@@ -27,7 +27,7 @@ public class RoundTest
         var round = new Round(ballots);
         assertEquals(true, round.isMajority());
         assertEquals(false, round.hasNext());
-        assertEquals(list(cv(Able, 3), cv(Baker, 2)), round.getCounts());
+        assertEquals(list(cv(Able, 3, 11), cv(Baker, 2, 10)), round.getCounts());
 
         assertEquals(round, round.solve());
     }
@@ -44,7 +44,7 @@ public class RoundTest
         var round = new Round(ballots);
         assertEquals(true, round.isMajority());
         assertEquals(false, round.hasNext());
-        assertEquals(list(cv(Able, 3), cv(Baker, 1), cv(Charlie, 1)), round.getCounts());
+        assertEquals(list(cv(Able, 3, 9), cv(Charlie, 1, 8), cv(Baker, 1, 7)), round.getCounts());
 
         assertEquals(round, round.solve());
     }
@@ -65,12 +65,12 @@ public class RoundTest
         var round = new Round(ballots);
         assertEquals(false, round.isMajority());
         assertEquals(true, round.hasNext());
-        assertEquals(list(cv(Able, 4), cv(Baker, 3), cv(Echo, 2)), round.getCounts());
+        assertEquals(list(cv(Able, 4, 8), cv(Baker, 3, 8), cv(Echo, 2, 5)), round.getCounts());
 
         round = round.next();
         assertEquals(true, round.isMajority());
         assertEquals(false, round.hasNext());
-        assertEquals(list(cv(Baker, 5), cv(Able, 4)), round.getCounts());
+        assertEquals(list(cv(Baker, 5, 8), cv(Able, 4, 8)), round.getCounts());
 
         assertEquals(round, new Round(ballots).solve());
     }
@@ -89,25 +89,25 @@ public class RoundTest
         var round = new Round(ballots);
         assertEquals(false, round.isMajority());
         assertEquals(true, round.hasNext());
-        assertEquals(list(cv(Able, 11), cv(Delta, 6), cv(Baker, 5), cv(Charlie, 4), cv(Echo, 3)),
+        assertEquals(list(cv(Able, 11, 39), cv(Delta, 6, 35), cv(Baker, 5, 24), cv(Charlie, 4, 34), cv(Echo, 3, 42)),
                      round.getCounts());
 
         round = round.next();
         assertEquals(false, round.isMajority());
         assertEquals(true, round.hasNext());
-        assertEquals(list(cv(Able, 11), cv(Charlie, 7), cv(Delta, 6), cv(Baker, 5)),
+        assertEquals(list(cv(Able, 11, 39), cv(Charlie, 7, 34), cv(Delta, 6, 35), cv(Baker, 5, 24)),
                      round.getCounts());
 
         round = round.next();
         assertEquals(false, round.isMajority());
         assertEquals(true, round.hasNext());
-        assertEquals(list(cv(Charlie, 12), cv(Able, 11), cv(Delta, 6)),
+        assertEquals(list(cv(Charlie, 12, 34), cv(Able, 11, 39), cv(Delta, 6, 35)),
                      round.getCounts());
 
         round = round.next();
         assertEquals(true, round.isMajority());
         assertEquals(false, round.hasNext());
-        assertEquals(list(cv(Charlie, 15), cv(Able, 14)), round.getCounts());
+        assertEquals(list(cv(Charlie, 15, 34), cv(Able, 14, 39)), round.getCounts());
 
         assertEquals(round, new Round(ballots).solve());
     }
@@ -138,8 +138,9 @@ public class RoundTest
     }
 
     private Round.CandidateVotes cv(Candidate candidate,
-                                    int votes)
+                                    int votes,
+                                    int weight)
     {
-        return new Round.CandidateVotes(candidate, votes);
+        return new Round.CandidateVotes(candidate, votes, weight);
     }
 }

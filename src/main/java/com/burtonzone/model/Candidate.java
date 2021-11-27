@@ -1,9 +1,11 @@
 package com.burtonzone.model;
 
 import lombok.Value;
+import org.javimmutable.collections.util.JImmutables;
 
 @Value
-public class Candidate implements Comparable<Candidate>
+public class Candidate
+    implements Comparable<Candidate>
 {
     String name;
     int priority;
@@ -16,5 +18,12 @@ public class Candidate implements Comparable<Candidate>
             diff = name.compareTo(o.name);
         }
         return diff;
+    }
+
+
+    @Override
+    public String toString()
+    {
+        return JImmutables.list(name, priority).toString();
     }
 }

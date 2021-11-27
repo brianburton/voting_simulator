@@ -16,18 +16,20 @@ public class Round
 {
     @EqualsAndHashCode.Include
     private final JImmutableMultiset<Ballot> ballots;
+    private final JImmutableMultiset<Candidate> weights;
     @Getter
     private final JImmutableList<CandidateVotes> counts;
-    private final Round prior;
     @Getter
     private final int totalVotes;
+    private final Round prior;
 
     public Round(Iterable<Ballot> allBallots)
     {
         ballots = JImmutables.multiset(allBallots);
+        weights = computeCandidateWeights(ballots);
         counts = countVotes(ballots);
-        prior = null;
         totalVotes = ballots.occurrenceCount();
+        prior = null;
     }
 
     private Round(Round prior)
@@ -37,6 +39,7 @@ public class Round
             .transform(JImmutables.list(), e -> entry(e.getKey().withoutCandidate(loser), e.getValue()))
             .select(e -> e.getKey().isValid())
             .reduce(JImmutables.multiset(), (m, e) -> m.insert(e.getKey().withoutCandidate(loser), e.getValue()));
+        weights = prior.weights;
         counts = countVotes(ballots);
         totalVotes = ballots.occurrenceCount();
         this.prior = prior;
@@ -103,22 +106,32 @@ public class Round
         return answer;
     }
 
-    private static <T> JImmutableMap<T, Integer> countObjects(Iterable<T> objects)
+    static JImmutableMultiset<Candidate> computeCandidateWeights(JImmutableMultiset<Ballot> ballots)
     {
-        var counts = JImmutables.<T, Integer>map();
-        for (T object : objects) {
-            counts = counts.update(object, h -> h.orElse(0) + 1);
+        final int maxWeight = ballots.stream()
+            .mapToInt(b -> b.getChoices().size())
+            .max()
+            .orElse(1);
+        JImmutableMultiset<Candidate> answer = JImmutables.multiset();
+        for (JImmutableMap.Entry<Ballot, Integer> e : ballots.entries()) {
+            final var candidates = e.getKey().getChoices();
+            final int count = e.getValue();
+            for (int i = 0; i < candidates.size(); ++i) {
+                var candidate = candidates.get(i);
+                var weight = (maxWeight - i) * count;
+                answer = answer.insert(candidate, weight);
+            }
         }
-        return counts;
+        return answer;
     }
 
-    private static JImmutableList<CandidateVotes> countVotes(JImmutableMultiset<Ballot> ballots)
+    private JImmutableList<CandidateVotes> countVotes(JImmutableMultiset<Ballot> ballots)
     {
         var candidateVotes = ballots.entries()
             .reduce(JImmutables.<Candidate>multiset(),
                     (m, e) -> m.insert(e.getKey().getFirstChoice(), e.getValue()));
         return candidateVotes.entries().stream()
-            .map(e -> new CandidateVotes(e.getKey(), e.getValue()))
+            .map(e -> new CandidateVotes(e.getKey(), e.getValue(), weights.count(e.getKey())))
             .sorted()
             .collect(JImmutables.listCollector());
     }
@@ -129,15 +142,25 @@ public class Round
     {
         Candidate candidate;
         int votes;
+        int weight;
 
         @Override
         public int compareTo(CandidateVotes o)
         {
             var diff = Integer.compare(o.votes, votes);
             if (diff == 0) {
+                diff = Integer.compare(o.weight, weight);
+            }
+            if (diff == 0) {
                 diff = candidate.compareTo(o.candidate);
             }
             return diff;
+        }
+
+        @Override
+        public String toString()
+        {
+            return list(candidate, votes, weight).toString();
         }
     }
 }
