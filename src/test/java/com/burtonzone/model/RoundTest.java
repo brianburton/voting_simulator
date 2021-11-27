@@ -1,9 +1,9 @@
 package com.burtonzone.model;
 
 import static org.javimmutable.collections.util.JImmutables.*;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
-import java.util.Arrays;
+import java.util.NoSuchElementException;
 import org.javimmutable.collections.JImmutableList;
 import org.junit.Test;
 
@@ -86,30 +86,40 @@ public class RoundTest
             .insertAll(repeat(3, Echo, Charlie, Delta))
             .insertAll(repeat(3, Delta, Able, Baker))
             .insertAll(repeat(4, Charlie, Echo, Delta));
-        var round = new Round(ballots);
-        assertEquals(false, round.isMajority());
-        assertEquals(true, round.hasNext());
+        final var round1 = new Round(ballots);
+        assertEquals(false, round1.hasPrior());
+        assertThrows(NoSuchElementException.class, round1::prior);
+        assertEquals(false, round1.isMajority());
+        assertEquals(true, round1.hasNext());
         assertEquals(list(cv(11, Able), cv(6, Delta), cv(5, Baker), cv(4, Charlie), cv(3, Echo)),
-                     round.getCounts());
+                     round1.getCounts());
 
-        round = round.next();
-        assertEquals(false, round.isMajority());
-        assertEquals(true, round.hasNext());
+        final var round2 = round1.next();
+        assertEquals(true, round2.hasPrior());
+        assertSame(round1, round2.prior());
+        assertEquals(false, round2.isMajority());
+        assertEquals(true, round2.hasNext());
         assertEquals(list(cv(11, Able), cv(7, Charlie), cv(6, Delta), cv(5, Baker)),
-                     round.getCounts());
+                     round2.getCounts());
 
-        round = round.next();
-        assertEquals(false, round.isMajority());
-        assertEquals(true, round.hasNext());
+        final var round3 = round2.next();
+        assertEquals(true, round3.hasPrior());
+        assertSame(round2, round3.prior());
+        assertEquals(false, round3.isMajority());
+        assertEquals(true, round3.hasNext());
         assertEquals(list(cv(12, Charlie), cv(11, Able), cv(6, Delta)),
-                     round.getCounts());
+                     round3.getCounts());
 
-        round = round.next();
-        assertEquals(true, round.isMajority());
-        assertEquals(false, round.hasNext());
-        assertEquals(list(cv(15, Charlie), cv(14, Able)), round.getCounts());
+        final var round4 = round3.next();
+        assertEquals(true, round4.hasPrior());
+        assertSame(round3, round4.prior());
+        assertEquals(true, round4.isMajority());
+        assertEquals(false, round4.hasNext());
+        assertEquals(list(cv(15, Charlie), cv(14, Able)), round4.getCounts());
+        assertThrows(NoSuchElementException.class, round4::next);
 
-        assertEquals(round, new Round(ballots).solve());
+        assertEquals(round4, round1.solve());
+        assertEquals(list(round1, round2, round3, round4), round4.toList());
     }
 
     private JImmutableList<Ballot> repeat(int count,
@@ -130,11 +140,6 @@ public class RoundTest
     private Ballot ballot(Candidate... candidates)
     {
         return new Ballot(list(candidates));
-    }
-
-    private Round round(Ballot... ballots)
-    {
-        return new Round(Arrays.asList(ballots));
     }
 
     private Round.CandidateVotes cv(int votes,

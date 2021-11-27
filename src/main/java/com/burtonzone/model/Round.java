@@ -20,6 +20,7 @@ public class Round
     private final JImmutableList<CandidateVotes> counts;
     @Getter
     private final int totalVotes;
+    @Nullable
     private final Round prior;
 
     public Round(Iterable<Ballot> allBallots)
@@ -47,10 +48,26 @@ public class Round
         return prior != null;
     }
 
-    @Nullable
     public Round prior()
     {
+        if (!hasPrior()) {
+            throw new NoSuchElementException();
+        }
         return prior;
+    }
+
+    public boolean hasNext()
+    {
+        if (isMajority()) {
+            return false;
+        }
+        if (counts.size() < 3) {
+            return false;
+        }
+        if (!getLastPlace().isSingle()) {
+            return false;
+        }
+        return true;
     }
 
     public Round next()
@@ -58,7 +75,7 @@ public class Round
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
-        return new Round(this, counts.get(counts.size() - 1).getSingle());
+        return new Round(this, getLastPlace().getSingle());
     }
 
     public Round solve()
@@ -77,21 +94,7 @@ public class Round
 
     public boolean isMajority()
     {
-        return counts.get(0).votes >= getMajorityVotes();
-    }
-
-    public boolean hasNext()
-    {
-        if (isMajority()) {
-            return false;
-        }
-        if (counts.size() < 3) {
-            return false;
-        }
-        if (counts.get(counts.size() - 1).candidates.size() > 1) {
-            return false;
-        }
-        return true;
+        return getFirstPlace().votes >= getMajorityVotes();
     }
 
     public JImmutableList<Round> toList()
@@ -103,6 +106,16 @@ public class Round
             round = round.prior;
         }
         return answer;
+    }
+
+    private CandidateVotes getFirstPlace()
+    {
+        return counts.get(0);
+    }
+
+    private CandidateVotes getLastPlace()
+    {
+        return counts.get(counts.size() - 1);
     }
 
     private JImmutableList<CandidateVotes> countVotes(JImmutableMultiset<Ballot> ballots)
