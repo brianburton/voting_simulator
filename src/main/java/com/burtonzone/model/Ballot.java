@@ -1,8 +1,5 @@
 package com.burtonzone.model;
 
-import java.util.List;
-import lombok.Builder;
-import lombok.Singular;
 import lombok.Value;
 import org.javimmutable.collections.JImmutableList;
 import org.javimmutable.collections.util.JImmutables;
@@ -12,8 +9,7 @@ public class Ballot
 {
     JImmutableList<Candidate> choices;
 
-    @Builder
-    private Ballot(@Singular List<Candidate> choices)
+    public Ballot(Candidate... choices)
     {
         this.choices = JImmutables.list(choices);
     }
@@ -37,5 +33,11 @@ public class Ballot
     {
         final var removed = JImmutables.set(candidates);
         return new Ballot(choices.reject(removed::contains));
+    }
+
+    @Override
+    public String toString()
+    {
+        return choices.toString();
     }
 }

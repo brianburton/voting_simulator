@@ -23,9 +23,9 @@ public class Round
     @Nullable
     private final Round prior;
 
-    public Round(Iterable<Ballot> allBallots)
+    private Round(JImmutableMultiset<Ballot> ballots)
     {
-        ballots = JImmutables.multiset(allBallots);
+        this.ballots = ballots;
         counts = countVotes(ballots);
         totalVotes = ballots.occurrenceCount();
         prior = null;
@@ -41,6 +41,11 @@ public class Round
         counts = countVotes(ballots);
         totalVotes = ballots.occurrenceCount();
         this.prior = prior;
+    }
+
+    public static Builder builder()
+    {
+        return new Builder();
     }
 
     public boolean hasPrior()
@@ -162,6 +167,48 @@ public class Round
         public String toString()
         {
             return list(votes, candidates).toString();
+        }
+    }
+
+    public static class Builder
+    {
+        private JImmutableMultiset<Ballot> ballots = JImmutables.multiset();
+
+        public Builder insert(Ballot ballot)
+        {
+            validateBallot(ballot);
+            ballots = ballots.insert(ballot);
+            return this;
+        }
+
+        public Builder insertAll(Iterable<Ballot> iterable)
+        {
+            iterable.forEach(this::validateBallot);
+            ballots = ballots.insertAll(iterable);
+            return this;
+        }
+
+        public Builder insertRepeat(int count,
+                                    Ballot ballot)
+        {
+            validateBallot(ballot);
+            ballots = ballots.insert(ballot, count);
+            return this;
+        }
+
+        public Round build()
+        {
+            if (ballots.isEmpty()) {
+                throw new IllegalArgumentException("no ballot shave been defined");
+            }
+            return new Round(ballots);
+        }
+
+        private void validateBallot(Ballot ballot)
+        {
+            if (!ballot.isValid()) {
+                throw new IllegalArgumentException(String.format("invalid ballot: %s", ballot));
+            }
         }
     }
 }

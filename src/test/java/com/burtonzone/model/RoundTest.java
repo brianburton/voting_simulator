@@ -4,7 +4,6 @@ import static org.javimmutable.collections.util.JImmutables.*;
 import static org.junit.Assert.*;
 
 import java.util.NoSuchElementException;
-import org.javimmutable.collections.JImmutableList;
 import org.junit.Test;
 
 public class RoundTest
@@ -18,13 +17,14 @@ public class RoundTest
     @Test
     public void simpleMajority()
     {
-        var ballots = ballots()
-            .insert(ballot(Able, Baker, Charlie))
-            .insert(ballot(Baker, Charlie))
-            .insert(ballot(Able, Charlie))
-            .insert(ballot(Baker, Able))
-            .insert(ballot(Able, Baker));
-        var round = new Round(ballots);
+        var round = Round.builder()
+            .insert(new Ballot(Able, Baker, Charlie))
+            .insert(new Ballot(Baker, Charlie))
+            .insert(new Ballot(Able, Charlie))
+            .insert(new Ballot(Baker, Able))
+            .insert(new Ballot(Able, Baker))
+            .build();
+
         assertEquals(true, round.isMajority());
         assertEquals(false, round.hasNext());
         assertEquals(list(cv(3, Able), cv(2, Baker)), round.getCounts());
@@ -35,13 +35,13 @@ public class RoundTest
     @Test
     public void simpleMajority2()
     {
-        var ballots = ballots()
-            .insert(ballot(Able, Baker, Charlie))
-            .insert(ballot(Baker, Charlie))
-            .insert(ballot(Able, Charlie))
-            .insert(ballot(Charlie, Delta))
-            .insert(ballot(Able, Baker));
-        var round = new Round(ballots);
+        var round = Round.builder()
+            .insert(new Ballot(Able, Baker, Charlie))
+            .insert(new Ballot(Baker, Charlie))
+            .insert(new Ballot(Able, Charlie))
+            .insert(new Ballot(Charlie, Delta))
+            .insert(new Ballot(Able, Baker))
+            .build();
         assertEquals(true, round.isMajority());
         assertEquals(false, round.hasNext());
         assertEquals(list(cv(3, Able), cv(1, Baker, Charlie)), round.getCounts());
@@ -52,17 +52,17 @@ public class RoundTest
     @Test
     public void twoRounds()
     {
-        var ballots = ballots()
-            .insert(ballot(Able, Delta))
-            .insert(ballot(Baker, Charlie))
-            .insert(ballot(Able, Delta))
-            .insert(ballot(Baker, Charlie))
-            .insert(ballot(Able, Delta))
-            .insert(ballot(Baker, Delta))
-            .insert(ballot(Able, Echo))
-            .insert(ballot(Echo, Baker))
-            .insert(ballot(Echo, Baker));
-        var round = new Round(ballots);
+        var builder = Round.builder()
+            .insert(new Ballot(Able, Delta))
+            .insert(new Ballot(Baker, Charlie))
+            .insert(new Ballot(Able, Delta))
+            .insert(new Ballot(Baker, Charlie))
+            .insert(new Ballot(Able, Delta))
+            .insert(new Ballot(Baker, Delta))
+            .insert(new Ballot(Able, Echo))
+            .insert(new Ballot(Echo, Baker))
+            .insert(new Ballot(Echo, Baker));
+        var round = builder.build();
         assertEquals(false, round.isMajority());
         assertEquals(true, round.hasNext());
         assertEquals(list(cv(4, Able), cv(3, Baker), cv(2, Echo)), round.getCounts());
@@ -72,21 +72,21 @@ public class RoundTest
         assertEquals(false, round.hasNext());
         assertEquals(list(cv(5, Baker), cv(4, Able)), round.getCounts());
 
-        assertEquals(round, new Round(ballots).solve());
+        assertEquals(round, builder.build().solve());
     }
 
     @Test
     public void threeRounds()
     {
-        var ballots = ballots()
-            .insertAll(repeat(5, Able, Delta, Echo))
-            .insertAll(repeat(6, Able, Echo, Baker))
-            .insertAll(repeat(5, Baker, Charlie, Echo))
-            .insertAll(repeat(3, Delta, Charlie, Echo))
-            .insertAll(repeat(3, Echo, Charlie, Delta))
-            .insertAll(repeat(3, Delta, Able, Baker))
-            .insertAll(repeat(4, Charlie, Echo, Delta));
-        final var round1 = new Round(ballots);
+        final var builder = Round.builder()
+            .insertRepeat(5, new Ballot(Able, Delta, Echo))
+            .insertRepeat(6, new Ballot(Able, Echo, Baker))
+            .insertRepeat(5, new Ballot(Baker, Charlie, Echo))
+            .insertRepeat(3, new Ballot(Delta, Charlie, Echo))
+            .insertRepeat(3, new Ballot(Echo, Charlie, Delta))
+            .insertRepeat(3, new Ballot(Delta, Able, Baker))
+            .insertRepeat(4, new Ballot(Charlie, Echo, Delta));
+        final var round1 = builder.build();
         assertEquals(false, round1.hasPrior());
         assertThrows(NoSuchElementException.class, round1::prior);
         assertEquals(false, round1.isMajority());
@@ -120,26 +120,6 @@ public class RoundTest
 
         assertEquals(round4, round1.solve());
         assertEquals(list(round1, round2, round3, round4), round4.toList());
-    }
-
-    private JImmutableList<Ballot> repeat(int count,
-                                          Candidate... candidates)
-    {
-        var answer = ballots();
-        for (int i = 0; i < count; ++i) {
-            answer = answer.insert(ballot(candidates));
-        }
-        return answer;
-    }
-
-    private JImmutableList<Ballot> ballots()
-    {
-        return list();
-    }
-
-    private Ballot ballot(Candidate... candidates)
-    {
-        return new Ballot(list(candidates));
     }
 
     private Round.CandidateVotes cv(int votes,
