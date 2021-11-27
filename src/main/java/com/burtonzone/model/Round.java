@@ -2,12 +2,12 @@ package com.burtonzone.model;
 
 import static org.javimmutable.collections.util.JImmutables.*;
 
+import java.util.NoSuchElementException;
 import javax.annotation.Nullable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 import org.javimmutable.collections.JImmutableList;
-import org.javimmutable.collections.JImmutableMap;
 import org.javimmutable.collections.JImmutableMultiset;
 import org.javimmutable.collections.util.JImmutables;
 
@@ -16,7 +16,6 @@ public class Round
 {
     @EqualsAndHashCode.Include
     private final JImmutableMultiset<Ballot> ballots;
-    private final JImmutableMultiset<Candidate> weights;
     @Getter
     private final JImmutableList<CandidateVotes> counts;
     @Getter
@@ -26,20 +25,18 @@ public class Round
     public Round(Iterable<Ballot> allBallots)
     {
         ballots = JImmutables.multiset(allBallots);
-        weights = computeCandidateWeights(ballots);
         counts = countVotes(ballots);
         totalVotes = ballots.occurrenceCount();
         prior = null;
     }
 
-    private Round(Round prior)
+    private Round(Round prior,
+                  Candidate... losers)
     {
-        final var loser = prior.getLastPlaceCandidate();
         ballots = prior.ballots.entries()
-            .transform(JImmutables.list(), e -> entry(e.getKey().withoutCandidate(loser), e.getValue()))
+            .transform(JImmutables.list(), e -> entry(e.getKey().withoutCandidate(losers), e.getValue()))
             .select(e -> e.getKey().isValid())
-            .reduce(JImmutables.multiset(), (m, e) -> m.insert(e.getKey().withoutCandidate(loser), e.getValue()));
-        weights = prior.weights;
+            .reduce(JImmutables.multiset(), (m, e) -> m.insert(e.getKey(), e.getValue()));
         counts = countVotes(ballots);
         totalVotes = ballots.occurrenceCount();
         this.prior = prior;
@@ -58,7 +55,10 @@ public class Round
 
     public Round next()
     {
-        return new Round(this);
+        if (!hasNext()) {
+            throw new NoSuchElementException();
+        }
+        return new Round(this, counts.get(counts.size() - 1).getSingle());
     }
 
     public Round solve()
@@ -82,17 +82,16 @@ public class Round
 
     public boolean hasNext()
     {
-        return !(counts.size() < 2 || isMajority());
-    }
-
-    public Candidate getFirstPlaceCandidate()
-    {
-        return counts.get(0).candidate;
-    }
-
-    public Candidate getLastPlaceCandidate()
-    {
-        return counts.get(counts.size() - 1).candidate;
+        if (isMajority()) {
+            return false;
+        }
+        if (counts.size() < 3) {
+            return false;
+        }
+        if (counts.get(counts.size() - 1).candidates.size() > 1) {
+            return false;
+        }
+        return true;
     }
 
     public JImmutableList<Round> toList()
@@ -106,32 +105,16 @@ public class Round
         return answer;
     }
 
-    static JImmutableMultiset<Candidate> computeCandidateWeights(JImmutableMultiset<Ballot> ballots)
-    {
-        final int maxWeight = ballots.stream()
-            .mapToInt(b -> b.getChoices().size())
-            .max()
-            .orElse(1);
-        JImmutableMultiset<Candidate> answer = JImmutables.multiset();
-        for (JImmutableMap.Entry<Ballot, Integer> e : ballots.entries()) {
-            final var candidates = e.getKey().getChoices();
-            final int count = e.getValue();
-            for (int i = 0; i < candidates.size(); ++i) {
-                var candidate = candidates.get(i);
-                var weight = (maxWeight - i) * count;
-                answer = answer.insert(candidate, weight);
-            }
-        }
-        return answer;
-    }
-
     private JImmutableList<CandidateVotes> countVotes(JImmutableMultiset<Ballot> ballots)
     {
         var candidateVotes = ballots.entries()
-            .reduce(JImmutables.<Candidate>multiset(),
+            .reduce(JImmutables.<Candidate>sortedMultiset(),
                     (m, e) -> m.insert(e.getKey().getFirstChoice(), e.getValue()));
-        return candidateVotes.entries().stream()
-            .map(e -> new CandidateVotes(e.getKey(), e.getValue(), weights.count(e.getKey())))
+        var votesMap = candidateVotes.entries().stream()
+            .map(e -> entry(e.getValue(), e.getKey()))
+            .collect(JImmutables.listMapCollector());
+        return votesMap.keys().stream()
+            .map(v -> new CandidateVotes(v, votesMap.get(v)))
             .sorted()
             .collect(JImmutables.listCollector());
     }
@@ -140,27 +123,32 @@ public class Round
     public static class CandidateVotes
         implements Comparable<CandidateVotes>
     {
-        Candidate candidate;
         int votes;
-        int weight;
+        JImmutableList<Candidate> candidates;
+
+        public boolean isSingle()
+        {
+            return candidates.size() == 1;
+        }
+
+        public Candidate getSingle()
+        {
+            if (!isSingle()) {
+                throw new NoSuchElementException("count is not one");
+            }
+            return candidates.iterator().next();
+        }
 
         @Override
         public int compareTo(CandidateVotes o)
         {
-            var diff = Integer.compare(o.votes, votes);
-            if (diff == 0) {
-                diff = Integer.compare(o.weight, weight);
-            }
-            if (diff == 0) {
-                diff = candidate.compareTo(o.candidate);
-            }
-            return diff;
+            return Integer.compare(o.votes, votes);
         }
 
         @Override
         public String toString()
         {
-            return list(candidate, votes, weight).toString();
+            return list(votes, candidates).toString();
         }
     }
 }

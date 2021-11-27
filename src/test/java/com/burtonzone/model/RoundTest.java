@@ -9,11 +9,11 @@ import org.junit.Test;
 
 public class RoundTest
 {
-    private final Candidate Able = new Candidate("A", 1);
-    private final Candidate Baker = new Candidate("B", 2);
-    private final Candidate Charlie = new Candidate("C", 3);
-    private final Candidate Delta = new Candidate("D", 4);
-    private final Candidate Echo = new Candidate("E", 5);
+    private final Candidate Able = new Candidate("Able");
+    private final Candidate Baker = new Candidate("Baker");
+    private final Candidate Charlie = new Candidate("Charlie");
+    private final Candidate Delta = new Candidate("Delta");
+    private final Candidate Echo = new Candidate("Echo");
 
     @Test
     public void simpleMajority()
@@ -27,7 +27,7 @@ public class RoundTest
         var round = new Round(ballots);
         assertEquals(true, round.isMajority());
         assertEquals(false, round.hasNext());
-        assertEquals(list(cv(Able, 3, 11), cv(Baker, 2, 10)), round.getCounts());
+        assertEquals(list(cv(3, Able), cv(2, Baker)), round.getCounts());
 
         assertEquals(round, round.solve());
     }
@@ -44,7 +44,7 @@ public class RoundTest
         var round = new Round(ballots);
         assertEquals(true, round.isMajority());
         assertEquals(false, round.hasNext());
-        assertEquals(list(cv(Able, 3, 9), cv(Charlie, 1, 8), cv(Baker, 1, 7)), round.getCounts());
+        assertEquals(list(cv(3, Able), cv(1, Baker, Charlie)), round.getCounts());
 
         assertEquals(round, round.solve());
     }
@@ -65,12 +65,12 @@ public class RoundTest
         var round = new Round(ballots);
         assertEquals(false, round.isMajority());
         assertEquals(true, round.hasNext());
-        assertEquals(list(cv(Able, 4, 8), cv(Baker, 3, 8), cv(Echo, 2, 5)), round.getCounts());
+        assertEquals(list(cv(4, Able), cv(3, Baker), cv(2, Echo)), round.getCounts());
 
         round = round.next();
         assertEquals(true, round.isMajority());
         assertEquals(false, round.hasNext());
-        assertEquals(list(cv(Baker, 5, 8), cv(Able, 4, 8)), round.getCounts());
+        assertEquals(list(cv(5, Baker), cv(4, Able)), round.getCounts());
 
         assertEquals(round, new Round(ballots).solve());
     }
@@ -89,25 +89,25 @@ public class RoundTest
         var round = new Round(ballots);
         assertEquals(false, round.isMajority());
         assertEquals(true, round.hasNext());
-        assertEquals(list(cv(Able, 11, 39), cv(Delta, 6, 35), cv(Baker, 5, 24), cv(Charlie, 4, 34), cv(Echo, 3, 42)),
+        assertEquals(list(cv(11, Able), cv(6, Delta), cv(5, Baker), cv(4, Charlie), cv(3, Echo)),
                      round.getCounts());
 
         round = round.next();
         assertEquals(false, round.isMajority());
         assertEquals(true, round.hasNext());
-        assertEquals(list(cv(Able, 11, 39), cv(Charlie, 7, 34), cv(Delta, 6, 35), cv(Baker, 5, 24)),
+        assertEquals(list(cv(11, Able), cv(7, Charlie), cv(6, Delta), cv(5, Baker)),
                      round.getCounts());
 
         round = round.next();
         assertEquals(false, round.isMajority());
         assertEquals(true, round.hasNext());
-        assertEquals(list(cv(Charlie, 12, 34), cv(Able, 11, 39), cv(Delta, 6, 35)),
+        assertEquals(list(cv(12, Charlie), cv(11, Able), cv(6, Delta)),
                      round.getCounts());
 
         round = round.next();
         assertEquals(true, round.isMajority());
         assertEquals(false, round.hasNext());
-        assertEquals(list(cv(Charlie, 15, 34), cv(Able, 14, 39)), round.getCounts());
+        assertEquals(list(cv(15, Charlie), cv(14, Able)), round.getCounts());
 
         assertEquals(round, new Round(ballots).solve());
     }
@@ -137,10 +137,9 @@ public class RoundTest
         return new Round(Arrays.asList(ballots));
     }
 
-    private Round.CandidateVotes cv(Candidate candidate,
-                                    int votes,
-                                    int weight)
+    private Round.CandidateVotes cv(int votes,
+                                    Candidate... candidates)
     {
-        return new Round.CandidateVotes(candidate, votes, weight);
+        return new Round.CandidateVotes(votes, list(candidates));
     }
 }

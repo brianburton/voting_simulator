@@ -33,8 +33,9 @@ public class Ballot
         return choices.get(0);
     }
 
-    public Ballot withoutCandidate(Candidate candidate)
+    public Ballot withoutCandidate(Candidate... candidates)
     {
-        return new Ballot(choices.reject(c -> c.equals(candidate)));
+        final var removed = JImmutables.set(candidates);
+        return new Ballot(choices.reject(removed::contains));
     }
 }
