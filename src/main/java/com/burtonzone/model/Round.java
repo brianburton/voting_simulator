@@ -80,6 +80,11 @@ public class Round
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
+        return advance();
+    }
+
+    public Round advance()
+    {
         return new Round(this, getLastPlace().getSingle());
     }
 
@@ -113,12 +118,20 @@ public class Round
         return answer;
     }
 
-    private CandidateVotes getFirstPlace()
+    public int getCandidateCount()
+    {
+        return (int)counts.stream()
+            .flatMap(cv -> cv.candidates.stream())
+            .distinct()
+            .count();
+    }
+
+    public CandidateVotes getFirstPlace()
     {
         return counts.get(0);
     }
 
-    private CandidateVotes getLastPlace()
+    public CandidateVotes getLastPlace()
     {
         return counts.get(counts.size() - 1);
     }
