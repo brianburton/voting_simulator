@@ -1,6 +1,6 @@
-package com.burtonzone;
+package com.burtonzone.rcv;
 
-import com.burtonzone.model.Round;
+import com.burtonzone.rcv.model.Round;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import org.javimmutable.collections.JImmutableList;

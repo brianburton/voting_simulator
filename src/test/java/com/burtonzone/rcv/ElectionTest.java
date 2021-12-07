@@ -1,11 +1,11 @@
-package com.burtonzone;
+package com.burtonzone.rcv;
 
 import static org.javimmutable.collections.util.JImmutables.*;
 import static org.junit.Assert.assertEquals;
 
-import com.burtonzone.model.Ballot;
-import com.burtonzone.model.Candidate;
-import com.burtonzone.model.Round;
+import com.burtonzone.rcv.model.Ballot;
+import com.burtonzone.rcv.model.Candidate;
+import com.burtonzone.rcv.model.Round;
 import org.junit.Test;
 
 public class ElectionTest
@@ -99,7 +99,7 @@ public class ElectionTest
             .insertRepeat(1, new Ballot(Foxtrot));
         final var election = new Election(3);
         final var result = election.run(builder.build());
-        assertEquals(list(cv(2, Baker,Echo), cv(1, Able,Charlie,Delta,Foxtrot)), result.getCounts());
+        assertEquals(list(cv(2, Baker, Echo), cv(1, Able, Charlie, Delta, Foxtrot)), result.getCounts());
         assertEquals(list(), election.getElected(result));
     }
 
