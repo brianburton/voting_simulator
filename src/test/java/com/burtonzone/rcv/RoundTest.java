@@ -1,4 +1,4 @@
-package com.burtonzone.rcv.model;
+package com.burtonzone.rcv;
 
 import static org.javimmutable.collections.util.JImmutables.*;
 import static org.junit.Assert.*;

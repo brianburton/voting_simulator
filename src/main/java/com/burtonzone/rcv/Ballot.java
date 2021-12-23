@@ -1,4 +1,4 @@
-package com.burtonzone.rcv.model;
+package com.burtonzone.rcv;
 
 import lombok.Value;
 import org.javimmutable.collections.JImmutableList;

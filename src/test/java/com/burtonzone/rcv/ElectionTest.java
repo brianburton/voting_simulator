@@ -3,9 +3,6 @@ package com.burtonzone.rcv;
 import static org.javimmutable.collections.util.JImmutables.*;
 import static org.junit.Assert.assertEquals;
 
-import com.burtonzone.rcv.model.Ballot;
-import com.burtonzone.rcv.model.Candidate;
-import com.burtonzone.rcv.model.Round;
 import org.junit.Test;
 
 public class ElectionTest
