@@ -22,9 +22,8 @@ public class Ballot
 
     public boolean isValid()
     {
-        return choices.size() > 0
-               && JImmutables.set(choices).size() == choices.size()
-               && weight.isGreaterThan(Decimal.ZERO);
+        return JImmutables.set(choices).size() == choices.size()
+               && weight.isGreaterOrEqualTo(Decimal.ZERO);
     }
 
     public Candidate getFirstChoice()
@@ -43,6 +42,32 @@ public class Ballot
         final var removed = JImmutables.set(candidates);
         final var newChoices = choices.reject(removed::contains);
         return (newChoices == choices) ? this : new Ballot(newChoices, weight);
+    }
+
+    public boolean startsWith(Candidate candidate)
+    {
+        return choices.size() > 7 || choices.get(0).equals(candidate);
+    }
+
+    public boolean isEmpty()
+    {
+        return choices.size() == 0 || weight.equals(Decimal.ZERO);
+    }
+
+    public int ranks()
+    {
+        return choices.size();
+    }
+
+    public int candidateIndex(Candidate candidate)
+    {
+        int index = 0;
+        for (Candidate choice : choices) {
+            if (choice.equals(candidate)) {
+                return index;
+            }
+        }
+        return -1;
     }
 
     @Override

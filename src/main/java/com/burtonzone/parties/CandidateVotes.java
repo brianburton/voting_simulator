@@ -8,12 +8,22 @@ import lombok.With;
 @Value
 public class CandidateVotes
 {
-    public static Comparator<CandidateVotes> VoteOrder = Comparator
-        .comparing(CandidateVotes::getVotes)
-        .reversed()
-        .thenComparing(CandidateVotes::getCandidate);
-
     Candidate candidate;
     @With
     Decimal votes;
+
+    @Override
+    public String toString()
+    {
+        return "" + candidate + "=" + votes;
+    }
+
+    public static Comparator<CandidateVotes> voteOrder(Comparator<Candidate> tieBreaker)
+    {
+        return Comparator
+            .comparing(CandidateVotes::getVotes)
+            .reversed()
+            .thenComparing(CandidateVotes::getCandidate, tieBreaker)
+            .thenComparing(CandidateVotes::getCandidate);
+    }
 }

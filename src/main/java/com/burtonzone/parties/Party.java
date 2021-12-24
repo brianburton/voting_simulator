@@ -12,4 +12,10 @@ public class Party
     public static Party Right = new Party("Right");
 
     String name;
+
+    @Override
+    public String toString()
+    {
+        return name;
+    }
 }

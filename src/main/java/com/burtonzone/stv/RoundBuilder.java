@@ -2,18 +2,16 @@ package com.burtonzone.stv;
 
 import com.burtonzone.common.Decimal;
 import com.burtonzone.parties.Candidate;
-import java.util.HashMap;
-import java.util.Map;
 import org.javimmutable.collections.util.JImmutables;
 
 public class RoundBuilder
 {
-    private final Map<Ballot, Integer> ballots = new HashMap<>();
+    private final BallotBox.Builder ballots = BallotBox.builder();
     private int seats = 1;
 
     public Round build()
     {
-        return new Round(JImmutables.map(ballots), seats);
+        return new Round(ballots.build(), seats);
     }
 
     public RoundBuilder seats(int val)
@@ -33,12 +31,7 @@ public class RoundBuilder
     {
         assert count >= 1;
         var ballot = new Ballot(JImmutables.list(candidates), Decimal.ONE);
-        var current = ballots.get(ballot);
-        if (current != null) {
-            ballots.put(ballot, current + count);
-        } else {
-            ballots.put(ballot, 1);
-        }
+        ballots.add(ballot, count);
         return this;
     }
 }

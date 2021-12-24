@@ -4,13 +4,12 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import lombok.EqualsAndHashCode;
-import lombok.ToString;
 
 @EqualsAndHashCode
-@ToString(includeFieldNames = false)
 public class Decimal
     implements Comparable<Decimal>
 {
+    public static final int PRECISION = 8;
     public static final Decimal ZERO = new Decimal(0);
     public static final Decimal ONE = new Decimal(1);
 
@@ -53,7 +52,7 @@ public class Decimal
 
     public Decimal dividedBy(Decimal other)
     {
-        return new Decimal(value.divide(other.value, MathContext.UNLIMITED));
+        return new Decimal(value.divide(other.value, PRECISION, RoundingMode.HALF_UP));
     }
 
     public Decimal times(Decimal other)
@@ -90,5 +89,18 @@ public class Decimal
     public boolean isLessOrEqualTo(Decimal other)
     {
         return compareTo(other) <= 0;
+    }
+
+    @Override
+    public String toString()
+    {
+        return value.toString();
+    }
+
+    public Decimal rounded(RoundingMode roundingMode)
+    {
+        return new Decimal(value
+                               .setScale(0, roundingMode)
+                               .setScale(PRECISION, RoundingMode.HALF_UP));
     }
 }
