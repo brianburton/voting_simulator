@@ -37,10 +37,9 @@ public class Ballot
         return new Ballot(choices, weight.times(extraWeight));
     }
 
-    public Ballot without(Candidate... candidates)
+    public Ballot without(Candidate candidate)
     {
-        final var removed = JImmutables.set(candidates);
-        final var newChoices = choices.reject(removed::contains);
+        final var newChoices = choices.reject(c -> c.equals(candidate));
         return (newChoices == choices) ? this : new Ballot(newChoices, weight);
     }
 
@@ -61,12 +60,12 @@ public class Ballot
 
     public int candidateIndex(Candidate candidate)
     {
-        int index = 0;
-        for (Candidate choice : choices) {
-            if (choice.equals(candidate)) {
-                return index;
-            }
-        }
+//        int index = 0;
+//        for (Candidate choice : choices) {
+//            if (choice.equals(candidate)) {
+//                return index;
+//            }
+//        }
         return -1;
     }
 

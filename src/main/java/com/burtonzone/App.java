@@ -1,10 +1,10 @@
 package com.burtonzone;
 
+import com.burtonzone.common.Rand;
 import com.burtonzone.parties.Party;
 import com.burtonzone.stv.District;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Random;
 import org.javimmutable.collections.util.JImmutables;
 
 public class App
@@ -13,7 +13,7 @@ public class App
     {
         final var fives = 20;
         final var threes = 0;
-        final var rand = new Random();
+        final var rand = new Rand();
         final var db = JImmutables.<District>listBuilder();
         for (int i = 1; i <= Math.max(fives, threes); ++i) {
             if (i <= fives) {

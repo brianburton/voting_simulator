@@ -1,9 +1,9 @@
 package com.burtonzone.stv;
 
+import com.burtonzone.common.Rand;
 import com.burtonzone.parties.Affinity;
 import com.burtonzone.parties.Candidate;
 import com.burtonzone.parties.Party;
-import java.util.Random;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.javimmutable.collections.JImmutableMultiset;
@@ -29,7 +29,7 @@ public class District
             .collect(JImmutables.multisetCollector());
     }
 
-    public static District randomDistrict(Random rand,
+    public static District randomDistrict(Rand rand,
                                           String name,
                                           int seats)
     {
