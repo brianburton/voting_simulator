@@ -14,9 +14,10 @@ import org.javimmutable.collections.util.JImmutables;
 
 public class Affinity
 {
-    public static Affinity Lefts = new Affinity(Left, CenterLeft);
-    public static Affinity Centers = new Affinity(CenterLeft, Center, CenterRight);
-    public static Affinity Rights = new Affinity(CenterRight, Right);
+    public static final Affinity Lefts = new Affinity(Left, CenterLeft);
+    public static final Affinity Centers = new Affinity(CenterLeft, Center, CenterRight);
+    public static final Affinity Rights = new Affinity(CenterRight, Right);
+    public static final JImmutableList<Affinity> All = JImmutables.list(Lefts, Centers, Rights);
 
     @Getter
     private final JImmutableList<Party> parties;
@@ -26,21 +27,34 @@ public class Affinity
         this.parties = JImmutables.list(parties);
     }
 
+    public static Ballot randomAffinityBallot(Random rand,
+                                              int numberOfSeats,
+                                              JImmutableList<Candidate> candidates)
+    {
+        final var i1 = rand.nextInt(3 * All.size());
+        final var i2 = rand.nextInt(3 * All.size());
+        final var i3 = rand.nextInt(3 * All.size());
+        final var affinityIndex = (i1 + i2 + i3) / 9;
+        final var affinity = All.get(affinityIndex);
+        return affinity.randomBallot(rand, numberOfSeats, candidates);
+    }
+
     public Ballot randomBallot(Random rand,
                                int numberOfSeats,
                                JImmutableList<Candidate> candidates)
     {
-        var sortedParties = new ArrayList<>(parties.getList());
+        final var sortedParties = new ArrayList<>(parties.getList());
         Collections.shuffle(sortedParties, rand);
-        var sortedCandidates = new ArrayList<>(candidates.getList());
+        final var sortedCandidates = new ArrayList<>(candidates.getList());
         Collections.shuffle(sortedCandidates);
-        var choices = new LinkedHashSet<Candidate>();
+        final var choices = new LinkedHashSet<Candidate>();
         for (Party party : sortedParties) {
             for (Candidate candidate : sortedCandidates) {
-                if (choices.size() < numberOfSeats) {
-                    if (candidate.getParty().equals(party)) {
-                        choices.add(candidate);
-                    }
+                if (choices.size() >= numberOfSeats) {
+                    break;
+                }
+                if (candidate.getParty().equals(party)) {
+                    choices.add(candidate);
                 }
             }
         }

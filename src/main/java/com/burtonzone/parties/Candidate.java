@@ -1,6 +1,5 @@
 package com.burtonzone.parties;
 
-import java.util.StringJoiner;
 import lombok.Value;
 
 @Value
@@ -19,9 +18,6 @@ public class Candidate
     @Override
     public String toString()
     {
-        return new StringJoiner(", ", "[", "]")
-            .add(name)
-            .add(party.toString())
-            .toString();
+        return String.format("%s (%s)", name, party.getAbbrev());
     }
 }

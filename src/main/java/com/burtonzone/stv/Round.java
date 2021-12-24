@@ -143,8 +143,19 @@ public class Round
         public RoundBuilder ballot(int count,
                                    Candidate... candidates)
         {
-            assert count >= 1;
             var ballot = new Ballot(JImmutables.list(candidates), Decimal.ONE);
+            return ballot(count, ballot);
+        }
+
+        public RoundBuilder ballot(Ballot ballot)
+        {
+            return ballot(1, ballot);
+        }
+
+        public RoundBuilder ballot(int count,
+                                   Ballot ballot)
+        {
+            assert count >= 1;
             ballots.add(ballot, count);
             return this;
         }

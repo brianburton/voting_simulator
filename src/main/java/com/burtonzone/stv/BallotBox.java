@@ -2,10 +2,12 @@ package com.burtonzone.stv;
 
 import com.burtonzone.common.Decimal;
 import com.burtonzone.parties.Candidate;
+import com.burtonzone.parties.Party;
 import javax.annotation.Nullable;
 import lombok.Getter;
 import org.javimmutable.collections.IterableStreamable;
 import org.javimmutable.collections.JImmutableMap;
+import org.javimmutable.collections.JImmutableMultiset;
 import org.javimmutable.collections.JImmutableSet;
 import org.javimmutable.collections.util.JImmutables;
 
@@ -29,6 +31,15 @@ public class BallotBox
     public IterableStreamable<JImmutableMap.Entry<Ballot, Integer>> ballots()
     {
         return ballots;
+    }
+
+    public JImmutableMultiset<Party> getPartyFirstChoiceCounts()
+    {
+        var answer = JImmutables.<Party>multiset();
+        for (JImmutableMap.Entry<Ballot, Integer> e : ballots) {
+            answer = answer.insert(e.getKey().getFirstChoice().getParty(), e.getValue());
+        }
+        return answer;
     }
 
     public BallotBox remove(Candidate candidate)
