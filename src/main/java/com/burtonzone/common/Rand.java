@@ -43,4 +43,9 @@ public class Rand
         var index = nextIndex(list.size());
         return list.get(index);
     }
+
+    public boolean nextBoolean()
+    {
+        return random.nextBoolean();
+    }
 }

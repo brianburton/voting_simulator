@@ -1,8 +1,8 @@
 package com.burtonzone;
 
 import com.burtonzone.common.Rand;
-import com.burtonzone.parties.Affinity;
 import com.burtonzone.parties.Party;
+import com.burtonzone.parties.Spectrum;
 import com.burtonzone.stv.District;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -20,7 +20,7 @@ public class App
         final var threes = 50;
         final var rand = new Rand();
         for (int test = 1; test <= 10; ++test) {
-            final var spectrum = new Affinity.Spectrum(rand);
+            final var spectrum = new Spectrum(rand);
             final var db = JImmutables.<District>listBuilder();
             for (int i = 1; i <= tens; ++i) {
                 db.add(District.randomDistrict(spectrum, "ten-" + i, 10));

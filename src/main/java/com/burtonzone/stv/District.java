@@ -1,8 +1,8 @@
 package com.burtonzone.stv;
 
-import com.burtonzone.parties.Affinity;
 import com.burtonzone.parties.Candidate;
 import com.burtonzone.parties.Party;
+import com.burtonzone.parties.Spectrum;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.javimmutable.collections.JImmutableMultiset;
@@ -28,7 +28,7 @@ public class District
             .collect(JImmutables.multisetCollector());
     }
 
-    public static District randomDistrict(Affinity.Spectrum spectrum,
+    public static District randomDistrict(Spectrum spectrum,
                                           String name,
                                           int seats)
     {
@@ -44,7 +44,7 @@ public class District
         final var rb = Round.builder();
         rb.seats(seats);
         for (int b = 1; b <= 1000 * seats; ++b) {
-            rb.ballot(affinity.randomBallot(spectrum.getRand(), seats, candidates));
+            rb.ballot(affinity.randomBallot(seats, candidates));
         }
         final var start = rb.build();
         final var end = start.run();
