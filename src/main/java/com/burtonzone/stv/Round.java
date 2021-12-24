@@ -2,6 +2,7 @@ package com.burtonzone.stv;
 
 import com.burtonzone.common.Decimal;
 import com.burtonzone.parties.Candidate;
+import com.burtonzone.parties.CandidateVotes;
 import com.burtonzone.parties.Votes;
 import java.math.RoundingMode;
 import javax.annotation.Nullable;
@@ -12,6 +13,9 @@ import org.javimmutable.collections.util.JImmutables;
 
 public class Round
 {
+    @Getter
+    private final Round prior;
+    @Getter
     private final BallotBox ballotBox;
     @Getter
     private final int seats;
@@ -19,39 +23,37 @@ public class Round
     final Decimal totalBallots;
     @Getter
     final Decimal quota;
-    private final Votes votes;
+    @Getter
+    private final JImmutableList<CandidateVotes> votes;
     @Getter
     private final JImmutableList<Candidate> elected;
-    @Getter
-    private final Round prior;
 
-    public Round(BallotBox ballotBox,
-                 int seats)
+    private Round(BallotBox ballotBox,
+                  int seats)
     {
+        prior = null;
         this.ballotBox = ballotBox;
         this.seats = seats;
         totalBallots = new Decimal(ballotBox.getTotalCount());
         quota = totalBallots.dividedBy(new Decimal(seats + 1))
             .plus(Decimal.ONE)
             .rounded(RoundingMode.DOWN);
-        var allCandidates = ballotBox.getCandidates();
-        votes = new Votes(allCandidates);
+        votes = JImmutables.list();
         elected = JImmutables.list();
-        prior = null;
     }
 
-    private Round(Votes votes,
+    private Round(Round prior,
                   BallotBox ballotBox,
-                  JImmutableList<Candidate> elected,
-                  Round prior)
+                  JImmutableList<CandidateVotes> votes,
+                  JImmutableList<Candidate> elected)
     {
+        this.prior = prior;
         this.ballotBox = ballotBox;
         this.seats = prior.seats;
         this.totalBallots = prior.totalBallots;
         this.quota = prior.quota;
         this.votes = votes;
         this.elected = elected;
-        this.prior = prior;
     }
 
     public static RoundBuilder builder()
@@ -85,7 +87,7 @@ public class Round
         if (elected.size() == seats || ballotBox.isEmpty()) {
             return null;
         }
-        var newVotes = votes;
+        var newVotes = new Votes();
         for (JImmutableMap.Entry<Ballot, Integer> entry : ballotBox.ballots()) {
             var ballot = entry.getKey();
             var count = entry.getValue();
@@ -100,12 +102,51 @@ public class Round
             var overVote = firstPlace.getVotes().minus(quota);
             var weight = overVote.dividedBy(firstPlace.getVotes());
             newElected = newElected.insertLast(firstPlace.getCandidate());
-            newVotes = newVotes.without(firstPlace.getCandidate());
-            newBallots = newBallots.removeWinner(firstPlace.getCandidate(), weight);
+            newBallots = newBallots.removeAndTransfer(firstPlace.getCandidate(), weight);
+        } else if (ballotBox.getMaxRanks() == 1) {
+            // we won't be able to improve any more so just fill in with whatever we have
+            var iter = sortedVotes.iterator();
+            while (newElected.size() < seats && iter.hasNext()) {
+                final Candidate candidate = iter.next().getCandidate();
+                newElected = newElected.insertLast(candidate);
+                newBallots = newBallots.remove(candidate);
+            }
         } else {
             var lastPlace = sortedVotes.get(sortedVotes.size() - 1);
-            newBallots = newBallots.removeLoser(lastPlace.getCandidate());
+            newBallots = newBallots.remove(lastPlace.getCandidate());
         }
-        return new Round(newVotes, newBallots, newElected, this);
+        return new Round(this, newBallots, sortedVotes, newElected);
+    }
+
+    public static class RoundBuilder
+    {
+        private final BallotBox.Builder ballots = BallotBox.builder();
+        private int seats = 1;
+
+        public Round build()
+        {
+            return new Round(ballots.build(), seats);
+        }
+
+        public RoundBuilder seats(int val)
+        {
+            seats = val;
+            assert seats > 0;
+            return this;
+        }
+
+        public RoundBuilder ballot(Candidate... candidates)
+        {
+            return ballot(1, candidates);
+        }
+
+        public RoundBuilder ballot(int count,
+                                   Candidate... candidates)
+        {
+            assert count >= 1;
+            var ballot = new Ballot(JImmutables.list(candidates), Decimal.ONE);
+            ballots.add(ballot, count);
+            return this;
+        }
     }
 }

@@ -3,6 +3,7 @@ package com.burtonzone.stv;
 import com.burtonzone.common.Decimal;
 import com.burtonzone.parties.Candidate;
 import javax.annotation.Nullable;
+import lombok.Getter;
 import org.javimmutable.collections.IterableStreamable;
 import org.javimmutable.collections.JImmutableMap;
 import org.javimmutable.collections.JImmutableSet;
@@ -11,6 +12,7 @@ import org.javimmutable.collections.util.JImmutables;
 public class BallotBox
 {
     private final JImmutableMap<Ballot, Integer> ballots;
+    @Getter
     private final int maxRanks;
 
     private BallotBox(JImmutableMap<Ballot, Integer> ballots)
@@ -29,13 +31,13 @@ public class BallotBox
         return ballots;
     }
 
-    public BallotBox removeLoser(Candidate candidate)
+    public BallotBox remove(Candidate candidate)
     {
         return removeCandidateImpl(candidate, null);
     }
 
-    public BallotBox removeWinner(Candidate candidate,
-                                  Decimal extraWeight)
+    public BallotBox removeAndTransfer(Candidate candidate,
+                                       Decimal extraWeight)
     {
         return removeCandidateImpl(candidate, extraWeight);
     }

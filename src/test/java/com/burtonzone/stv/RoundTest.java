@@ -35,6 +35,7 @@ public class RoundTest
         var result = election.run();
         var elected = result.getElected();
         assertEquals(JImmutables.list(A, C), elected);
+        assertSame(election, result.getFirstRound());
     }
 
     @Test
@@ -63,6 +64,7 @@ public class RoundTest
         assertSame(round1, round2.getPrior());
 
         assertNull(round2.advance());
+        assertSame(election, round2.getFirstRound());
     }
 
     @Test
@@ -91,6 +93,7 @@ public class RoundTest
         assertSame(round1, round2.getPrior());
 
         assertNull(round2.advance());
+        assertSame(election, round2.getFirstRound());
     }
 
     @Test
@@ -115,9 +118,15 @@ public class RoundTest
 
         final var round2 = round1.advance();
         assertNotNull(round2);
-        assertEquals(JImmutables.list(D, B), round2.getElected());
+        assertEquals(JImmutables.list(D), round2.getElected());
         assertSame(round1, round2.getPrior());
 
-        assertNull(round2.advance());
+        final var round3 = round2.advance();
+        assertNotNull(round3);
+        assertEquals(JImmutables.list(D, B), round3.getElected());
+        assertSame(round2, round3.getPrior());
+
+        assertNull(round3.advance());
+        assertSame(election, round3.getFirstRound());
     }
 }

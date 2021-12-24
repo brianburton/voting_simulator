@@ -4,18 +4,15 @@ import com.burtonzone.common.Decimal;
 import java.util.Comparator;
 import org.javimmutable.collections.JImmutableList;
 import org.javimmutable.collections.JImmutableMap;
-import org.javimmutable.collections.JImmutableSet;
 import org.javimmutable.collections.util.JImmutables;
 
 public class Votes
 {
     private final JImmutableMap<Candidate, Decimal> candidates;
 
-    public Votes(JImmutableSet<Candidate> allCandidates)
+    public Votes()
     {
-        candidates = allCandidates.stream()
-            .map(c -> JImmutables.entry(c, Decimal.ZERO))
-            .collect(JImmutables.mapCollector());
+        candidates = JImmutables.map();
     }
 
     private Votes(JImmutableMap<Candidate, Decimal> candidates)
@@ -27,11 +24,6 @@ public class Votes
                       Decimal votes)
     {
         return new Votes(candidates.assign(candidate, getVotesFor(candidate).plus(votes)));
-    }
-
-    public Votes without(Candidate candidate)
-    {
-        return new Votes(candidates.delete(candidate));
     }
 
     public Decimal getVotesFor(Candidate c)
