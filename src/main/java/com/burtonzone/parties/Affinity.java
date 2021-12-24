@@ -13,9 +13,9 @@ import org.javimmutable.collections.util.JImmutables;
 
 public class Affinity
 {
-    private static final Affinity Lefts = new Affinity(Left, CenterLeft);
-    private static final Affinity Centers = new Affinity(CenterLeft, Center, CenterRight);
-    private static final Affinity Rights = new Affinity(CenterRight, Right);
+    private static final Affinity Lefts = new Affinity(Left, Left, CenterLeft, Center);
+    private static final Affinity Centers = new Affinity(CenterLeft, Center, Center, CenterRight);
+    private static final Affinity Rights = new Affinity(Center, CenterRight, Right, Right);
     private static final JImmutableList<Affinity> All = JImmutables.list(Lefts, Centers, Centers, Rights);
 
     @Getter
@@ -57,23 +57,29 @@ public class Affinity
     public static class Spectrum
     {
         private final JImmutableList<Node> nodes;
+        @Getter
         private final Rand rand;
+        private final int maxValue;
 
         public Spectrum(Rand rand)
         {
             var nb = JImmutables.<Node>listBuilder();
-            var size = 5 + rand.nextIndex(30);
+            var size = 10 + rand.nextIndex(40);
             nb.add(new Node(Lefts, size));
-            size = 5 + rand.nextIndex(30);
+            var max = size;
+            size = 10 + rand.nextIndex(40);
             nb.add(new Node(Rights, size));
+            max += size;
             nb.add(new Node(Centers, 100));
+            max += 100;
             this.rand = rand;
             this.nodes = nb.build();
+            this.maxValue = max;
         }
 
         public Affinity nextAffinity()
         {
-            var number = rand.nextIndex(100);
+            var number = rand.nextIndex(maxValue);
             for (Node node : nodes) {
                 if (number <= node.threshold) {
                     return node.affinity;

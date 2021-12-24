@@ -14,19 +14,25 @@ public class App
 
     public static void main(String[] args)
     {
+        final var tens = 0;
+        final var sevens = 0;
         final var fives = 57;
         final var threes = 50;
         final var rand = new Rand();
         for (int test = 1; test <= 10; ++test) {
             final var spectrum = new Affinity.Spectrum(rand);
             final var db = JImmutables.<District>listBuilder();
-            for (int i = 1; i <= Math.max(fives, threes); ++i) {
-                if (i <= fives) {
-                    db.add(District.randomDistrict(spectrum, "five-" + i, 5));
-                }
-                if (i <= threes) {
-                    db.add(District.randomDistrict(spectrum, "three-" + i, 3));
-                }
+            for (int i = 1; i <= tens; ++i) {
+                db.add(District.randomDistrict(spectrum, "ten-" + i, 10));
+            }
+            for (int i = 1; i <= sevens; ++i) {
+                db.add(District.randomDistrict(spectrum, "seven-" + i, 7));
+            }
+            for (int i = 1; i <= fives; ++i) {
+                db.add(District.randomDistrict(spectrum, "five-" + i, 5));
+            }
+            for (int i = 1; i <= threes; ++i) {
+                db.add(District.randomDistrict(spectrum, "three-" + i, 3));
             }
             final var districts = db.build();
             if (test > 1) {
