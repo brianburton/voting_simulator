@@ -3,8 +3,9 @@ package com.burtonzone.stv;
 import com.burtonzone.common.Decimal;
 import com.burtonzone.parties.Candidate;
 import com.burtonzone.parties.Party;
+import java.util.Comparator;
 import javax.annotation.Nullable;
-import lombok.Getter;
+import lombok.Value;
 import org.javimmutable.collections.IterableStreamable;
 import org.javimmutable.collections.JImmutableMap;
 import org.javimmutable.collections.JImmutableMultiset;
@@ -14,13 +15,10 @@ import org.javimmutable.collections.util.JImmutables;
 public class BallotBox
 {
     private final JImmutableMap<Ballot, Integer> ballots;
-    @Getter
-    private final int maxRanks;
 
     private BallotBox(JImmutableMap<Ballot, Integer> ballots)
     {
         this.ballots = ballots;
-        maxRanks = ballots.keys().stream().mapToInt(Ballot::ranks).max().orElse(0);
     }
 
     public static Builder builder()
@@ -71,31 +69,9 @@ public class BallotBox
             .collect(JImmutables.sortedSetCollector());
     }
 
-    public int compareCandidates(Candidate a,
-                                 Candidate b)
+    public Comparator<Candidate> createCandidateComparator()
     {
-        for (int index = 0; index < maxRanks; ++index) {
-            var aScore = scoreAtIndex(a, index);
-            var bScore = scoreAtIndex(b, index);
-            var diff = aScore.compareTo(bScore);
-            if (diff != 0) {
-                return -diff;
-            }
-        }
-        return 0;
-    }
-
-    private Decimal scoreAtIndex(Candidate candidate,
-                                 int index)
-    {
-        Decimal answer = Decimal.ZERO;
-        for (JImmutableMap.Entry<Ballot, Integer> e : ballots) {
-            var ballot = e.getKey();
-            if (ballot.candidateIndex(candidate) == index) {
-                answer = answer.plus(ballot.getWeight().times(e.getValue()));
-            }
-        }
-        return answer;
+        return new CandidateComparator(ballots);
     }
 
     private BallotBox removeCandidateImpl(Candidate candidate,
@@ -117,6 +93,70 @@ public class BallotBox
             }
         }
         return newBallots == ballots ? this : new BallotBox(newBallots);
+    }
+
+    public boolean isExhausted()
+    {
+        return ballots.stream().map(b -> b.getKey().ranks()).noneMatch(r -> r > 1);
+    }
+
+    public static class CandidateComparator
+        implements Comparator<Candidate>
+    {
+        private final JImmutableMap<Key, Decimal> scores;
+        private final int maxSize;
+
+        private CandidateComparator(JImmutableMap<Ballot, Integer> ballots)
+        {
+            var maxSize = 0;
+            var scores = JImmutables.<Key, Decimal>map();
+            for (JImmutableMap.Entry<Ballot, Integer> e : ballots) {
+                var ballot = e.getKey();
+                var count = e.getValue();
+                var weight = ballot.getWeight();
+                var ballotScore = weight.times(count);
+                var choices = ballot.getChoices();
+                maxSize = Math.max(maxSize, choices.size());
+                for (int i = 0; i < choices.size(); ++i) {
+                    var candidate = choices.get(i);
+                    var key = new Key(candidate, i);
+                    var oldScore = scores.find(key).orElse(Decimal.ZERO);
+                    var newScore = oldScore.plus(ballotScore);
+                    scores.assign(key, newScore);
+                }
+            }
+            this.scores = scores;
+            this.maxSize = maxSize;
+        }
+
+        @Override
+        public int compare(Candidate a,
+                           Candidate b)
+        {
+            for (int i = 0; i < maxSize; ++i) {
+                var aScore = candidateScoreAt(a, i);
+                var bScore = candidateScoreAt(b, i);
+                var diff = aScore.compareTo(bScore);
+                if (diff != 0) {
+                    return -diff;
+                }
+            }
+            return 0;
+        }
+
+        private Decimal candidateScoreAt(Candidate candidate,
+                                         int index)
+        {
+            var key = new Key(candidate, index);
+            return scores.find(key).orElse(Decimal.ZERO);
+        }
+
+        @Value
+        private static class Key
+        {
+            Candidate candidate;
+            int index;
+        }
     }
 
     public static class Builder

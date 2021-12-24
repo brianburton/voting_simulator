@@ -11,8 +11,8 @@ public class App
 {
     public static void main(String[] args)
     {
-        final var fives = 20;
-        final var threes = 0;
+        final var fives = 57;
+        final var threes = 50;
         final var rand = new Rand();
         final var db = JImmutables.<District>listBuilder();
         for (int i = 1; i <= Math.max(fives, threes); ++i) {
@@ -24,6 +24,11 @@ public class App
             }
         }
         final var districts = db.build();
+        System.out.println("District count: " + districts.size());
+        System.out.println("Seat count    : " + districts.stream().mapToInt(d -> d.getEnd().getSeats()).sum());
+        System.out.println("Elected count : " + districts.stream().mapToInt(d -> d.getEnd().getElected().size()).sum());
+        System.out.println();
+        System.out.println("       Party  Seat   Exp   Act");
         var preferredParties = JImmutables.<Party>multiset();
         for (District district : districts) {
             preferredParties = preferredParties.insertAll(district.getPartyFirstChoiceCounts());
@@ -33,8 +38,9 @@ public class App
             electedParties = electedParties.insertAll(district.getPartyElectedCounts());
         }
         for (Party party : Party.All) {
-            System.out.printf("%12s  %4s  %4s%n",
+            System.out.printf("%12s  %4d  %4s  %4s%n",
                               party.getName(),
+                              electedParties.count(party),
                               percent(preferredParties.count(party), preferredParties.occurrenceCount()),
                               percent(electedParties.count(party), electedParties.occurrenceCount()));
         }

@@ -50,8 +50,10 @@ public class Round
         this.prior = prior;
         this.ballotBox = ballotBox;
         this.seats = prior.seats;
-        this.totalBallots = prior.totalBallots;
-        this.quota = prior.quota;
+        totalBallots = new Decimal(ballotBox.getTotalCount());
+        quota = totalBallots.dividedBy(new Decimal(seats + 1))
+            .plus(Decimal.ONE)
+            .rounded(RoundingMode.DOWN);
         this.votes = votes;
         this.elected = elected;
     }
@@ -94,7 +96,7 @@ public class Round
             var ballotVotes = ballot.getWeight().times(count);
             newVotes = newVotes.plus(ballot.getFirstChoice(), ballotVotes);
         }
-        var sortedVotes = newVotes.getSortedList(ballotBox::compareCandidates);
+        var sortedVotes = newVotes.getSortedList(ballotBox.createCandidateComparator());
         var firstPlace = sortedVotes.get(0);
         var newBallots = ballotBox;
         var newElected = elected;
@@ -103,7 +105,7 @@ public class Round
             var weight = overVote.dividedBy(firstPlace.getVotes());
             newElected = newElected.insertLast(firstPlace.getCandidate());
             newBallots = newBallots.removeAndTransfer(firstPlace.getCandidate(), weight);
-        } else if (ballotBox.getMaxRanks() == 1) {
+        } else if (ballotBox.isExhausted()) {
             // we won't be able to improve any more so just fill in with whatever we have
             var iter = sortedVotes.iterator();
             while (newElected.size() < seats && iter.hasNext()) {

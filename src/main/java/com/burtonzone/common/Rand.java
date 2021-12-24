@@ -28,12 +28,7 @@ public class Rand
 
     public int nextIndex(int collectionSize)
     {
-        var limit = 3 * collectionSize;
-        var r1 = 1 + random.nextInt(limit);
-        var r2 = 1 + random.nextInt(limit);
-        var r3 = 1 + random.nextInt(limit);
-        var avg = (r1 + r2 + r3) / 3;
-        return (avg - 1) / 3;
+        return random.nextInt(collectionSize);
     }
 
     public <T> JImmutableList<T> shuffle(Collection<T> collection)

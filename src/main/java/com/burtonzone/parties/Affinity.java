@@ -12,10 +12,10 @@ import org.javimmutable.collections.util.JImmutables;
 
 public class Affinity
 {
-    public static final Affinity Lefts = new Affinity(Left, CenterLeft);
-    public static final Affinity Centers = new Affinity(CenterLeft, Center, CenterRight);
-    public static final Affinity Rights = new Affinity(CenterRight, Right);
-    public static final JImmutableList<Affinity> All = JImmutables.list(Lefts, Centers, Rights);
+    private static final Affinity Lefts = new Affinity(Left, CenterLeft);
+    private static final Affinity Centers = new Affinity(CenterLeft, Center, Center, CenterRight);
+    private static final Affinity Rights = new Affinity(CenterRight, Right);
+    private static final JImmutableList<Affinity> All = JImmutables.list(Lefts, Centers, Centers, Rights);
 
     @Getter
     private final JImmutableList<Party> parties;
