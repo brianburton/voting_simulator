@@ -32,7 +32,6 @@ public class District
                                           String name,
                                           int seats)
     {
-        final var affinity = spectrum.nextAffinity();
         final var cb = JImmutables.<Candidate>listBuilder();
         for (int s = 1; s <= seats; ++s) {
             for (Party party : Party.All) {
@@ -43,7 +42,12 @@ public class District
 
         final var rb = Round.builder();
         rb.seats(seats);
-        for (int b = 1; b <= 1000 * seats; ++b) {
+        var affinity = spectrum.nextAffinity();
+        for (int b = 1; b <= 550 * seats; ++b) {
+            rb.ballot(affinity.randomBallot(seats, candidates));
+        }
+        affinity = spectrum.nextAffinity();
+        for (int b = 1; b <= 450 * seats; ++b) {
             rb.ballot(affinity.randomBallot(seats, candidates));
         }
         final var start = rb.build();
