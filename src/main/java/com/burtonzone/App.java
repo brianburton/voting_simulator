@@ -1,11 +1,15 @@
 package com.burtonzone;
 
+import static org.javimmutable.collections.util.JImmutables.*;
+
 import com.burtonzone.common.Rand;
 import com.burtonzone.parties.Party;
 import com.burtonzone.parties.Spectrum;
 import com.burtonzone.stv.District;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.javimmutable.collections.JImmutableList;
 import org.javimmutable.collections.util.JImmutables;
 
@@ -18,14 +22,17 @@ public class App
         final var rand = new Rand();
         for (int test = 1; test <= 10; ++test) {
             final var spectrum = new Spectrum(rand);
-            final var db = JImmutables.<District>listBuilder();
+            final var db = JImmutables.<DistrictSpec>listBuilder();
             // number and size of districts taken from fairvote.org plan for US house elections
             addDistricts(spectrum, db, 44, 5, "five-");
             addDistricts(spectrum, db, 9, 4, "four-");
             addDistricts(spectrum, db, 54, 3, "three-");
             addDistricts(spectrum, db, 5, 2, "two-");
             addDistricts(spectrum, db, 7, 1, "one-");
-            final var districts = db.build();
+            final var districts = db.build()
+                .parallelStream()
+                .map(DistrictSpec::build)
+                .collect(listCollector());
             if (test > 1) {
                 System.out.println();
             }
@@ -55,14 +62,14 @@ public class App
     }
 
     private static void addDistricts(Spectrum spectrum,
-                                     JImmutableList.Builder<District> db,
+                                     JImmutableList.Builder<DistrictSpec> db,
                                      int numberOfDistricts,
                                      int numberOfSeatsPerDistrict,
                                      String namePrefix
     )
     {
         for (int i = 1; i <= numberOfDistricts; ++i) {
-            db.add(District.randomDistrict(spectrum, namePrefix + i, numberOfSeatsPerDistrict));
+            db.add(new DistrictSpec(namePrefix + i, spectrum, numberOfSeatsPerDistrict));
         }
     }
 
@@ -76,5 +83,19 @@ public class App
             .divide(denom, 8, RoundingMode.HALF_UP)
             .setScale(1, RoundingMode.HALF_UP);
         return ratio;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    private static class DistrictSpec
+    {
+        private final String name;
+        private final Spectrum spectrum;
+        private final int seats;
+
+        public District build()
+        {
+            return District.randomDistrict(spectrum, name, seats);
+        }
     }
 }
