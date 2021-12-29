@@ -145,4 +145,21 @@ public class RoundTest
         final var result = start.run();
         assertEquals(JImmutables.list(D), result.getElected());
     }
+
+    @Test
+    public void multiRoundTest()
+    {
+        // sample election from wikipedia https://en.wikipedia.org/wiki/Single_transferable_vote
+        final var start = Round.builder()
+            .seats(3)
+            .ballot(5, A, B)
+            .ballot(3, B, A)
+            .ballot(8, C, D)
+            .ballot(4, C, E)
+            .ballot(1, D, B)
+            .ballot(2, E, B)
+            .build();
+        final var result = start.run();
+        assertEquals(JImmutables.list(C, A, D), result.getElected());
+    }
 }
