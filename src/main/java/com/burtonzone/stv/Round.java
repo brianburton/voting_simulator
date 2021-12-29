@@ -45,11 +45,12 @@ public class Round
     private Round(Round prior,
                   BallotBox ballotBox,
                   JImmutableList<CandidateVotes> votes,
-                  JImmutableList<Candidate> elected)
+                  JImmutableList<Candidate> elected,
+                  int seats)
     {
         this.prior = prior;
         this.ballotBox = ballotBox;
-        this.seats = prior.seats;
+        this.seats = seats;
         totalBallots = new Decimal(ballotBox.getTotalCount());
         quota = totalBallots.dividedBy(new Decimal(seats + 1))
             .plus(Decimal.ONE)
@@ -86,7 +87,7 @@ public class Round
     @Nullable
     public Round advance()
     {
-        if (elected.size() == seats || ballotBox.isEmpty()) {
+        if (seats == 0 || ballotBox.isEmpty()) {
             return null;
         }
         var newVotes = new Votes();
@@ -100,24 +101,27 @@ public class Round
         var firstPlace = sortedVotes.get(0);
         var newBallots = ballotBox;
         var newElected = elected;
-        if (firstPlace.getVotes().isGreaterOrEqualTo(quota)) {
+        var newSeats = seats;
+        if (firstPlace.getVotes().equals(quota)) {
+            newElected = newElected.insertLast(firstPlace.getCandidate());
+            newBallots = newBallots.remove(firstPlace.getCandidate());
+            newSeats -= 1;
+        } else if (firstPlace.getVotes().isGreaterThan(quota)) {
             var overVote = firstPlace.getVotes().minus(quota);
             var weight = overVote.dividedBy(firstPlace.getVotes());
             newElected = newElected.insertLast(firstPlace.getCandidate());
             newBallots = newBallots.removeAndTransfer(firstPlace.getCandidate(), weight);
+            newSeats -= 1;
         } else if (ballotBox.isExhausted()) {
             // we won't be able to improve any more so just fill in with whatever we have
-            var iter = sortedVotes.iterator();
-            while (newElected.size() < seats && iter.hasNext()) {
-                final Candidate candidate = iter.next().getCandidate();
-                newElected = newElected.insertLast(candidate);
-                newBallots = newBallots.remove(candidate);
-            }
+            final JImmutableList<Candidate> pluralityWinners = sortedVotes.slice(0, seats).transform(CandidateVotes::getCandidate);
+            newElected = newElected.insertAllLast(pluralityWinners);
+            newSeats = 0;
         } else {
             var lastPlace = sortedVotes.get(sortedVotes.size() - 1);
             newBallots = newBallots.remove(lastPlace.getCandidate());
         }
-        return new Round(this, newBallots, sortedVotes, newElected);
+        return new Round(this, newBallots, sortedVotes, newElected, newSeats);
     }
 
     public static class RoundBuilder
