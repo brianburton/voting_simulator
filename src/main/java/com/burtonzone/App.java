@@ -7,7 +7,7 @@ import com.burtonzone.common.Decimal;
 import com.burtonzone.common.Rand;
 import com.burtonzone.election.Party;
 import com.burtonzone.election.Spectrum;
-import com.burtonzone.stv.District;
+import com.burtonzone.old_stv.District;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import lombok.AllArgsConstructor;

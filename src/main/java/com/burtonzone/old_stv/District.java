@@ -1,4 +1,4 @@
-package com.burtonzone.stv;
+package com.burtonzone.old_stv;
 
 import com.burtonzone.common.Counter;
 import com.burtonzone.election.Candidate;
