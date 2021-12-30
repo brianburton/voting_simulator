@@ -1,4 +1,4 @@
-package com.burtonzone.parties;
+package com.burtonzone.election;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;

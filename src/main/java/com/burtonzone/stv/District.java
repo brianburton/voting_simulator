@@ -1,8 +1,9 @@
 package com.burtonzone.stv;
 
-import com.burtonzone.parties.Candidate;
-import com.burtonzone.parties.Party;
-import com.burtonzone.parties.Spectrum;
+import com.burtonzone.common.Counter;
+import com.burtonzone.election.Candidate;
+import com.burtonzone.election.Party;
+import com.burtonzone.election.Spectrum;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.javimmutable.collections.JImmutableMultiset;
@@ -16,7 +17,7 @@ public class District
     private final Round start;
     private final Round end;
 
-    public JImmutableMultiset<Party> getPartyFirstChoiceCounts()
+    public Counter<Party> getPartyFirstChoiceCounts()
     {
         return start.getBallotBox().getPartyFirstChoiceCounts();
     }

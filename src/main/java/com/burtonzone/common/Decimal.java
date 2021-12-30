@@ -103,4 +103,9 @@ public class Decimal
                                .setScale(0, roundingMode)
                                .setScale(PRECISION, RoundingMode.HALF_UP));
     }
+
+    public BigDecimal toBigDecimal()
+    {
+        return value;
+    }
 }

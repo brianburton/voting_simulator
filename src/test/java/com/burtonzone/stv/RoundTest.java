@@ -3,8 +3,8 @@ package com.burtonzone.stv;
 import static org.junit.Assert.*;
 
 import com.burtonzone.common.Decimal;
-import com.burtonzone.parties.Candidate;
-import com.burtonzone.parties.Party;
+import com.burtonzone.election.Candidate;
+import com.burtonzone.election.Party;
 import org.javimmutable.collections.util.JImmutables;
 import org.junit.Test;
 

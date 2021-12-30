@@ -1,10 +1,8 @@
-package com.burtonzone.parties;
+package com.burtonzone.election;
 
-import static com.burtonzone.parties.Party.*;
+import static com.burtonzone.election.Party.*;
 
-import com.burtonzone.common.Decimal;
 import com.burtonzone.common.Rand;
-import com.burtonzone.stv.Ballot;
 import java.util.stream.IntStream;
 import lombok.Getter;
 import org.javimmutable.collections.JImmutableList;
@@ -69,7 +67,7 @@ public class Spectrum
                     .distinct()
                     .limit(numberOfSeats)
                     .collect(JImmutables.listCollector());
-            return new Ballot(choices, Decimal.ONE);
+            return new Ballot(choices);
         }
     }
 }

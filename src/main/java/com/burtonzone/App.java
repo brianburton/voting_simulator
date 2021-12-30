@@ -2,9 +2,11 @@ package com.burtonzone;
 
 import static org.javimmutable.collections.util.JImmutables.*;
 
+import com.burtonzone.common.Counter;
+import com.burtonzone.common.Decimal;
 import com.burtonzone.common.Rand;
-import com.burtonzone.parties.Party;
-import com.burtonzone.parties.Spectrum;
+import com.burtonzone.election.Party;
+import com.burtonzone.election.Spectrum;
 import com.burtonzone.stv.District;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -30,7 +32,7 @@ public class App
             addDistricts(spectrum, db, 5, 2, "two-");
             addDistricts(spectrum, db, 7, 1, "one-");
             final var districts = db.build()
-                .parallelStream()
+                .stream()
                 .map(DistrictSpec::build)
                 .collect(listCollector());
             if (test > 1) {
@@ -43,9 +45,9 @@ public class App
             System.out.println("Elected count : " + districts.stream().mapToInt(d -> d.getEnd().getElected().size()).sum());
             System.out.println();
             System.out.println("Party         Seats    Exp    Act");
-            var preferredParties = JImmutables.<Party>multiset();
+            var preferredParties = new Counter<Party>();
             for (District district : districts) {
-                preferredParties = preferredParties.insertAll(district.getPartyFirstChoiceCounts());
+                preferredParties = preferredParties.add(district.getPartyFirstChoiceCounts());
             }
             var electedParties = JImmutables.<Party>multiset();
             for (District district : districts) {
@@ -55,7 +57,7 @@ public class App
                 System.out.printf("%-12s  %4d   %4s%%  %4s%%%n",
                                   party.getName(),
                                   electedParties.count(party),
-                                  percent(preferredParties.count(party), preferredParties.occurrenceCount()),
+                                  percent(preferredParties.get(party), preferredParties.getTotal()),
                                   percent(electedParties.count(party), electedParties.occurrenceCount()));
             }
         }
@@ -78,11 +80,26 @@ public class App
     {
         var numer = new BigDecimal(amount);
         var denom = new BigDecimal(maxAmount);
-        var ratio = numer
+        var ratio = percent(numer, denom);
+        return ratio;
+    }
+
+    private static BigDecimal percent(Decimal amount,
+                                      Decimal maxAmount)
+    {
+        var numer = amount.toBigDecimal();
+        var denom = maxAmount.toBigDecimal();
+        var ratio = percent(numer, denom);
+        return ratio;
+    }
+
+    private static BigDecimal percent(BigDecimal numer,
+                                      BigDecimal denom)
+    {
+        return numer
             .multiply(HUNDRED)
             .divide(denom, 8, RoundingMode.HALF_UP)
             .setScale(1, RoundingMode.HALF_UP);
-        return ratio;
     }
 
     @Getter

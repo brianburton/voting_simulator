@@ -1,21 +1,21 @@
-package com.burtonzone.parties;
+package com.burtonzone.election;
 
+import com.burtonzone.common.Counter;
 import com.burtonzone.common.Decimal;
 import java.util.Comparator;
 import org.javimmutable.collections.JImmutableList;
-import org.javimmutable.collections.JImmutableMap;
 import org.javimmutable.collections.util.JImmutables;
 
 public class Votes
 {
-    private final JImmutableMap<Candidate, Decimal> candidates;
+    private final Counter<Candidate> candidates;
 
     public Votes()
     {
-        candidates = JImmutables.map();
+        candidates = new Counter<>();
     }
 
-    private Votes(JImmutableMap<Candidate, Decimal> candidates)
+    private Votes(Counter<Candidate> candidates)
     {
         this.candidates = candidates;
     }
@@ -23,12 +23,12 @@ public class Votes
     public Votes plus(Candidate candidate,
                       Decimal votes)
     {
-        return new Votes(candidates.assign(candidate, getVotesFor(candidate).plus(votes)));
+        return new Votes(candidates.add(candidate, votes));
     }
 
     public Decimal getVotesFor(Candidate c)
     {
-        return candidates.find(c).orElse(Decimal.ZERO);
+        return candidates.get(c);
     }
 
     public int size()
@@ -40,7 +40,7 @@ public class Votes
     {
         var comparator = CandidateVotes.voteOrder(tieBreaker);
         return candidates.stream()
-            .map(e -> new CandidateVotes(e.getKey(), e.getValue()))
+            .map(e -> new CandidateVotes(e.getKey(), e.getCount()))
             .sorted(comparator)
             .collect(JImmutables.listCollector());
     }

@@ -1,14 +1,16 @@
 package com.burtonzone.stv;
 
+import com.burtonzone.common.Counter;
 import com.burtonzone.common.Decimal;
-import com.burtonzone.parties.Candidate;
-import com.burtonzone.parties.CandidateVotes;
-import com.burtonzone.parties.Votes;
+import com.burtonzone.election.Ballot;
+import com.burtonzone.election.BallotBox;
+import com.burtonzone.election.Candidate;
+import com.burtonzone.election.CandidateVotes;
+import com.burtonzone.election.Votes;
 import java.math.RoundingMode;
 import javax.annotation.Nullable;
 import lombok.Getter;
 import org.javimmutable.collections.JImmutableList;
-import org.javimmutable.collections.JImmutableMap;
 import org.javimmutable.collections.util.JImmutables;
 
 public class Round
@@ -34,7 +36,7 @@ public class Round
         prior = null;
         this.ballotBox = ballotBox;
         this.seats = seats;
-        totalBallots = new Decimal(ballotBox.getTotalCount());
+        totalBallots = ballotBox.getTotalCount();
         quota = totalBallots.dividedBy(new Decimal(seats + 1))
             .plus(Decimal.ONE)
             .rounded(RoundingMode.DOWN);
@@ -51,7 +53,7 @@ public class Round
         this.prior = prior;
         this.ballotBox = ballotBox;
         this.seats = seats;
-        totalBallots = new Decimal(ballotBox.getTotalCount());
+        totalBallots = ballotBox.getTotalCount();
         quota = totalBallots.dividedBy(new Decimal(seats + 1))
             .plus(Decimal.ONE)
             .rounded(RoundingMode.DOWN);
@@ -91,11 +93,12 @@ public class Round
             return null;
         }
         var newVotes = new Votes();
-        for (JImmutableMap.Entry<Ballot, Integer> entry : ballotBox.ballots()) {
+        for (Counter.Entry<Ballot> entry : ballotBox.ballots()) {
             var ballot = entry.getKey();
-            var count = entry.getValue();
-            var ballotVotes = ballot.getWeight().times(count);
-            newVotes = newVotes.plus(ballot.getFirstChoice(), ballotVotes);
+            if (!ballot.isEmpty()) {
+                var ballotVotes = entry.getCount();
+                newVotes = newVotes.plus(ballot.getFirstChoice(), ballotVotes);
+            }
         }
         var sortedVotes = newVotes.getSortedList(ballotBox.createCandidateComparator());
         var firstPlace = sortedVotes.get(0);
@@ -149,7 +152,7 @@ public class Round
         public RoundBuilder ballot(int count,
                                    Candidate... candidates)
         {
-            var ballot = new Ballot(JImmutables.list(candidates), Decimal.ONE);
+            var ballot = new Ballot(JImmutables.list(candidates));
             return ballot(count, ballot);
         }
 
