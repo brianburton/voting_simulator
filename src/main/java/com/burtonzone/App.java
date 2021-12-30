@@ -2,16 +2,16 @@ package com.burtonzone;
 
 import static org.javimmutable.collections.util.JImmutables.*;
 
+import com.burtonzone.basic_stv.BasicStvRunner;
 import com.burtonzone.common.Counter;
 import com.burtonzone.common.Decimal;
 import com.burtonzone.common.Rand;
+import com.burtonzone.election.Election;
+import com.burtonzone.election.ElectionResult;
 import com.burtonzone.election.Party;
 import com.burtonzone.election.Spectrum;
-import com.burtonzone.old_stv.District;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import org.javimmutable.collections.JImmutableList;
 import org.javimmutable.collections.util.JImmutables;
 
@@ -23,8 +23,9 @@ public class App
     {
         final var rand = new Rand();
         for (int test = 1; test <= 10; ++test) {
+            final var runner = new BasicStvRunner();
             final var spectrum = new Spectrum(rand);
-            final var db = JImmutables.<DistrictSpec>listBuilder();
+            final var db = JImmutables.<Election>listBuilder();
             // number and size of districts taken from fairvote.org plan for US house elections
             addDistricts(spectrum, db, 44, 5, "five-");
             addDistricts(spectrum, db, 9, 4, "four-");
@@ -33,7 +34,7 @@ public class App
             addDistricts(spectrum, db, 7, 1, "one-");
             final var districts = db.build()
                 .stream()
-                .map(DistrictSpec::build)
+                .map(runner::runElection)
                 .collect(listCollector());
             if (test > 1) {
                 System.out.println();
@@ -41,16 +42,16 @@ public class App
             System.out.println("Test " + test);
             System.out.println();
             System.out.println("District count: " + districts.size());
-            System.out.println("Seat count    : " + districts.stream().mapToInt(d -> d.getEnd().getSeats()).sum());
-            System.out.println("Elected count : " + districts.stream().mapToInt(d -> d.getEnd().getElected().size()).sum());
+            System.out.println("Seat count    : " + districts.stream().mapToInt(d -> d.getFinalRound().getSeats()).sum());
+            System.out.println("Elected count : " + districts.stream().mapToInt(d -> d.getFinalRound().getElected().size()).sum());
             System.out.println();
             System.out.println("Party         Seats    Exp    Act");
             var preferredParties = new Counter<Party>();
-            for (District district : districts) {
+            for (ElectionResult district : districts) {
                 preferredParties = preferredParties.add(district.getPartyFirstChoiceCounts());
             }
             var electedParties = JImmutables.<Party>multiset();
-            for (District district : districts) {
+            for (ElectionResult district : districts) {
                 electedParties = electedParties.insertAll(district.getPartyElectedCounts());
             }
             for (Party party : Party.All) {
@@ -64,14 +65,14 @@ public class App
     }
 
     private static void addDistricts(Spectrum spectrum,
-                                     JImmutableList.Builder<DistrictSpec> db,
+                                     JImmutableList.Builder<Election> db,
                                      int numberOfDistricts,
                                      int numberOfSeatsPerDistrict,
                                      String namePrefix
     )
     {
         for (int i = 1; i <= numberOfDistricts; ++i) {
-            db.add(new DistrictSpec(namePrefix + i, spectrum, numberOfSeatsPerDistrict));
+            db.add(Election.random(spectrum, numberOfSeatsPerDistrict));
         }
     }
 
@@ -100,19 +101,5 @@ public class App
             .multiply(HUNDRED)
             .divide(denom, 8, RoundingMode.HALF_UP)
             .setScale(1, RoundingMode.HALF_UP);
-    }
-
-    @Getter
-    @AllArgsConstructor
-    private static class DistrictSpec
-    {
-        private final String name;
-        private final Spectrum spectrum;
-        private final int seats;
-
-        public District build()
-        {
-            return District.randomDistrict(spectrum, name, seats);
-        }
     }
 }

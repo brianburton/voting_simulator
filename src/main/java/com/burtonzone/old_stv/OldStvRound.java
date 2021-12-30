@@ -6,17 +6,20 @@ import com.burtonzone.election.Ballot;
 import com.burtonzone.election.BallotBox;
 import com.burtonzone.election.Candidate;
 import com.burtonzone.election.CandidateVotes;
+import com.burtonzone.election.Election;
+import com.burtonzone.election.ElectionResult;
 import com.burtonzone.election.Votes;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.math.RoundingMode;
 import javax.annotation.Nullable;
 import lombok.Getter;
 import org.javimmutable.collections.JImmutableList;
 import org.javimmutable.collections.util.JImmutables;
 
-public class Round
+public class OldStvRound
 {
     @Getter
-    private final Round prior;
+    private final OldStvRound prior;
     @Getter
     private final BallotBox ballotBox;
     @Getter
@@ -30,8 +33,13 @@ public class Round
     @Getter
     private final JImmutableList<Candidate> elected;
 
-    private Round(BallotBox ballotBox,
-                  int seats)
+    public OldStvRound(Election election)
+    {
+        this(election.getBallots(), election.getSeats());
+    }
+
+    private OldStvRound(BallotBox ballotBox,
+                        int seats)
     {
         prior = null;
         this.ballotBox = ballotBox;
@@ -44,11 +52,11 @@ public class Round
         elected = JImmutables.list();
     }
 
-    private Round(Round prior,
-                  BallotBox ballotBox,
-                  JImmutableList<CandidateVotes> votes,
-                  JImmutableList<Candidate> elected,
-                  int seats)
+    private OldStvRound(OldStvRound prior,
+                        BallotBox ballotBox,
+                        JImmutableList<CandidateVotes> votes,
+                        JImmutableList<Candidate> elected,
+                        int seats)
     {
         this.prior = prior;
         this.ballotBox = ballotBox;
@@ -61,24 +69,24 @@ public class Round
         this.elected = elected;
     }
 
-    public static RoundBuilder builder()
+    public static Builder builder()
     {
-        return new RoundBuilder();
+        return new Builder();
     }
 
-    public Round getFirstRound()
+    public OldStvRound getFirstRound()
     {
-        Round answer = this;
+        OldStvRound answer = this;
         while (answer.prior != null) {
             answer = answer.prior;
         }
         return answer;
     }
 
-    public Round run()
+    public OldStvRound run()
     {
-        Round answer = this;
-        Round next = answer.advance();
+        OldStvRound answer = this;
+        OldStvRound next = answer.advance();
         while (next != null) {
             answer = next;
             next = answer.advance();
@@ -87,7 +95,7 @@ public class Round
     }
 
     @Nullable
-    public Round advance()
+    public OldStvRound advance()
     {
         if (seats == 0 || ballotBox.isEmpty()) {
             return null;
@@ -124,48 +132,50 @@ public class Round
             var lastPlace = sortedVotes.get(sortedVotes.size() - 1);
             newBallots = newBallots.remove(lastPlace.getCandidate());
         }
-        return new Round(this, newBallots, sortedVotes, newElected, newSeats);
+        return new OldStvRound(this, newBallots, sortedVotes, newElected, newSeats);
     }
 
-    public static class RoundBuilder
+    public ElectionResult.RoundResult toElectionResult()
     {
-        private final BallotBox.Builder ballots = BallotBox.builder();
-        private int seats = 1;
+        return new ElectionResult.RoundResult(votes, elected, ballotBox.getExhaustedCount());
+    }
 
-        public Round build()
+    public static class Builder
+    {
+        private final Election.Builder election = Election.builder();
+
+        public OldStvRound build()
         {
-            return new Round(ballots.build(), seats);
+            return new OldStvRound(election.build());
         }
 
-        public RoundBuilder seats(int val)
+        @CanIgnoreReturnValue
+        public Builder seats(int val)
         {
-            seats = val;
-            assert seats > 0;
+            election.seats(val);
             return this;
         }
 
-        public RoundBuilder ballot(Candidate... candidates)
+        @CanIgnoreReturnValue
+        public Builder ballot(Candidate... candidates)
         {
             return ballot(1, candidates);
         }
 
-        public RoundBuilder ballot(int count,
-                                   Candidate... candidates)
+        @CanIgnoreReturnValue
+        public Builder ballot(int count,
+                              Candidate... candidates)
         {
             var ballot = new Ballot(JImmutables.list(candidates));
             return ballot(count, ballot);
         }
 
-        public RoundBuilder ballot(Ballot ballot)
-        {
-            return ballot(1, ballot);
-        }
-
-        public RoundBuilder ballot(int count,
-                                   Ballot ballot)
+        @CanIgnoreReturnValue
+        public Builder ballot(int count,
+                              Ballot ballot)
         {
             assert count >= 1;
-            ballots.add(ballot, count);
+            election.ballot(count, ballot);
             return this;
         }
     }

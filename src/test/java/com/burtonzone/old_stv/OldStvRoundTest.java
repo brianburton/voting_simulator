@@ -8,7 +8,7 @@ import com.burtonzone.election.Party;
 import org.javimmutable.collections.util.JImmutables;
 import org.junit.Test;
 
-public class RoundTest
+public class OldStvRoundTest
 {
     private final Candidate A = new Candidate(Party.CenterLeft, "A");
     private final Candidate B = new Candidate(Party.CenterLeft, "B");
@@ -19,7 +19,7 @@ public class RoundTest
     @Test
     public void sampleWithTieBreaker()
     {
-        var election = Round.builder()
+        var election = OldStvRound.builder()
             .seats(2)
             .ballot(A, E, B, D, C)
             .ballot(A, D, B, C, E)
@@ -42,7 +42,7 @@ public class RoundTest
     public void simpleTransfer()
     {
         // the two surplus votes from A will boost B to a seat
-        final var election = Round.builder()
+        final var election = OldStvRound.builder()
             .seats(2)
             .ballot(7, A, B)
             .ballot(3, B, A)
@@ -71,7 +71,7 @@ public class RoundTest
     public void nonQuotaFinalWinner()
     {
         // in round 2 C has more votes even though no quota
-        final var election = Round.builder()
+        final var election = OldStvRound.builder()
             .seats(2)
             .ballot(50, A)
             .ballot(3, B)
@@ -100,7 +100,7 @@ public class RoundTest
     @Test
     public void loserVoteTransfer()
     {
-        final var election = Round.builder()
+        final var election = OldStvRound.builder()
             .seats(2)
             .ballot(2, A, B)  // pushes B to quota in round 2
             .ballot(4, B, A)
@@ -134,7 +134,7 @@ public class RoundTest
     @Test
     public void tooFewRankingsLtPluralityWin()
     {
-        final var start = Round.builder()
+        final var start = OldStvRound.builder()
             .seats(1)
             .ballot(21, A, C)
             .ballot(20, B, C)
@@ -150,7 +150,7 @@ public class RoundTest
     public void multiRoundTest()
     {
         // sample election from wikipedia https://en.wikipedia.org/wiki/Single_transferable_vote
-        final var start = Round.builder()
+        final var start = OldStvRound.builder()
             .seats(3)
             .ballot(5, A, B)
             .ballot(3, B, A)

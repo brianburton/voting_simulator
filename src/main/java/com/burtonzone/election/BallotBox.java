@@ -5,7 +5,6 @@ import com.burtonzone.common.Decimal;
 import java.util.Comparator;
 import javax.annotation.Nullable;
 import lombok.Value;
-import org.javimmutable.collections.IterableStreamable;
 import org.javimmutable.collections.JImmutableSet;
 import org.javimmutable.collections.util.JImmutables;
 
@@ -23,7 +22,7 @@ public class BallotBox
         return new Builder();
     }
 
-    public IterableStreamable<Counter.Entry<Ballot>> ballots()
+    public Counter<Ballot> ballots()
     {
         return ballots;
     }
@@ -96,6 +95,11 @@ public class BallotBox
     public boolean isExhausted()
     {
         return ballots.stream().map(b -> b.getKey().ranks()).noneMatch(r -> r > 1);
+    }
+
+    public Decimal getExhaustedCount()
+    {
+        return ballots.get(Ballot.Empty);
     }
 
     public static class CandidateComparator
