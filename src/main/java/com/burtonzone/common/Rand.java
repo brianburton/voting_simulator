@@ -4,12 +4,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Random;
+import lombok.Getter;
 import org.javimmutable.collections.JImmutableList;
 import org.javimmutable.collections.util.JImmutables;
 
 public class Rand
 {
     private final Random random;
+    @Getter
+    private final long seed;
 
     public Rand()
     {
@@ -18,12 +21,14 @@ public class Rand
 
     public Rand(long seed)
     {
-        this(new Random(seed));
+        this(new Random(seed), seed);
     }
 
-    public Rand(Random random)
+    public Rand(Random random,
+                long seed)
     {
         this.random = random;
+        this.seed = seed;
     }
 
     public int nextIndex(int collectionSize)

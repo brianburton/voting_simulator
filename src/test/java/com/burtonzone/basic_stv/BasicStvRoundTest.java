@@ -1,25 +1,28 @@
-package com.burtonzone.old_stv;
+package com.burtonzone.basic_stv;
 
 import static org.junit.Assert.*;
 
 import com.burtonzone.common.Decimal;
 import com.burtonzone.election.Candidate;
+import com.burtonzone.election.Election;
+import com.burtonzone.election.ElectionRunner;
 import com.burtonzone.election.Party;
 import org.javimmutable.collections.util.JImmutables;
 import org.junit.Test;
 
-public class OldStvRoundTest
+public class BasicStvRoundTest
 {
     private final Candidate A = new Candidate(Party.CenterLeft, "A");
     private final Candidate B = new Candidate(Party.CenterLeft, "B");
     private final Candidate C = new Candidate(Party.CenterLeft, "C");
     private final Candidate D = new Candidate(Party.CenterLeft, "D");
     private final Candidate E = new Candidate(Party.CenterLeft, "E");
+    private final ElectionRunner runner = new BasicStvRunner();
 
     @Test
     public void sampleWithTieBreaker()
     {
-        var election = OldStvRound.builder()
+        var election = Election.builder()
             .seats(2)
             .ballot(A, E, B, D, C)
             .ballot(A, D, B, C, E)
@@ -32,17 +35,16 @@ public class OldStvRoundTest
             .ballot(C, A, B, E, D)
             .ballot(D, A, C, E, B)
             .build();
-        var result = election.run();
+        var result = runner.runElection(election);
         var elected = result.getElected();
         assertEquals(JImmutables.list(A, C), elected);
-        assertSame(election, result.getFirstRound());
     }
 
     @Test
     public void simpleTransfer()
     {
         // the two surplus votes from A will boost B to a seat
-        final var election = OldStvRound.builder()
+        final var election = Election.builder()
             .seats(2)
             .ballot(7, A, B)
             .ballot(3, B, A)
@@ -50,28 +52,23 @@ public class OldStvRoundTest
             .build();
 
         assertEquals(2, election.getSeats());
-        assertEquals(new Decimal(14), election.getTotalBallots());
+        assertEquals(new Decimal(14), election.getTotalVotes());
         assertEquals(new Decimal(5), election.getQuota());
 
-        final var round1 = election.advance();
+        final var round1 = BasicStvRound.start(election);
         assertNotNull(round1);
         assertEquals(JImmutables.list(A), round1.getElected());
-        assertSame(election, round1.getPrior());
 
         final var round2 = round1.advance();
-        assertNotNull(round2);
+        assertTrue(round2.isFinished());
         assertEquals(JImmutables.list(A, B), round2.getElected());
-        assertSame(round1, round2.getPrior());
-
-        assertNull(round2.advance());
-        assertSame(election, round2.getFirstRound());
     }
 
     @Test
     public void nonQuotaFinalWinner()
     {
         // in round 2 C has more votes even though no quota
-        final var election = OldStvRound.builder()
+        final var election = Election.builder()
             .seats(2)
             .ballot(50, A)
             .ballot(3, B)
@@ -80,27 +77,30 @@ public class OldStvRoundTest
             .build();
 
         assertEquals(2, election.getSeats());
-        assertEquals(new Decimal(59), election.getTotalBallots());
+        assertEquals(new Decimal(59), election.getTotalVotes());
         assertEquals(new Decimal(20), election.getQuota());
 
-        final var round1 = election.advance();
+        final var round1 = BasicStvRound.start(election);
         assertNotNull(round1);
         assertEquals(JImmutables.list(A), round1.getElected());
-        assertSame(election, round1.getPrior());
 
         final var round2 = round1.advance();
-        assertNotNull(round2);
-        assertEquals(JImmutables.list(A, C), round2.getElected());
-        assertSame(round1, round2.getPrior());
+        assertFalse(round2.isFinished());
+        assertEquals(JImmutables.list(A), round2.getElected());
 
-        assertNull(round2.advance());
-        assertSame(election, round2.getFirstRound());
+        final var round3 = round2.advance();
+        assertFalse(round3.isFinished());
+        assertEquals(JImmutables.list(A), round3.getElected());
+
+        final var round4 = round3.advance();
+        assertTrue(round4.isFinished());
+        assertEquals(JImmutables.list(A, C), round4.getElected());
     }
 
     @Test
     public void loserVoteTransfer()
     {
-        final var election = OldStvRound.builder()
+        final var election = Election.builder()
             .seats(2)
             .ballot(2, A, B)  // pushes B to quota in round 2
             .ballot(4, B, A)
@@ -109,32 +109,30 @@ public class OldStvRoundTest
             .build();
 
         assertEquals(2, election.getSeats());
-        assertEquals(new Decimal(15), election.getTotalBallots());
+        assertEquals(new Decimal(15), election.getTotalVotes());
         assertEquals(new Decimal(6), election.getQuota());
 
-        final var round1 = election.advance();
-        assertNotNull(round1);
+        final var round1 = BasicStvRound.start(election);
+        assertFalse(round1.isFinished());
         assertEquals(JImmutables.list(), round1.getElected());
-        assertSame(election, round1.getPrior());
 
         final var round2 = round1.advance();
-        assertNotNull(round2);
+        assertFalse(round2.isFinished());
         assertEquals(JImmutables.list(B), round2.getElected());
-        assertSame(round1, round2.getPrior());
 
         final var round3 = round2.advance();
-        assertNotNull(round3);
-        assertEquals(JImmutables.list(B, C), round3.getElected());
-        assertSame(round2, round3.getPrior());
+        assertFalse(round3.isFinished());
+        assertEquals(JImmutables.list(B), round3.getElected());
 
-        assertNull(round3.advance());
-        assertSame(election, round3.getFirstRound());
+        final var round4 = round3.advance();
+        assertTrue(round4.isFinished());
+        assertEquals(JImmutables.list(B, C), round4.getElected());
     }
 
     @Test
     public void tooFewRankingsLtPluralityWin()
     {
-        final var start = OldStvRound.builder()
+        final var election = Election.builder()
             .seats(1)
             .ballot(21, A, C)
             .ballot(20, B, C)
@@ -142,7 +140,7 @@ public class OldStvRoundTest
             .ballot(5, C, B)
             .ballot(49, D)
             .build();
-        final var result = start.run();
+        final var result = runner.runElection(election);
         assertEquals(JImmutables.list(D), result.getElected());
     }
 
@@ -150,7 +148,7 @@ public class OldStvRoundTest
     public void multiRoundTest()
     {
         // sample election from wikipedia https://en.wikipedia.org/wiki/Single_transferable_vote
-        final var start = OldStvRound.builder()
+        final var election = Election.builder()
             .seats(3)
             .ballot(5, A, B)
             .ballot(3, B, A)
@@ -159,7 +157,7 @@ public class OldStvRoundTest
             .ballot(1, D, B)
             .ballot(2, E, B)
             .build();
-        final var result = start.run();
+        final var result = runner.runElection(election);
         assertEquals(JImmutables.list(C, A, D), result.getElected());
     }
 }

@@ -12,6 +12,7 @@ import com.burtonzone.election.Party;
 import com.burtonzone.election.Spectrum;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import lombok.Value;
 import org.javimmutable.collections.JImmutableList;
 import org.javimmutable.collections.util.JImmutables;
 
@@ -26,18 +27,28 @@ public class App
             if (test > 1) {
                 System.out.println();
             }
-            System.out.println("Test " + test);
+            System.out.printf("Test %d (seed=%d)", test, rand.getSeed());
 
             final var runner = new BasicStvRunner();
             final var spectrum = new Spectrum(rand);
-            final var db = JImmutables.<Election>listBuilder();
+            final var db = JImmutables.<DistrictSpec>listBuilder();
             // number and size of districts taken from fairvote.org plan for US house elections
-            addDistricts(spectrum, db, 44, 5, "five-");
-            addDistricts(spectrum, db, 9, 4, "four-");
-            addDistricts(spectrum, db, 54, 3, "three-");
-            addDistricts(spectrum, db, 5, 2, "two-");
-            addDistricts(spectrum, db, 7, 1, "one-");
-            final JImmutableList<Election> elections = db.build();
+            addDistricts(db, 44, 5);
+            addDistricts(db, 9, 4);
+            addDistricts(db, 54, 3);
+            addDistricts(db, 5, 2);
+            addDistricts(db, 7, 1);
+            // double size districts
+//            addDistricts(db, 44, 10);
+//            addDistricts(db, 9, 8);
+//            addDistricts(db, 54, 6);
+//            addDistricts(db, 5, 4);
+//            addDistricts(db, 7, 2);
+            final JImmutableList<Election> elections =
+                db.build()
+                    .stream().parallel()
+                    .map(spec -> spec.create(spectrum))
+                    .collect(listCollector());
 
             System.out.println();
             System.out.println("Election count: " + elections.size());
@@ -70,15 +81,24 @@ public class App
         }
     }
 
-    private static void addDistricts(Spectrum spectrum,
-                                     JImmutableList.Builder<Election> db,
+    private static void addDistricts(JImmutableList.Builder<DistrictSpec> db,
                                      int numberOfDistricts,
-                                     int numberOfSeatsPerDistrict,
-                                     String namePrefix
-    )
+                                     int numberOfSeatsPerDistrict)
     {
+        final var districtSpec = new DistrictSpec(numberOfSeatsPerDistrict);
         for (int i = 1; i <= numberOfDistricts; ++i) {
-            db.add(Election.random(spectrum, numberOfSeatsPerDistrict));
+            db.add(districtSpec);
+        }
+    }
+
+    @Value
+    private static class DistrictSpec
+    {
+        int numberOfSeats;
+
+        Election create(Spectrum spectrum)
+        {
+            return Election.random(spectrum, numberOfSeats);
         }
     }
 

@@ -51,11 +51,7 @@ public class Election
         final var rb = builder();
         rb.seats(seats);
         var affinity = spectrum.nextAffinity();
-        for (int b = 1; b <= 275 * seats; ++b) {
-            rb.ballot(affinity.randomBallot(seats, candidates));
-        }
-        affinity = spectrum.nextAffinity();
-        for (int b = 1; b <= 225 * seats; ++b) {
+        for (int b = 1; b <= 1_000 * seats; ++b) {
             rb.ballot(affinity.randomBallot(seats, candidates));
         }
         return rb.build();

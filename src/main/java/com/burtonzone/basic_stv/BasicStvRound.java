@@ -25,22 +25,27 @@ public class BasicStvRound
     @Getter
     final boolean finished;
 
-    public BasicStvRound(Election election)
+    private BasicStvRound(Election election)
     {
         this(election, election.getBallots(), list(), list(), false);
     }
 
-    public BasicStvRound(Election election,
-                         BallotBox ballotBox,
-                         JImmutableList<CandidateVotes> votes,
-                         JImmutableList<Candidate> elected,
-                         boolean finished)
+    private BasicStvRound(Election election,
+                          BallotBox ballotBox,
+                          JImmutableList<CandidateVotes> votes,
+                          JImmutableList<Candidate> elected,
+                          boolean finished)
     {
         this.election = election;
         this.ballotBox = ballotBox;
         this.votes = votes;
         this.elected = elected;
         this.finished = finished;
+    }
+
+    public static BasicStvRound start(Election election)
+    {
+        return new BasicStvRound(election).advance();
     }
 
     public BasicStvRound advance()

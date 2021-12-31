@@ -14,7 +14,7 @@ public class BasicStvRunner
     public ElectionResult runElection(Election election)
     {
         final JImmutableList.Builder<ElectionResult.RoundResult> results = listBuilder();
-        BasicStvRound round = new BasicStvRound(election);
+        BasicStvRound round = BasicStvRound.start(election);
         do {
             results.add(round.toElectionResult());
             round = round.advance();
