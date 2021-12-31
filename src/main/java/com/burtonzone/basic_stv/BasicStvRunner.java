@@ -14,11 +14,12 @@ public class BasicStvRunner
     public ElectionResult runElection(Election election)
     {
         final JImmutableList.Builder<ElectionResult.RoundResult> results = listBuilder();
-        var round = new BasicStvRound(election);
+        BasicStvRound round = new BasicStvRound(election);
         do {
             results.add(round.toElectionResult());
             round = round.advance();
-        } while (!round.isFinal());
+        } while (!round.isFinished());
+        results.add(round.toElectionResult());
         return new ElectionResult(election, results.build());
     }
 }

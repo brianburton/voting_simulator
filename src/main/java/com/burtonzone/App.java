@@ -23,6 +23,11 @@ public class App
     {
         final var rand = new Rand();
         for (int test = 1; test <= 10; ++test) {
+            if (test > 1) {
+                System.out.println();
+            }
+            System.out.println("Test " + test);
+
             final var runner = new BasicStvRunner();
             final var spectrum = new Spectrum(rand);
             final var db = JImmutables.<Election>listBuilder();
@@ -32,26 +37,27 @@ public class App
             addDistricts(spectrum, db, 54, 3, "three-");
             addDistricts(spectrum, db, 5, 2, "two-");
             addDistricts(spectrum, db, 7, 1, "one-");
-            final var districts = db.build()
-                .stream()
+            final JImmutableList<Election> elections = db.build();
+
+            System.out.println();
+            System.out.println("Election count: " + elections.size());
+            System.out.println("Election Seats: " + elections.stream().mapToInt(Election::getSeats).sum());
+
+            final var results = elections
+                .stream().parallel()
                 .map(runner::runElection)
                 .collect(listCollector());
-            if (test > 1) {
-                System.out.println();
-            }
-            System.out.println("Test " + test);
-            System.out.println();
-            System.out.println("District count: " + districts.size());
-            System.out.println("Seat count    : " + districts.stream().mapToInt(d -> d.getFinalRound().getSeats()).sum());
-            System.out.println("Elected count : " + districts.stream().mapToInt(d -> d.getFinalRound().getElected().size()).sum());
+            System.out.println("District count: " + results.size());
+            System.out.println("Seat count    : " + results.stream().mapToInt(d -> d.getFinalRound().getSeats()).sum());
+            System.out.println("Elected count : " + results.stream().mapToInt(d -> d.getFinalRound().getElected().size()).sum());
             System.out.println();
             System.out.println("Party         Seats    Exp    Act");
             var preferredParties = new Counter<Party>();
-            for (ElectionResult district : districts) {
+            for (ElectionResult district : results) {
                 preferredParties = preferredParties.add(district.getPartyFirstChoiceCounts());
             }
             var electedParties = JImmutables.<Party>multiset();
-            for (ElectionResult district : districts) {
+            for (ElectionResult district : results) {
                 electedParties = electedParties.insertAll(district.getPartyElectedCounts());
             }
             for (Party party : Party.All) {

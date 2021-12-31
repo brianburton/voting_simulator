@@ -22,49 +22,60 @@ public class BasicStvRound
     private final JImmutableList<CandidateVotes> votes;
     @Getter
     private final JImmutableList<Candidate> elected;
+    @Getter
+    final boolean finished;
 
     public BasicStvRound(Election election)
     {
-        this(election, election.getBallots(), list(), list());
+        this(election, election.getBallots(), list(), list(), false);
     }
 
     public BasicStvRound(Election election,
                          BallotBox ballotBox,
                          JImmutableList<CandidateVotes> votes,
-                         JImmutableList<Candidate> elected)
+                         JImmutableList<Candidate> elected,
+                         boolean finished)
     {
         this.election = election;
         this.ballotBox = ballotBox;
         this.votes = votes;
         this.elected = elected;
+        this.finished = finished;
     }
 
     public BasicStvRound advance()
     {
-        assert !isFinal();
+        assert !finished;
         final var seats = election.getSeats();
         final var quota = election.getQuota();
-        final var sortedVotes = computeVotes(ballotBox);
+        final var sortedVotes = computeVotes();
         final var firstPlace = sortedVotes.get(0);
         var newElected = elected;
         var newBallots = ballotBox;
-        if (firstPlace.getVotes().equals(quota)) {
-            newElected = newElected.insertLast(firstPlace.getCandidate());
-            newBallots = newBallots.remove(firstPlace.getCandidate());
-        } else if (firstPlace.getVotes().isGreaterThan(quota)) {
-            var overVote = firstPlace.getVotes().minus(quota);
-            var weight = overVote.dividedBy(firstPlace.getVotes());
+        var finished = false;
+        if (firstPlace.getVotes().isGreaterOrEqualTo(quota)) {
+            final var overVote = firstPlace.getVotes().minus(quota);
+            final var weight = overVote.dividedBy(firstPlace.getVotes());
             newElected = newElected.insertLast(firstPlace.getCandidate());
             newBallots = newBallots.removeAndTransfer(firstPlace.getCandidate(), weight);
-        } else if (ballotBox.isExhausted()) {
-            // we won't be able to improve any more so just fill in with whatever we have
-            final JImmutableList<Candidate> pluralityWinners = sortedVotes.slice(0, seats).transform(CandidateVotes::getCandidate);
+            finished = newElected.size() == seats || newBallots.isEmpty();
+        } else if (sortedVotes.size() <= seats - elected.size()) {
+            // we won't be able to improve any so just fill in with whatever we have
+            final JImmutableList<Candidate> pluralityWinners = sortedVotes
+                .slice(0, seats - newElected.size())
+                .transform(CandidateVotes::getCandidate);
             newElected = newElected.insertAllLast(pluralityWinners);
+            finished = true;
         } else {
-            var lastPlace = sortedVotes.get(sortedVotes.size() - 1);
+            final var lastPlace = sortedVotes.get(sortedVotes.size() - 1);
             newBallots = newBallots.remove(lastPlace.getCandidate());
+            finished = newBallots.isEmpty();
         }
-        return new BasicStvRound(election, newBallots, sortedVotes, newElected);
+        if (newBallots.isEmpty() && seats > newElected.size()) {
+            System.err.printf("out of ballots with unfilled seats, need %d%n",
+                              seats - newElected.size());
+        }
+        return new BasicStvRound(election, newBallots, sortedVotes, newElected, finished);
     }
 
     public ElectionResult.RoundResult toElectionResult()
@@ -72,12 +83,7 @@ public class BasicStvRound
         return new ElectionResult.RoundResult(votes, elected, ballotBox.getExhaustedCount());
     }
 
-    public boolean isFinal()
-    {
-        return elected.size() == election.getSeats() || ballotBox.isEmpty();
-    }
-
-    private JImmutableList<CandidateVotes> computeVotes(BallotBox ballots)
+    private JImmutableList<CandidateVotes> computeVotes()
     {
         var counter = new Counter<Candidate>();
         for (Counter.Entry<Ballot> e : ballotBox.ballots()) {

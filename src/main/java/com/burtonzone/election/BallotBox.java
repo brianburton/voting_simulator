@@ -47,6 +47,9 @@ public class BallotBox
     public BallotBox removeAndTransfer(Candidate candidate,
                                        Decimal transferWeight)
     {
+        if (transferWeight.equals(Decimal.ZERO)) {
+            transferWeight = null;
+        }
         return removeCandidateImpl(candidate, transferWeight);
     }
 
