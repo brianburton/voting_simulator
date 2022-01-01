@@ -34,7 +34,7 @@ public class Counter<T>
     public Counter<T> add(T key,
                           Decimal count)
     {
-        if (count.isLessOrEqualTo(Decimal.ZERO)) {
+        if (count.isNegOrZero()) {
             return this;
         }
         var newCounts = counts.update(key, h -> h.orElse(Decimal.ZERO).plus(count));

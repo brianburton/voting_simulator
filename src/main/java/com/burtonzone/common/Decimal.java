@@ -9,7 +9,9 @@ import lombok.EqualsAndHashCode;
 public class Decimal
     implements Comparable<Decimal>
 {
-    public static final int PRECISION = 8;
+    private static final int PRECISION = 8;
+    private static final int DIVISION_PRECISION = 4 * PRECISION;
+    private static final BigDecimal ZERO_BOUND = new BigDecimal(5).scaleByPowerOfTen(-PRECISION);
     public static final Decimal ZERO = new Decimal(0);
     public static final Decimal ONE = new Decimal(1);
 
@@ -20,9 +22,14 @@ public class Decimal
         this(new BigDecimal(value));
     }
 
+    Decimal(String value)
+    {
+        this(new BigDecimal(value));
+    }
+
     private Decimal(BigDecimal value)
     {
-        this.value = value.setScale(10, RoundingMode.HALF_UP);
+        this.value = value.setScale(PRECISION, RoundingMode.HALF_UP);
     }
 
     public Decimal plus(Decimal other)
@@ -40,19 +47,9 @@ public class Decimal
         return new Decimal(value.subtract(other.value));
     }
 
-    public Decimal squared()
-    {
-        return new Decimal(value.multiply(value));
-    }
-
-    public Decimal root()
-    {
-        return new Decimal(value.sqrt(MathContext.UNLIMITED));
-    }
-
     public Decimal dividedBy(Decimal other)
     {
-        return new Decimal(value.divide(other.value, PRECISION, RoundingMode.HALF_UP));
+        return new Decimal(value.divide(other.value, DIVISION_PRECISION, RoundingMode.HALF_UP));
     }
 
     public Decimal times(Decimal other)
@@ -91,10 +88,26 @@ public class Decimal
         return compareTo(other) <= 0;
     }
 
+    public Decimal abs()
+    {
+        return value.signum() >= 0 ? this : new Decimal(value.negate());
+    }
+
+    public boolean isZero()
+    {
+        var diff = minus(ZERO).abs();
+        return diff.value.compareTo(ZERO_BOUND) <= 0;
+    }
+
+    public boolean isNegOrZero()
+    {
+        return value.signum() <= 0 || isZero();
+    }
+
     @Override
     public String toString()
     {
-        return value.toString();
+        return value.toPlainString();
     }
 
     public Decimal rounded(RoundingMode roundingMode)
