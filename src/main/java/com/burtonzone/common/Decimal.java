@@ -62,6 +62,22 @@ public class Decimal
         return new Decimal(value.multiply(new BigDecimal(val), MathContext.UNLIMITED));
     }
 
+    public Decimal floor()
+    {
+        var changed = value.setScale(0, RoundingMode.FLOOR);
+        return new Decimal(changed);
+    }
+
+    public Decimal div(Decimal o)
+    {
+        return dividedBy(o).floor();
+    }
+
+    public Decimal mod(Decimal o)
+    {
+        return minus(div(o).times(o));
+    }
+
     @Override
     public int compareTo(Decimal other)
     {
@@ -120,5 +136,10 @@ public class Decimal
     public BigDecimal toBigDecimal()
     {
         return value;
+    }
+
+    public int toInt()
+    {
+        return value.toBigInteger().intValue();
     }
 }

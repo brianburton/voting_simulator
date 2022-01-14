@@ -56,6 +56,22 @@ public class Counter<T>
         return answer;
     }
 
+    public Counter<T> subtract(T key,
+                               Decimal count)
+    {
+        var current = get(key);
+        if (count.isGreaterThan(current)) {
+            throw new IllegalArgumentException("trying to subtract more than available");
+        }
+        var changed = current.minus(count);
+        if (changed.isZero()) {
+            return delete(key);
+        } else {
+            return new Counter<>(counts.assign(key, changed));
+        }
+    }
+
+
     public Counter<T> delete(T key)
     {
         var newCounts = counts.delete(key);

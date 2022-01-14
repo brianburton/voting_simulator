@@ -2,7 +2,6 @@ package com.burtonzone;
 
 import static org.javimmutable.collections.util.JImmutables.*;
 
-import com.burtonzone.basic_stv.BasicStvRunner;
 import com.burtonzone.common.Counter;
 import com.burtonzone.common.Decimal;
 import com.burtonzone.common.Rand;
@@ -10,6 +9,7 @@ import com.burtonzone.election.Election;
 import com.burtonzone.election.ElectionResult;
 import com.burtonzone.election.Party;
 import com.burtonzone.election.Spectrum;
+import com.burtonzone.open_list.OpenListRunner;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import lombok.Value;
@@ -29,7 +29,7 @@ public class App
             }
             System.out.printf("Test %d (seed=%d)", test, rand.getSeed());
 
-            final var runner = new BasicStvRunner();
+            final var runner = new OpenListRunner();
             final var spectrum = new Spectrum(rand);
             final var db = JImmutables.<DistrictSpec>listBuilder();
             // number and size of districts taken from fairvote.org plan for US house elections
