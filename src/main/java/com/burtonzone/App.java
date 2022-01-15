@@ -29,6 +29,7 @@ public class App
             }
             System.out.printf("Test %d (seed=%d)", test, rand.getSeed());
 
+//            final var runner = new BasicStvRunner();
             final var runner = new OpenListRunner();
             final var spectrum = new Spectrum(rand);
             final var db = JImmutables.<DistrictSpec>listBuilder();
@@ -55,7 +56,7 @@ public class App
             System.out.println("Election Seats: " + elections.stream().mapToInt(Election::getSeats).sum());
 
             final var results = elections
-                .stream().parallel()
+                .stream()//.parallel()
                 .map(runner::runElection)
                 .collect(listCollector());
             System.out.println("District count: " + results.size());

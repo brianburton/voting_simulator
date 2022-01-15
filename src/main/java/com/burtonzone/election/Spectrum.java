@@ -22,6 +22,9 @@ public class Spectrum
         addCount(nb, new Affinity(Right, CenterRight), randomSize(rand, nb));
         addCount(nb, new Affinity(Center, CenterLeft), randomSize(rand, nb));
         addCount(nb, new Affinity(Center, CenterRight), randomSize(rand, nb));
+        addCount(nb, new Affinity(CenterLeft, Center, CenterRight), randomSize(rand, nb));
+        addCount(nb, new Affinity(Left, Center, CenterRight), randomSize(rand, nb));
+        addCount(nb, new Affinity(Center, CenterRight, Right), randomSize(rand, nb));
         this.rand = rand;
         this.nodes = nb.build();
     }
@@ -29,7 +32,7 @@ public class Spectrum
     private int randomSize(Rand rand,
                            JImmutableList.Builder<Affinity> nb)
     {
-        final var remainder = Math.max(10, 400 - nb.size());
+        final var remainder = Math.max(10, 800 - nb.size());
         return rand.nextIndex(Math.min(100, remainder));
     }
 
