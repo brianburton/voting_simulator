@@ -56,9 +56,10 @@ public class OpenListRunner
             var partyVotes = new Counter<Party>();
             var candidateVotes = new Counter<Candidate>();
             for (Counter.Entry<Ballot> e : election.getBallots().ballots()) {
-                var candidate = e.getKey().getFirstChoice();
-                var count = e.getCount();
-                partyVotes = partyVotes.add(candidate.getParty(), count);
+                final var candidate = e.getKey().getFirstChoice();
+                final var party = candidate.getParty();
+                final var count = e.getCount();
+                partyVotes = partyVotes.add(party, count);
                 candidateVotes = candidateVotes.add(candidate, count);
             }
             this.election = election;
