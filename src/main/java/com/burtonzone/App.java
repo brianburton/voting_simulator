@@ -23,7 +23,7 @@ public class App
     public static void main(String[] args)
     {
         final var rand = new Rand();
-        for (int test = 1; test <= 10; ++test) {
+        for (int test = 1; test <= 25; ++test) {
             if (test > 1) {
                 System.out.println();
             }
