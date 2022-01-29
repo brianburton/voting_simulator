@@ -18,7 +18,7 @@ public class GridElectionFactory
     private static final int MaxPos = 100;
     private static final int VoterDistance = 25;
     private static final int CandidateDistance = 15;
-    private static final int VotersPerSeat = 300;
+    private static final int VotersPerSeat = 250;
     private static final Position Center = new Position((MinPos + MaxPos) / 2, (MinPos + MaxPos) / 2);
     private static final JImmutableList<Integer> PartyPoints = JImmutables.list(20, 30, 40, 50, 60, 70, 80);
 

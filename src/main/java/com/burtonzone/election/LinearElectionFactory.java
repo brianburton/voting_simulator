@@ -8,35 +8,32 @@ import lombok.Getter;
 import org.javimmutable.collections.JImmutableList;
 import org.javimmutable.collections.util.JImmutables;
 
-public class Spectrum
+public class LinearElectionFactory
     implements ElectionFactory
 {
-
-    private final JImmutableList<Affinity> nodes;
     @Getter
     private final Rand rand;
 
-    public Spectrum(Rand rand)
+    public LinearElectionFactory(Rand rand)
     {
         this.rand = rand;
+    }
+
+    @Override
+    public Election createElection(int numberOfSeats)
+    {
         var allAffinities = list(
             new Affinity(Left, CenterLeft),
             new Affinity(CenterLeft, Center),
             new Affinity(Center, CenterRight),
             new Affinity(CenterRight, Right));
-
         final var nb = JImmutables.<Affinity>listBuilder();
         while (nb.size() < 500) {
             final Affinity affinity = rand.nextElement(allAffinities);
             final int count = randomSize(rand, nb);
             addCount(nb, affinity, count);
         }
-        this.nodes = nb.build();
-    }
-
-    @Override
-    public Election createElection(int numberOfSeats)
-    {
+        var nodes = nb.build();
         final var cb = JImmutables.<Candidate>listBuilder();
         for (int s = 1; s <= numberOfSeats; ++s) {
             for (Party party : All) {
@@ -47,7 +44,7 @@ public class Spectrum
 
         final var rb = Election.builder();
         rb.seats(numberOfSeats);
-        var affinity = nextAffinity();
+        var affinity = nextAffinity(nodes);
         for (int b = 1; b <= 1_000 * numberOfSeats; ++b) {
             rb.ballot(affinity.randomBallot(numberOfSeats, candidates));
         }
@@ -76,7 +73,7 @@ public class Spectrum
         }
     }
 
-    public Affinity nextAffinity()
+    public Affinity nextAffinity(JImmutableList<Affinity> nodes)
     {
         return rand.nextElement(nodes);
     }

@@ -13,7 +13,6 @@ import com.burtonzone.election.Party;
 import com.burtonzone.grid.GridElectionFactory;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.function.Supplier;
 import lombok.Value;
 import org.javimmutable.collections.JImmutableList;
 import org.javimmutable.collections.util.JImmutables;
@@ -25,10 +24,10 @@ public class App
     public static void main(String[] args)
     {
         final var rand = new Rand();
-        final ElectionFactory gridFactory = new GridElectionFactory(rand, Party.All.size());
-//        Supplier<ElectionFactory> newFactory = () -> new Spectrum(rand);
-        Supplier<ElectionFactory> newFactory = () -> gridFactory;
-        ElectionFactory factory = newFactory.get();
+//        final ElectionFactory factory = new LinearElectionFactory(rand);
+        final ElectionFactory factory = new GridElectionFactory(rand, Party.All.size());
+        final var runner = new BasicStvRunner();
+//        final var runner = new OpenListRunner();
         System.out.printf("%-3s", "");
         System.out.printf(" %-3s %-3s %-3s %-3s %-3s   ",
                           "",
@@ -58,8 +57,6 @@ public class App
         for (int test = 1; test <= 25; ++test) {
             System.out.printf("%3d", test);
 
-            final var runner = new BasicStvRunner();
-//            final var runner = new OpenListRunner();
             final var db = JImmutables.<DistrictSpec>listBuilder();
             // number and size of districts taken from fairvote.org plan for US house elections
             addDistricts(db, 44, 5);
@@ -77,7 +74,7 @@ public class App
             final JImmutableList<Election> elections =
                 db.build()
                     .stream().parallel()
-                    .map(spec -> spec.create(newFactory.get()))
+                    .map(spec -> spec.create(factory))
                     .collect(listCollector());
 
             final var results = elections

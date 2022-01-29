@@ -16,7 +16,7 @@ public class Position
 
     public String toString()
     {
-        return String.format("%03d-%03d", x, y);
+        return String.format("%02d-%02d", x, y);
     }
 
     // the root isn't needed some we're just comparing relative distances not absolute ones
