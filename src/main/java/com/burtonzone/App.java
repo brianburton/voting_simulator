@@ -23,11 +23,38 @@ public class App
     public static void main(String[] args)
     {
         final var rand = new Rand();
+        System.out.printf("%-3s", "");
+        System.out.printf(" %-3s %-3s %-3s %-3s %-3s   ",
+                          "",
+                          "",
+                          "",
+                          "",
+                          "");
+        for (Party party : Party.All) {
+            System.out.printf(" %s ", center(party.getName(), 19));
+        }
+        System.out.println();
+        System.out.printf("%3s", "#");
+        System.out.printf(" %3s %3s %3s %3s %3s   ",
+                          "ec",
+                          "sc",
+                          "rc",
+                          "rsc",
+                          "rec");
+        for (Party party : Party.All) {
+            System.out.printf(" %4s   %5s  %5s ",
+                              "ps",
+                              "eps",
+                              "aps");
+        }
+        System.out.printf("   %3s", "err");
+        System.out.println();
         for (int test = 1; test <= 25; ++test) {
-            if (test > 1) {
-                System.out.println();
-            }
-            System.out.printf("Test %d (seed=%d)", test, rand.getSeed());
+//            if (test > 1) {
+//                System.out.println();
+//            }
+//            System.out.printf("Test %d (seed=%d)", test, rand.getSeed());
+            System.out.printf("%3d", test);
 
 //            final var runner = new BasicStvRunner();
             final var runner = new OpenListRunner();
@@ -51,34 +78,51 @@ public class App
                     .map(spec -> spec.create(spectrum))
                     .collect(listCollector());
 
-            System.out.println();
-            System.out.println("Election count: " + elections.size());
-            System.out.println("Election Seats: " + elections.stream().mapToInt(Election::getSeats).sum());
+//            System.out.println();
+//            System.out.println("Election count: " + elections.size());
+//            System.out.println("Election Seats: " + elections.stream().mapToInt(Election::getSeats).sum());
 
             final var results = elections
                 .stream()//.parallel()
                 .map(runner::runElection)
                 .collect(listCollector());
-            System.out.println("District count: " + results.size());
-            System.out.println("Seat count    : " + results.stream().mapToInt(d -> d.getFinalRound().getSeats()).sum());
-            System.out.println("Elected count : " + results.stream().mapToInt(d -> d.getFinalRound().getElected().size()).sum());
-            System.out.println();
-            System.out.println("Party         Seats    Exp    Act");
+//            System.out.println("District count: " + results.size());
+//            System.out.println("Seat count    : " + results.stream().mapToInt(d -> d.getFinalRound().getSeats()).sum());
+//            System.out.println("Elected count : " + results.stream().mapToInt(d -> d.getFinalRound().getElected().size()).sum());
+//            System.out.println();
+            final int totalSeats = results.stream().mapToInt(d -> d.getFinalRound().getSeats()).sum();
+            final int totalElected = results.stream().mapToInt(d -> d.getFinalRound().getElected().size()).sum();
+            System.out.printf(" %3d %3d %3d %3d %3d  ",
+                              elections.size(),
+                              elections.stream().mapToInt(Election::getSeats).sum(),
+                              results.size(),
+                              totalSeats,
+                              totalElected);
+//            System.out.println("Party         Seats    Exp    Act");
             var preferredParties = new Counter<Party>();
-            for (ElectionResult district : results) {
-                preferredParties = preferredParties.add(district.getPartyFirstChoiceCounts());
-            }
             var electedParties = JImmutables.<Party>multiset();
             for (ElectionResult district : results) {
+                preferredParties = preferredParties.add(district.getPartyFirstChoiceCounts());
                 electedParties = electedParties.insertAll(district.getPartyElectedCounts());
             }
+            var errors = Decimal.ZERO;
             for (Party party : Party.All) {
-                System.out.printf("%-12s  %4d   %4s%%  %4s%%%n",
-                                  party.getName(),
-                                  electedParties.count(party),
+//                System.out.printf("   %-12s  %4d   %4s%%  %4s%%",
+//                                  party.getName(),
+//                                  electedParties.count(party),
+//                                  percent(preferredParties.get(party), preferredParties.getTotal()),
+//                                  percent(electedParties.count(party), electedParties.occurrenceCount()));
+                final var actualSeats = electedParties.count(party);
+                final var expectedSeats = preferredParties.get(party).dividedBy(preferredParties.getTotal()).times(totalSeats);
+                System.out.printf("  %4d   %4s%%  %4s%%",
+                                  actualSeats,
                                   percent(preferredParties.get(party), preferredParties.getTotal()),
-                                  percent(electedParties.count(party), electedParties.occurrenceCount()));
+                                  percent(actualSeats, electedParties.occurrenceCount()));
+                errors = errors.plus(actualSeats).minus(expectedSeats).abs();
             }
+            System.out.printf("  %4s%%", percent(errors, new Decimal(elections.stream().mapToInt(Election::getSeats).sum())));
+
+            System.out.println();
         }
     }
 
@@ -128,5 +172,18 @@ public class App
             .multiply(HUNDRED)
             .divide(denom, 8, RoundingMode.HALF_UP)
             .setScale(1, RoundingMode.HALF_UP);
+    }
+
+    private static String center(String s,
+                                 int width)
+    {
+        s = " " + s + " ";
+        while (s.length() < width) {
+            s = "-" + s;
+            if (s.length() < width) {
+                s = s + "-";
+            }
+        }
+        return s;
     }
 }
