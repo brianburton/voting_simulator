@@ -54,7 +54,7 @@ public class App
         }
         System.out.printf("   %3s", "err");
         System.out.println();
-        for (int test = 1; test <= 25; ++test) {
+        for (int test = 1; test <= 23; ++test) {
             System.out.printf("%3d", test);
 
             final var db = JImmutables.<DistrictSpec>listBuilder();

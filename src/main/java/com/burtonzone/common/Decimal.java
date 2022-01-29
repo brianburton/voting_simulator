@@ -78,6 +78,16 @@ public class Decimal
         return minus(div(o).times(o));
     }
 
+    public Decimal squared()
+    {
+        return times(this);
+    }
+
+    public Decimal root()
+    {
+        return new Decimal(value.sqrt(new MathContext(DIVISION_PRECISION, RoundingMode.HALF_UP)));
+    }
+
     @Override
     public int compareTo(Decimal other)
     {

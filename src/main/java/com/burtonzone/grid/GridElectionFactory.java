@@ -3,11 +3,9 @@ package com.burtonzone.grid;
 import com.burtonzone.common.Rand;
 import com.burtonzone.election.Ballot;
 import com.burtonzone.election.BallotBox;
-import com.burtonzone.election.Candidate;
 import com.burtonzone.election.Election;
 import com.burtonzone.election.ElectionFactory;
 import com.burtonzone.election.Party;
-import java.util.ArrayList;
 import org.javimmutable.collections.JImmutableList;
 import org.javimmutable.collections.util.JImmutables;
 
@@ -17,8 +15,9 @@ public class GridElectionFactory
     private static final int MinPos = 0;
     private static final int MaxPos = 100;
     private static final int VoterDistance = 25;
-    private static final int CandidateDistance = 15;
-    private static final int VotersPerSeat = 250;
+    private static final int CandidateDistance = 10;
+    private static final int VotersPerSeat = 500;
+    private static final int VoterTolerance = 20;
     private static final Position Center = new Position((MinPos + MaxPos) / 2, (MinPos + MaxPos) / 2);
     private static final JImmutableList<Integer> PartyPoints = JImmutables.list(20, 30, 40, 50, 60, 70, 80);
 
@@ -35,10 +34,10 @@ public class GridElectionFactory
     @Override
     public Election createElection(int numSeats)
     {
-        var candidates = createCandidates(numSeats);
-        var voterCenter = randomPartyPosition(rand, 3);
-        var voters = createVoters(voterCenter, VotersPerSeat * numSeats);
-        var ballotBox = createBallotBox(candidates, voters);
+        final var candidates = createCandidates(numSeats);
+        final var voterCenter = randomPartyPosition(rand, 3);
+        final var voters = createVoters(voterCenter, VotersPerSeat * numSeats);
+        final var ballotBox = createBallotBox(candidates, voters);
         return new Election(ballotBox, numSeats);
     }
 
@@ -51,12 +50,12 @@ public class GridElectionFactory
     private static JImmutableList<GridParty> createParties(Rand rand,
                                                            int numParties)
     {
-        var positions = JImmutables.<Position>sortedSet(new Position.DistanceComparator(Center));
+        var positions = JImmutables.sortedSet(new Position.DistanceComparator(Center));
         while (positions.size() < numParties) {
             final Position position = randomPartyPosition(rand, 1);
             positions = positions.insert(position);
         }
-        return positions.transform(JImmutables.list(), GridParty::new);
+        return positions.transform(JImmutables.list(), p -> new GridParty(p, Center.realDistance(p)));
     }
 
     private static Position randomPartyPosition(Rand rand,
@@ -71,8 +70,10 @@ public class GridElectionFactory
     {
         var builder = BallotBox.builder();
         for (GridVoters voter : voters) {
-            var ballot = createBallot(candidates, voter.getPosition());
-            builder.add(ballot, voter.getCount());
+            final var ballot = createBallot(candidates, voter.getPosition());
+            if (ballot.isNonEmpty()) {
+                builder.add(ballot, voter.getCount());
+            }
         }
         return builder.build();
     }
@@ -80,9 +81,10 @@ public class GridElectionFactory
     private Ballot createBallot(JImmutableList<GridCandidate> candidates,
                                 Position position)
     {
-        var sorted = new ArrayList<>(candidates.getList());
-        sorted.sort(new GridCandidate.DistanceComparator(position));
-        final JImmutableList<Candidate> choices = sorted.stream()
+        var maxDistance = VoterTolerance * VoterTolerance;
+        var choices = candidates.stream()
+            .sorted(new GridCandidate.DistanceComparator(position))
+            .filter(c -> c.getPosition().quickDistance(position) <= maxDistance)
             .map(GridCandidate::getCandidate)
             .collect(JImmutables.listCollector());
         return new Ballot(choices);

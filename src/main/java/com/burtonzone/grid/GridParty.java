@@ -9,9 +9,11 @@ public class GridParty
     Position position;
     Party party;
 
-    public GridParty(Position position)
+    public GridParty(Position position,
+                     int distance)
     {
         this.position = position;
-        party = new Party(position.toString(), String.format("%d-%d", position.getX() / 10, position.getY() / 10));
+        party = new Party(String.format("%s-%d", position, distance),
+                          String.format("%d-%d", position.getX() / 10, position.getY() / 10));
     }
 }

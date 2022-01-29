@@ -1,5 +1,6 @@
 package com.burtonzone.grid;
 
+import com.burtonzone.common.Decimal;
 import com.burtonzone.common.Rand;
 import java.util.Comparator;
 import lombok.AllArgsConstructor;
@@ -16,15 +17,19 @@ public class Position
 
     public String toString()
     {
-        return String.format("%02d-%02d", x, y);
+        return String.format("%d-%d", x, y);
     }
 
-    // the root isn't needed some we're just comparing relative distances not absolute ones
-    public int distanceTo(Position other)
+    public int quickDistance(Position other)
     {
         var sumX = x - other.x;
         var sumY = y - other.y;
         return sumX * sumX + sumY * sumY;
+    }
+
+    public int realDistance(Position other)
+    {
+        return new Decimal(quickDistance(other)).root().toInt();
     }
 
     public Position centeredNearBy(Rand rand,
@@ -90,8 +95,8 @@ public class Position
         public int compare(Position a,
                            Position b)
         {
-            var aDistance = center.distanceTo(a);
-            var bDistance = center.distanceTo(b);
+            var aDistance = center.quickDistance(a);
+            var bDistance = center.quickDistance(b);
             var diff = aDistance - bDistance;
             if (diff == 0) {
                 diff = a.compareTo(b);
