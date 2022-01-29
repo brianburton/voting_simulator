@@ -37,26 +37,6 @@ public class Election
         return new Builder();
     }
 
-    public static Election random(Spectrum spectrum,
-                                  int seats)
-    {
-        final var cb = JImmutables.<Candidate>listBuilder();
-        for (int s = 1; s <= seats; ++s) {
-            for (Party party : Party.All) {
-                cb.add(new Candidate(party, party.getAbbrev() + "-" + s));
-            }
-        }
-        final var candidates = cb.build();
-
-        final var rb = builder();
-        rb.seats(seats);
-        var affinity = spectrum.nextAffinity();
-        for (int b = 1; b <= 1_000 * seats; ++b) {
-            rb.ballot(affinity.randomBallot(seats, candidates));
-        }
-        return rb.build();
-    }
-
     public static class Builder
     {
         private final BallotBox.Builder ballots = BallotBox.builder();

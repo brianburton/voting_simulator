@@ -9,6 +9,7 @@ import org.javimmutable.collections.JImmutableList;
 import org.javimmutable.collections.util.JImmutables;
 
 public class Spectrum
+    implements ElectionFactory
 {
 
     private final JImmutableList<Affinity> nodes;
@@ -31,6 +32,32 @@ public class Spectrum
             addCount(nb, affinity, count);
         }
         this.nodes = nb.build();
+    }
+
+    @Override
+    public Election createElection(int numberOfSeats)
+    {
+        final var cb = JImmutables.<Candidate>listBuilder();
+        for (int s = 1; s <= numberOfSeats; ++s) {
+            for (Party party : All) {
+                cb.add(new Candidate(party, party.getAbbrev() + "-" + s));
+            }
+        }
+        final var candidates = cb.build();
+
+        final var rb = Election.builder();
+        rb.seats(numberOfSeats);
+        var affinity = nextAffinity();
+        for (int b = 1; b <= 1_000 * numberOfSeats; ++b) {
+            rb.ballot(affinity.randomBallot(numberOfSeats, candidates));
+        }
+        return rb.build();
+    }
+
+    @Override
+    public JImmutableList<Party> allParties()
+    {
+        return All;
     }
 
     private int randomSize(Rand rand,

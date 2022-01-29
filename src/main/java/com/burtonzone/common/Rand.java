@@ -36,6 +36,37 @@ public class Rand
         return random.nextInt(collectionSize);
     }
 
+    public int nextIndex(int collectionSize,
+                         int bias)
+    {
+        return nextInt(0, collectionSize - 1, bias);
+    }
+
+    public int nextInt(int min,
+                       int max)
+    {
+        if (max <= min) {
+            return min;
+        } else {
+            return min + random.nextInt(max - min + 1);
+        }
+    }
+
+    public int nextInt(int min,
+                       int max,
+                       int bias)
+    {
+        if (max <= min || bias <= 0) {
+            return min;
+        } else {
+            var sum = 0;
+            for (int i = 1; i <= bias; ++i) {
+                sum += random.nextInt(max - min + 1);
+            }
+            return min + sum / bias;
+        }
+    }
+
     public <T> JImmutableList<T> shuffle(Collection<T> collection)
     {
         var list = new ArrayList<T>(collection);
@@ -46,6 +77,13 @@ public class Rand
     public <T> T nextElement(JImmutableList<T> list)
     {
         var index = nextIndex(list.size());
+        return list.get(index);
+    }
+
+    public <T> T nextElement(JImmutableList<T> list,
+                             int bias)
+    {
+        var index = nextIndex(list.size(), bias);
         return list.get(index);
     }
 

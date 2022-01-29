@@ -2,16 +2,18 @@ package com.burtonzone;
 
 import static org.javimmutable.collections.util.JImmutables.*;
 
+import com.burtonzone.basic_stv.BasicStvRunner;
 import com.burtonzone.common.Counter;
 import com.burtonzone.common.Decimal;
 import com.burtonzone.common.Rand;
 import com.burtonzone.election.Election;
+import com.burtonzone.election.ElectionFactory;
 import com.burtonzone.election.ElectionResult;
 import com.burtonzone.election.Party;
-import com.burtonzone.election.Spectrum;
-import com.burtonzone.open_list.OpenListRunner;
+import com.burtonzone.grid.GridElectionFactory;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.function.Supplier;
 import lombok.Value;
 import org.javimmutable.collections.JImmutableList;
 import org.javimmutable.collections.util.JImmutables;
@@ -23,6 +25,10 @@ public class App
     public static void main(String[] args)
     {
         final var rand = new Rand();
+        final ElectionFactory gridFactory = new GridElectionFactory(rand, Party.All.size());
+//        Supplier<ElectionFactory> newFactory = () -> new Spectrum(rand);
+        Supplier<ElectionFactory> newFactory = () -> gridFactory;
+        ElectionFactory factory = newFactory.get();
         System.out.printf("%-3s", "");
         System.out.printf(" %-3s %-3s %-3s %-3s %-3s   ",
                           "",
@@ -30,7 +36,7 @@ public class App
                           "",
                           "",
                           "");
-        for (Party party : Party.All) {
+        for (Party party : factory.allParties()) {
             System.out.printf(" %s ", center(party.getName(), 19));
         }
         System.out.println();
@@ -41,7 +47,7 @@ public class App
                           "rc",
                           "rsc",
                           "rec");
-        for (Party party : Party.All) {
+        for (Party party : factory.allParties()) {
             System.out.printf(" %4s   %5s  %5s ",
                               "ps",
                               "eps",
@@ -50,15 +56,10 @@ public class App
         System.out.printf("   %3s", "err");
         System.out.println();
         for (int test = 1; test <= 25; ++test) {
-//            if (test > 1) {
-//                System.out.println();
-//            }
-//            System.out.printf("Test %d (seed=%d)", test, rand.getSeed());
             System.out.printf("%3d", test);
 
-//            final var runner = new BasicStvRunner();
-            final var runner = new OpenListRunner();
-            final var spectrum = new Spectrum(rand);
+            final var runner = new BasicStvRunner();
+//            final var runner = new OpenListRunner();
             final var db = JImmutables.<DistrictSpec>listBuilder();
             // number and size of districts taken from fairvote.org plan for US house elections
             addDistricts(db, 44, 5);
@@ -72,24 +73,17 @@ public class App
 //            addDistricts(db, 54, 6);
 //            addDistricts(db, 5, 4);
 //            addDistricts(db, 7, 2);
+
             final JImmutableList<Election> elections =
                 db.build()
                     .stream().parallel()
-                    .map(spec -> spec.create(spectrum))
+                    .map(spec -> spec.create(newFactory.get()))
                     .collect(listCollector());
-
-//            System.out.println();
-//            System.out.println("Election count: " + elections.size());
-//            System.out.println("Election Seats: " + elections.stream().mapToInt(Election::getSeats).sum());
 
             final var results = elections
                 .stream()//.parallel()
                 .map(runner::runElection)
                 .collect(listCollector());
-//            System.out.println("District count: " + results.size());
-//            System.out.println("Seat count    : " + results.stream().mapToInt(d -> d.getFinalRound().getSeats()).sum());
-//            System.out.println("Elected count : " + results.stream().mapToInt(d -> d.getFinalRound().getElected().size()).sum());
-//            System.out.println();
             final int totalSeats = results.stream().mapToInt(d -> d.getFinalRound().getSeats()).sum();
             final int totalElected = results.stream().mapToInt(d -> d.getFinalRound().getElected().size()).sum();
             System.out.printf(" %3d %3d %3d %3d %3d  ",
@@ -98,7 +92,6 @@ public class App
                               results.size(),
                               totalSeats,
                               totalElected);
-//            System.out.println("Party         Seats    Exp    Act");
             var preferredParties = new Counter<Party>();
             var electedParties = JImmutables.<Party>multiset();
             for (ElectionResult district : results) {
@@ -106,12 +99,7 @@ public class App
                 electedParties = electedParties.insertAll(district.getPartyElectedCounts());
             }
             var errors = Decimal.ZERO;
-            for (Party party : Party.All) {
-//                System.out.printf("   %-12s  %4d   %4s%%  %4s%%",
-//                                  party.getName(),
-//                                  electedParties.count(party),
-//                                  percent(preferredParties.get(party), preferredParties.getTotal()),
-//                                  percent(electedParties.count(party), electedParties.occurrenceCount()));
+            for (Party party : factory.allParties()) {
                 final var actualSeats = electedParties.count(party);
                 final var expectedSeats = preferredParties.get(party).dividedBy(preferredParties.getTotal()).times(totalSeats);
                 System.out.printf("  %4d   %4s%%  %4s%%",
@@ -141,9 +129,9 @@ public class App
     {
         int numberOfSeats;
 
-        Election create(Spectrum spectrum)
+        Election create(ElectionFactory factory)
         {
-            return Election.random(spectrum, numberOfSeats);
+            return factory.createElection(numberOfSeats);
         }
     }
 
