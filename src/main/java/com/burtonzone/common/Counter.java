@@ -1,5 +1,7 @@
 package com.burtonzone.common;
 
+import static com.burtonzone.common.Decimal.ZERO;
+
 import java.util.Comparator;
 import javax.annotation.Nonnull;
 import lombok.AllArgsConstructor;
@@ -31,13 +33,31 @@ public class Counter<T>
         return counts.isEmpty();
     }
 
+    public Counter<T> addZero(T key)
+    {
+        if (counts.get(key) != null) {
+            return this;
+        } else {
+            return new Counter<>(counts.assign(key, ZERO));
+        }
+    }
+
+    public Counter<T> addZeros(Iterable<T> keys)
+    {
+        var answer = this;
+        for (T key : keys) {
+            answer = answer.addZero(key);
+        }
+        return answer;
+    }
+
     public Counter<T> add(T key,
                           Decimal count)
     {
         if (count.isNegOrZero()) {
             return this;
         }
-        var newCounts = counts.update(key, h -> h.orElse(Decimal.ZERO).plus(count));
+        var newCounts = counts.update(key, h -> h.orElse(ZERO).plus(count));
         return new Counter<>(newCounts);
     }
 
@@ -80,12 +100,12 @@ public class Counter<T>
 
     public Decimal get(T key)
     {
-        return counts.getValueOr(key, Decimal.ZERO);
+        return counts.getValueOr(key, ZERO);
     }
 
     public Decimal getTotal()
     {
-        return counts.values().reduce(Decimal.ZERO, Decimal::plus);
+        return counts.values().reduce(ZERO, Decimal::plus);
     }
 
     public int size()

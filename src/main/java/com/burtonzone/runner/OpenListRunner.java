@@ -54,7 +54,8 @@ public class OpenListRunner
         private Worksheet(Election election)
         {
             var partyVotes = new Counter<Party>();
-            var candidateVotes = new Counter<Candidate>();
+            var candidateVotes = new Counter<Candidate>()
+                .addZeros(election.getCandidates());
             for (Counter.Entry<Ballot> e : election.getBallots().ballots()) {
                 final var candidate = e.getKey().getFirstChoice();
                 final var party = candidate.getParty();

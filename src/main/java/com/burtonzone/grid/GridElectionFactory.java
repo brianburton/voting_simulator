@@ -38,7 +38,7 @@ public class GridElectionFactory
         final var candidates = createCandidates(numSeats);
         final var voterCenter = randomPartyPosition(rand, 3);
         final var ballotBox = createBallotBox(candidates, voterCenter, numSeats);
-        return new Election(ballotBox, numSeats);
+        return new Election(candidates.transform(GridCandidate::getCandidate), ballotBox, numSeats);
     }
 
     @Override
@@ -110,14 +110,14 @@ public class GridElectionFactory
     {
         var candidates = JImmutables.<GridCandidate>list();
         for (GridParty party : parties) {
-            var partyCandidates = createCandidates(party, numCandidatesPerParty);
+            var partyCandidates = createPartyCandidates(party, numCandidatesPerParty);
             candidates = candidates.insertAll(partyCandidates);
         }
         return candidates;
     }
 
-    private JImmutableList<GridCandidate> createCandidates(GridParty party,
-                                                           int numCandidates)
+    private JImmutableList<GridCandidate> createPartyCandidates(GridParty party,
+                                                                int numCandidates)
     {
         final Position center = party.getPosition();
         var positions = JImmutables.<Position>set();

@@ -3,14 +3,20 @@ package com.burtonzone.election;
 import com.burtonzone.common.Decimal;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.math.RoundingMode;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import lombok.Getter;
+import org.javimmutable.collections.JImmutableList;
 import org.javimmutable.collections.util.JImmutables;
 
 public class Election
 {
     @Getter
     private final int seats;
+    @Getter
+    private final JImmutableList<Candidate> candidates;
     @Getter
     private final BallotBox ballots;
     @Getter
@@ -20,10 +26,12 @@ public class Election
     @Getter
     private final Comparator<Candidate> tieBreaker;
 
-    public Election(BallotBox ballots,
+    public Election(JImmutableList<Candidate> candidates,
+                    BallotBox ballots,
                     int seats)
     {
         this.seats = seats;
+        this.candidates = candidates;
         this.ballots = ballots;
         totalVotes = ballots.getTotalCount();
         quota = totalVotes.dividedBy(new Decimal(seats + 1))
@@ -40,11 +48,26 @@ public class Election
     public static class Builder
     {
         private final BallotBox.Builder ballots = BallotBox.builder();
+        private final Set<Candidate> candidates = new LinkedHashSet<>();
         private int seats = 1;
 
         public Election build()
         {
-            return new Election(ballots.build(), seats);
+            return new Election(JImmutables.list(candidates), ballots.build(), seats);
+        }
+
+        @CanIgnoreReturnValue
+        public Builder candidates(Candidate... candidates)
+        {
+            Collections.addAll(this.candidates, candidates);
+            return this;
+        }
+
+        @CanIgnoreReturnValue
+        public Builder candidate(Candidate candidate)
+        {
+            candidates.add(candidate);
+            return this;
         }
 
         @CanIgnoreReturnValue
@@ -81,6 +104,9 @@ public class Election
         {
             assert count >= 1;
             ballots.add(ballot, count);
+            for (Candidate candidate : ballot.getChoices()) {
+                candidates.add(candidate);
+            }
             return this;
         }
     }
