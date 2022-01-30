@@ -65,10 +65,10 @@ public class App
             addDistricts(db, 5, 2);
             addDistricts(db, 7, 1);
             // double size districts
-//            addDistricts(db, 44, 10);
-//            addDistricts(db, 9, 8);
-//            addDistricts(db, 54, 6);
-//            addDistricts(db, 5, 4);
+//            addDistricts(db, 44, 8);
+//            addDistricts(db, 9, 6);
+//            addDistricts(db, 54, 5);
+//            addDistricts(db, 5, 3);
 //            addDistricts(db, 7, 2);
 
             final JImmutableList<Election> elections =

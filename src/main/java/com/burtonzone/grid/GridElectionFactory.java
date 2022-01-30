@@ -50,8 +50,13 @@ public class GridElectionFactory
     private static JImmutableList<GridParty> createParties(Rand rand,
                                                            int numParties)
     {
+        var loops = 0;
         var positions = JImmutables.sortedSet(new Position.DistanceComparator(Center));
         while (positions.size() < numParties) {
+            if (loops++ >= 100) {
+                loops = 0;
+                positions = positions.deleteAll();
+            }
             final Position position = randomPartyPosition(rand, 1);
             final var minDistance = positions.stream()
                 .mapToInt(p -> p.realDistance(position))
