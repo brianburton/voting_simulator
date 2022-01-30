@@ -10,7 +10,7 @@ import com.burtonzone.election.ElectionFactory;
 import com.burtonzone.election.ElectionResult;
 import com.burtonzone.election.Party;
 import com.burtonzone.grid.GridElectionFactory;
-import com.burtonzone.runner.SingleVoteRunner;
+import com.burtonzone.runner.BlockVoteRunner;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import lombok.Value;
@@ -28,7 +28,8 @@ public class App
         final ElectionFactory factory = new GridElectionFactory(rand, 5);
 //        final var runner = new BasicStvRunner();
 //        final var runner = new OpenListRunner();
-        final var runner = new SingleVoteRunner();
+//        final var runner = new SingleVoteRunner();
+        final var runner = new BlockVoteRunner();
         System.out.printf("%-3s", "");
         System.out.printf(" %-3s %-3s %-3s %-3s %-3s   ",
                           "",
