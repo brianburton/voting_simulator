@@ -28,6 +28,7 @@ public class App
         final ElectionFactory factory = new GridElectionFactory(rand, Party.All.size());
         final var runner = new BasicStvRunner();
 //        final var runner = new OpenListRunner();
+//        final var runner = new SingleVoteRunner();
         System.out.printf("%-3s", "");
         System.out.printf(" %-3s %-3s %-3s %-3s %-3s   ",
                           "",
