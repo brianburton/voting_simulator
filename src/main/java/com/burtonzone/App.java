@@ -2,7 +2,6 @@ package com.burtonzone;
 
 import static org.javimmutable.collections.util.JImmutables.*;
 
-import com.burtonzone.basic_stv.BasicStvRunner;
 import com.burtonzone.common.Counter;
 import com.burtonzone.common.Decimal;
 import com.burtonzone.common.Rand;
@@ -11,6 +10,7 @@ import com.burtonzone.election.ElectionFactory;
 import com.burtonzone.election.ElectionResult;
 import com.burtonzone.election.Party;
 import com.burtonzone.grid.GridElectionFactory;
+import com.burtonzone.runner.basic_stv.BasicStvRunner;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import lombok.Value;

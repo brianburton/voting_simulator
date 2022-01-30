@@ -1,4 +1,4 @@
-package com.burtonzone.basic_stv;
+package com.burtonzone.runner.basic_stv;
 
 import static org.junit.Assert.*;
 

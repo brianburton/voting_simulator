@@ -1,4 +1,4 @@
-package com.burtonzone.open_list;
+package com.burtonzone.runner;
 
 import static org.javimmutable.collections.util.JImmutables.*;
 
