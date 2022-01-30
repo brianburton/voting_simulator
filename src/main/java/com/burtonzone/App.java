@@ -103,9 +103,11 @@ public class App
                                   actualSeats,
                                   percent(preferredParties.get(party), preferredParties.getTotal()),
                                   percent(actualSeats, electedParties.occurrenceCount()));
-                errors = errors.plus(actualSeats).minus(expectedSeats).abs();
+                final var error = expectedSeats.minus(new Decimal(actualSeats));
+                errors = errors.plus(error.squared());
             }
-            System.out.printf("  %4s%%", percent(errors, new Decimal(elections.stream().mapToInt(Election::getSeats).sum())));
+            errors = errors.root();
+            System.out.printf("  %4s%%", percent(errors, new Decimal(totalSeats)));
 
             System.out.println();
         }
