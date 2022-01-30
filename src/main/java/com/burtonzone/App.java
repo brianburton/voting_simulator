@@ -10,7 +10,7 @@ import com.burtonzone.election.ElectionFactory;
 import com.burtonzone.election.ElectionResult;
 import com.burtonzone.election.Party;
 import com.burtonzone.grid.GridElectionFactory;
-import com.burtonzone.runner.OpenListRunner;
+import com.burtonzone.runner.SingleVoteRunner;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import lombok.Value;
@@ -23,12 +23,12 @@ public class App
 
     public static void main(String[] args)
     {
-        final var rand = new Rand(1);
+        final var rand = new Rand();
 //        final ElectionFactory factory = new LinearElectionFactory(rand);
-        final ElectionFactory factory = new GridElectionFactory(rand, 3);
+        final ElectionFactory factory = new GridElectionFactory(rand, 5);
 //        final var runner = new BasicStvRunner();
-        final var runner = new OpenListRunner();
-//        final var runner = new SingleVoteRunner();
+//        final var runner = new OpenListRunner();
+        final var runner = new SingleVoteRunner();
         System.out.printf("%-3s", "");
         System.out.printf(" %-3s %-3s %-3s %-3s %-3s   ",
                           "",

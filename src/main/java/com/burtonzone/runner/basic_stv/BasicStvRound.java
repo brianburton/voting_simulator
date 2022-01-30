@@ -58,19 +58,19 @@ public class BasicStvRound
         var newElected = elected;
         var newBallots = ballotBox;
         var finished = false;
-        if (sortedVotes.size() <= seats - elected.size()) {
+        if (firstPlace.getVotes().isGreaterOrEqualTo(quota)) {
+            final var overVote = firstPlace.getVotes().minus(quota);
+            final var weight = overVote.dividedBy(firstPlace.getVotes());
+            newElected = newElected.insertLast(firstPlace.getCandidate());
+            newBallots = newBallots.removeAndTransfer(firstPlace.getCandidate(), weight);
+            finished = newElected.size() == seats || newBallots.isEmpty();
+        } else if (sortedVotes.size() <= seats - elected.size()) {
             // we won't be able to improve any so just fill in with whatever we have
             final JImmutableList<Candidate> pluralityWinners = sortedVotes
                 .slice(0, seats - newElected.size())
                 .transform(CandidateVotes::getCandidate);
             newElected = newElected.insertAllLast(pluralityWinners);
             finished = true;
-        } else if (firstPlace.getVotes().isGreaterOrEqualTo(quota)) {
-            final var overVote = firstPlace.getVotes().minus(quota);
-            final var weight = overVote.dividedBy(firstPlace.getVotes());
-            newElected = newElected.insertLast(firstPlace.getCandidate());
-            newBallots = newBallots.removeAndTransfer(firstPlace.getCandidate(), weight);
-            finished = newElected.size() == seats || newBallots.isEmpty();
         } else {
             final var lastPlace = sortedVotes.get(sortedVotes.size() - 1);
             newBallots = newBallots.remove(lastPlace.getCandidate());
