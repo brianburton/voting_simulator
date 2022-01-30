@@ -163,12 +163,24 @@ public class BallotBox
     public static class Builder
     {
         private Counter<Ballot> ballots = new Counter<>();
+        private int count;
+
+        public Builder add(Ballot ballot)
+        {
+            return add(ballot, 1);
+        }
 
         public Builder add(Ballot ballot,
                            int count)
         {
             ballots = ballots.add(ballot, count);
+            this.count += count;
             return this;
+        }
+
+        public int count()
+        {
+            return count;
         }
 
         public BallotBox build()

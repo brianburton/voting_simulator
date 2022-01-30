@@ -36,8 +36,7 @@ public class GridElectionFactory
     {
         final var candidates = createCandidates(numSeats);
         final var voterCenter = randomPartyPosition(rand, 3);
-        final var voters = createVoters(voterCenter, VotersPerSeat * numSeats);
-        final var ballotBox = createBallotBox(candidates, voters);
+        final var ballotBox = createBallotBox(candidates, voterCenter, numSeats);
         return new Election(ballotBox, numSeats);
     }
 
@@ -66,16 +65,21 @@ public class GridElectionFactory
     }
 
     private BallotBox createBallotBox(JImmutableList<GridCandidate> candidates,
-                                      JImmutableList<GridVoters> voters)
+                                      Position voterCenter,
+                                      int numSeats)
     {
-        var builder = BallotBox.builder();
-        for (GridVoters voter : voters) {
-            final var ballot = createBallot(candidates, voter.getPosition());
+        final var numVoters = numSeats * VotersPerSeat;
+        final var ballotBox = BallotBox.builder();
+        while (ballotBox.count() < numVoters) {
+            final var voterPosition = voterCenter
+                .nearBy(rand, VoterDistance)
+                .wrapped(MinPos, MaxPos);
+            final var ballot = createBallot(candidates, voterPosition);
             if (ballot.isNonEmpty()) {
-                builder.add(ballot, voter.getCount());
+                ballotBox.add(ballot);
             }
         }
-        return builder.build();
+        return ballotBox.build();
     }
 
     private Ballot createBallot(JImmutableList<GridCandidate> candidates,
@@ -110,20 +114,5 @@ public class GridElectionFactory
             positions = positions.insert(position);
         }
         return positions.transform(JImmutables.list(), p -> new GridCandidate(party, p));
-    }
-
-    private JImmutableList<GridVoters> createVoters(Position centerPosition,
-                                                    int numVoters)
-    {
-        var counts = JImmutables.<Position>multiset();
-        for (int i = 1; i <= numVoters; ++i) {
-            var position = centerPosition
-                .nearBy(rand, VoterDistance)
-                .wrapped(MinPos, MaxPos);
-            counts = counts.insert(position);
-        }
-        return counts.entries().stream()
-            .map(e -> new GridVoters(e.getKey(), e.getValue()))
-            .collect(JImmutables.listCollector());
     }
 }
