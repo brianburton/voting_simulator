@@ -20,7 +20,7 @@ import com.burtonzone.election.ElectionRunner;
  *
  * Each voter gets one vote per seat and candidates with the highest vote counts are elected.
  */
-public class BlockVoteRunner
+public class BlockPluralityRunner
     implements ElectionRunner
 
 {

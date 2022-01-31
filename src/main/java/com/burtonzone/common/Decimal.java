@@ -32,6 +32,11 @@ public class Decimal
         this.value = value.setScale(PRECISION, RoundingMode.HALF_UP);
     }
 
+    public Decimal rounded()
+    {
+        return new Decimal(value.setScale(0, RoundingMode.HALF_UP));
+    }
+
     public Decimal plus(Decimal other)
     {
         return new Decimal(value.add(other.value));

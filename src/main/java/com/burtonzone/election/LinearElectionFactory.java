@@ -43,6 +43,7 @@ public class LinearElectionFactory
         final var candidates = cb.build();
 
         final var rb = Election.builder();
+        rb.parties(Party.All);
         rb.seats(numberOfSeats);
         var affinity = nextAffinity(nodes);
         for (int b = 1; b <= 1_000 * numberOfSeats; ++b) {

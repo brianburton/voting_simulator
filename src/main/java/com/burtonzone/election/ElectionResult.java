@@ -4,8 +4,6 @@ import com.burtonzone.common.Counter;
 import com.burtonzone.common.Decimal;
 import lombok.Value;
 import org.javimmutable.collections.JImmutableList;
-import org.javimmutable.collections.JImmutableMultiset;
-import org.javimmutable.collections.util.JImmutables;
 
 public class ElectionResult
 {
@@ -18,6 +16,11 @@ public class ElectionResult
         assert results.isNonEmpty();
         this.election = election;
         this.results = results;
+    }
+
+    public Election getElection()
+    {
+        return election;
     }
 
     public RoundResult getFinalRound()
@@ -45,11 +48,13 @@ public class ElectionResult
         return election.getBallots().getPartyFirstChoiceCounts();
     }
 
-    public JImmutableMultiset<Party> getPartyElectedCounts()
+    public Counter<Party> getPartyElectedCounts()
     {
-        return getFinalRound().getElected().stream()
-            .map(Candidate::getParty)
-            .collect(JImmutables.multisetCollector());
+        var answer = new Counter<Party>();
+        for (Candidate candidate : getFinalRound().getElected()) {
+            answer = answer.add(candidate.getParty(), Decimal.ONE);
+        }
+        return answer;
     }
 
     @Value

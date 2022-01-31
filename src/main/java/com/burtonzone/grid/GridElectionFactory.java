@@ -38,7 +38,7 @@ public class GridElectionFactory
         final var candidates = createCandidates(numSeats);
         final var voterCenter = randomPartyPosition(rand, 3);
         final var ballotBox = createBallotBox(candidates, voterCenter, numSeats);
-        return new Election(candidates.transform(GridCandidate::getCandidate), ballotBox, numSeats);
+        return new Election(parties.transform(GridParty::getParty), candidates.transform(GridCandidate::getCandidate), ballotBox, numSeats);
     }
 
     @Override

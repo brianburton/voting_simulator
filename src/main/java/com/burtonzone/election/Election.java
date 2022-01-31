@@ -3,7 +3,6 @@ package com.burtonzone.election;
 import com.burtonzone.common.Decimal;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.math.RoundingMode;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -13,6 +12,8 @@ import org.javimmutable.collections.util.JImmutables;
 
 public class Election
 {
+    @Getter
+    private final JImmutableList<Party> parties;
     @Getter
     private final int seats;
     @Getter
@@ -26,10 +27,12 @@ public class Election
     @Getter
     private final Comparator<Candidate> tieBreaker;
 
-    public Election(JImmutableList<Candidate> candidates,
+    public Election(JImmutableList<Party> parties,
+                    JImmutableList<Candidate> candidates,
                     BallotBox ballots,
                     int seats)
     {
+        this.parties = parties;
         this.seats = seats;
         this.candidates = candidates;
         this.ballots = ballots;
@@ -47,19 +50,31 @@ public class Election
 
     public static class Builder
     {
+        private final Set<Party> parties = new LinkedHashSet<>();
         private final BallotBox.Builder ballots = BallotBox.builder();
         private final Set<Candidate> candidates = new LinkedHashSet<>();
         private int seats = 1;
 
         public Election build()
         {
-            return new Election(JImmutables.list(candidates), ballots.build(), seats);
+            return new Election(JImmutables.list(parties), JImmutables.list(candidates), ballots.build(), seats);
+        }
+
+        @CanIgnoreReturnValue
+        public Builder parties(Iterable<Party> parties)
+        {
+            for (Party party : parties) {
+                this.parties.add(party);
+            }
+            return this;
         }
 
         @CanIgnoreReturnValue
         public Builder candidates(Candidate... candidates)
         {
-            Collections.addAll(this.candidates, candidates);
+            for (Candidate candidate : candidates) {
+                candidate(candidate);
+            }
             return this;
         }
 
@@ -67,6 +82,7 @@ public class Election
         public Builder candidate(Candidate candidate)
         {
             candidates.add(candidate);
+            parties.add(candidate.getParty());
             return this;
         }
 
