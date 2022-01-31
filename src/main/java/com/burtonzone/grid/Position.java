@@ -56,9 +56,15 @@ public class Position
         var newY = wrap(y, minValue, maxValue);
         if (newX == x && newY == y) {
             return this;
-        } else {
-            return new Position(newX, newY);
         }
+        // If we wrapped one position but not the other we shift the unwrapped one
+        // to the other side to put us into the opposite corner from where we started.
+        if (newX != x && newY == y) {
+            newY = maxValue - (y - minValue);
+        } else if (newX == x) {
+            newX = maxValue - (x - minValue);
+        }
+        return new Position(newX, newY);
     }
 
     @Override

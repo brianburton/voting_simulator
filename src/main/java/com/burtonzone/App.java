@@ -8,7 +8,7 @@ import com.burtonzone.election.Election;
 import com.burtonzone.election.ElectionFactory;
 import com.burtonzone.election.ElectionResult;
 import com.burtonzone.grid.GridElectionFactory;
-import com.burtonzone.runner.OpenListRunner;
+import com.burtonzone.runner.basic_stv.BasicStvRunner;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import lombok.Value;
@@ -24,8 +24,8 @@ public class App
         final var rand = new Rand();
 //        final ElectionFactory factory = new LinearElectionFactory(rand);
         final ElectionFactory factory = new GridElectionFactory(rand, 5);
-//        final var runner = new BasicStvRunner();
-        final var runner = new OpenListRunner();
+        final var runner = new BasicStvRunner();
+//        final var runner = new OpenListRunner();
 //        final var runner = new SingleVoteRunner();
 //        final var runner = new BlockPluralityRunner();
         for (int test = 1; test <= 23; ++test) {
@@ -50,7 +50,7 @@ public class App
                     .collect(listCollector());
 
             final var results = elections
-                .stream()//.parallel()
+                .stream().parallel()
                 .map(runner::runElection)
                 .collect(listCollector());
             System.out.printf("%3s  %s%n", "", ResultsReport.printHeader1(factory.allParties()));
@@ -58,7 +58,7 @@ public class App
             for (ElectionResult result : results) {
                 System.out.printf("%3d %s%n", test, ResultsReport.of(result).getRow());
             }
-            System.out.printf("%3d %s%n", test, ResultsReport.of(results).getRow());
+            System.out.printf("%3s %s%n", "---", ResultsReport.of(results).getRow());
             System.out.println();
         }
     }
