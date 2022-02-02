@@ -116,7 +116,7 @@ public class ResultsReport
                 final var pr = new PartyResult(party);
                 out.printf("  %4d   %5s%%  %5s%%", pr.getSeats(), pr.getVotePercent(), pr.getSeatPercent());
             }
-            out.printf("  %4s%%", percent(computeErrors(), partyVotes.getTotal()));
+            out.printf("  %4s%%", percent(computeErrors(), new Decimal(seats)));
         }
         return str.toString();
     }
