@@ -7,7 +7,7 @@ import com.burtonzone.election.Election;
 import com.burtonzone.election.ElectionFactory;
 import com.burtonzone.election.ElectionResult;
 import com.burtonzone.grid.GridElectionFactory;
-import com.burtonzone.runner.basic_stv.BasicStvRunner;
+import com.burtonzone.runner.OpenListFormulaRunner;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import lombok.Value;
@@ -25,8 +25,9 @@ public class App
 //        final ElectionFactory factory = new LinearElectionFactory(rand);
         final ElectionFactory factory = new GridElectionFactory(rand, 5);
 //        final var runner = OpenListFormulaRunner.dhondt();
-        final var runner = new BasicStvRunner();
-//        final var runner = new OpenListRunner();
+        final var runner = OpenListFormulaRunner.sainteLaguë();
+//        final var runner = new OpenListHareRunner();
+//        final var runner = new BasicStvRunner();
 //        final var runner = new SingleVoteRunner();
 //        final var runner = new BlockPluralityRunner();
         for (int test = 1; test <= 23; ++test) {

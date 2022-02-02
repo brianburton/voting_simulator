@@ -102,7 +102,7 @@ public class ResultsReport
             for (Party party : parties) {
                 out.printf(" %4s   %6s  %6s ", "ps", "eps", "aps");
             }
-            out.printf("   %3s", "err");
+            out.printf("    %3s", "err");
         }
         return str.toString();
     }
@@ -116,7 +116,7 @@ public class ResultsReport
                 final var pr = new PartyResult(party);
                 out.printf("  %4d   %5s%%  %5s%%", pr.getSeats(), pr.getVotePercent(), pr.getSeatPercent());
             }
-            out.printf("  %4s%%", percent(computeErrors(), new Decimal(seats)));
+            out.printf("  %5s%%", percent(computeErrors(), new Decimal(seats)));
         }
         return str.toString();
     }
