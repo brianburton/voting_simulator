@@ -11,43 +11,48 @@ import com.burtonzone.election.Election;
 import com.burtonzone.election.ElectionResult;
 import com.burtonzone.election.ElectionRunner;
 import com.burtonzone.election.Party;
-import java.util.Comparator;
+import java.util.function.BiFunction;
 import org.javimmutable.collections.JImmutableList;
-import org.javimmutable.collections.JImmutableMap;
 import org.javimmutable.collections.util.JImmutables;
 
-/**
- * Fully open list PR.
- */
-public class OpenListRunner
+public class OpenListFormulaRunner
     implements ElectionRunner
 {
+    private static final BiFunction<Decimal, Decimal, Decimal> DHondtFormula = (votes, seats) -> votes.dividedBy(Decimal.ONE.plus(seats));
+    private static final BiFunction<Decimal, Decimal, Decimal> SainteLaguëFormula = (votes, seats) -> votes.dividedBy(Decimal.ONE.plus(seats.times(Decimal.TWO)));
+
+    private final BiFunction<Decimal, Decimal, Decimal> formula;
+
+    private OpenListFormulaRunner(BiFunction<Decimal, Decimal, Decimal> formula)
+    {
+        this.formula = formula;
+    }
+
+    public static OpenListFormulaRunner dhondt()
+    {
+        return new OpenListFormulaRunner(DHondtFormula);
+    }
+
+    public static OpenListFormulaRunner sainteLaguë()
+    {
+        return new OpenListFormulaRunner(SainteLaguëFormula);
+    }
+
     @Override
     public ElectionResult runElection(Election election)
     {
         var worksheet = new Worksheet(election);
-        for (Counter.Entry<Party> e : worksheet.partyVotes) {
-            if (worksheet.isComplete()) {
-                break;
-            }
-            var party = e.getKey();
-            var votes = e.getCount();
-            var numberToAdd = votes.div(election.getQuota());
-            worksheet.electPartyCandidates(party, numberToAdd.toInt());
-        }
-        for (JImmutableMap.Entry<Party, Decimal> e : worksheet.getRemainders()) {
-            if (worksheet.isComplete()) {
-                break;
-            }
-            worksheet.electPartyCandidates(e.getKey(), 1);
-        }
+        worksheet.countVotes();
+        worksheet.assignSeats();
         return worksheet.getElectionResult();
     }
 
-    private static class Worksheet
+    private class Worksheet
     {
         private final Election election;
+        private final Decimal seats;
         private final Counter<Party> partyVotes;
+        private Counter<Party> partySeats;
         private JImmutableList<CandidateVotes> unelectedCandidates;
         private JImmutableList<CandidateVotes> electedCandidates;
 
@@ -64,28 +69,58 @@ public class OpenListRunner
                 candidateVotes = candidateVotes.add(candidate, count);
             }
             this.election = election;
+            this.seats = new Decimal(election.getSeats());
             this.partyVotes = partyVotes;
+            partySeats = new Counter<Party>();
             unelectedCandidates = candidateVotes
                 .getSortedList(election.getTieBreaker())
                 .transform(CandidateVotes::new);
             electedCandidates = JImmutables.list();
         }
 
-        private boolean isIncomplete()
+        private void countVotes()
         {
-            return electedCandidates.size() < election.getSeats();
+            while (isIncomplete()) {
+                var topParty = topParty();
+                partySeats = partySeats.add(topParty, 1);
+            }
         }
 
-        private boolean isComplete()
+        private void assignSeats()
         {
-            return !isIncomplete();
+            for (Counter.Entry<Party> entry : partySeats) {
+                var party = entry.getKey();
+                var count = entry.getCount().toInt();
+                electPartyCandidates(party, count);
+            }
+        }
+
+        private boolean isIncomplete()
+        {
+            return partySeats.getTotal().isLessThan(seats);
+        }
+
+        private Party topParty()
+        {
+            Party topParty = null;
+            Decimal topVotes = Decimal.ZERO;
+            for (Counter.Entry<Party> entry : partyVotes) {
+                final Party party = entry.getKey();
+                final Decimal rawVotes = entry.getCount();
+                var adjustedVotes = formula.apply(rawVotes, partySeats.get(party));
+                if (adjustedVotes.isGreaterThan(topVotes)) {
+                    topVotes = adjustedVotes;
+                    topParty = party;
+                }
+            }
+            return topParty;
         }
 
         private void electPartyCandidates(Party party,
                                           int numberToAdd)
         {
             var i = 0;
-            while (isIncomplete() && numberToAdd > 0 && i < unelectedCandidates.size()) {
+            while (numberToAdd > 0 && i < unelectedCandidates.size()) {
                 var cv = unelectedCandidates.get(i);
                 if (cv.getCandidate().getParty().equals(party)) {
                     electedCandidates = electedCandidates.insertLast(cv);
@@ -95,19 +130,6 @@ public class OpenListRunner
                     i += 1;
                 }
             }
-        }
-
-        private JImmutableList<JImmutableMap.Entry<Party, Decimal>> getRemainders()
-        {
-            var reverseOrder = Comparator.<Decimal>naturalOrder().reversed();
-            var remainders = JImmutables.<Decimal, Party>sortedListMap(reverseOrder);
-            for (Counter.Entry<Party> e : partyVotes) {
-                var remainder = e.getCount().mod(election.getQuota());
-                remainders = remainders.insert(remainder, e.getKey());
-            }
-            return remainders.stream()
-                .flatMap(e -> e.getValue().stream().map(p -> entry(p, e.getKey())))
-                .collect(listCollector());
         }
 
         private Decimal getUnused()

@@ -14,6 +14,7 @@ public class Decimal
     private static final BigDecimal ZERO_BOUND = new BigDecimal(5).scaleByPowerOfTen(-PRECISION);
     public static final Decimal ZERO = new Decimal(0);
     public static final Decimal ONE = new Decimal(1);
+    public static final Decimal TWO = new Decimal(2);
 
     private final BigDecimal value;
 

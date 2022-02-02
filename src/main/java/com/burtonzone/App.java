@@ -2,7 +2,6 @@ package com.burtonzone;
 
 import static org.javimmutable.collections.util.JImmutables.*;
 
-import com.burtonzone.common.Decimal;
 import com.burtonzone.common.Rand;
 import com.burtonzone.election.Election;
 import com.burtonzone.election.ElectionFactory;
@@ -24,6 +23,7 @@ public class App
         final var rand = new Rand();
 //        final ElectionFactory factory = new LinearElectionFactory(rand);
         final ElectionFactory factory = new GridElectionFactory(rand, 5);
+//        final var runner = OpenListFormulaRunner.dhondt();
         final var runner = new BasicStvRunner();
 //        final var runner = new OpenListRunner();
 //        final var runner = new SingleVoteRunner();
@@ -58,7 +58,7 @@ public class App
             for (ElectionResult result : results) {
                 System.out.printf("%3d %s%n", test, ResultsReport.of(result).getRow());
             }
-            System.out.printf("%3s %s%n", "---", ResultsReport.of(results).getRow());
+            System.out.printf("%3s %s%n", "TOT", ResultsReport.of(results).getRow());
             System.out.println();
         }
     }
@@ -82,45 +82,5 @@ public class App
         {
             return factory.createElection(numberOfSeats);
         }
-    }
-
-    private static BigDecimal percent(int amount,
-                                      int maxAmount)
-    {
-        var numer = new BigDecimal(amount);
-        var denom = new BigDecimal(maxAmount);
-        var ratio = percent(numer, denom);
-        return ratio;
-    }
-
-    private static BigDecimal percent(Decimal amount,
-                                      Decimal maxAmount)
-    {
-        var numer = amount.toBigDecimal();
-        var denom = maxAmount.toBigDecimal();
-        var ratio = percent(numer, denom);
-        return ratio;
-    }
-
-    private static BigDecimal percent(BigDecimal numer,
-                                      BigDecimal denom)
-    {
-        return numer
-            .multiply(HUNDRED)
-            .divide(denom, 8, RoundingMode.HALF_UP)
-            .setScale(1, RoundingMode.HALF_UP);
-    }
-
-    private static String center(String s,
-                                 int width)
-    {
-        s = " " + s + " ";
-        while (s.length() < width) {
-            s = "-" + s;
-            if (s.length() < width) {
-                s = s + "-";
-            }
-        }
-        return s;
     }
 }
