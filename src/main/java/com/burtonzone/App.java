@@ -7,17 +7,13 @@ import com.burtonzone.election.Election;
 import com.burtonzone.election.ElectionFactory;
 import com.burtonzone.election.ElectionResult;
 import com.burtonzone.grid.GridElectionFactory;
-import com.burtonzone.runner.OpenListFormulaRunner;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
+import com.burtonzone.runner.Runners;
 import lombok.Value;
 import org.javimmutable.collections.JImmutableList;
 import org.javimmutable.collections.util.JImmutables;
 
 public class App
 {
-    private static final BigDecimal HUNDRED = new BigDecimal(100).setScale(8, RoundingMode.HALF_UP);
-
     public static void main(String[] args)
     {
         final var showDistrictResults = false;
@@ -25,11 +21,11 @@ public class App
 //        final ElectionFactory factory = new LinearElectionFactory(rand);
         final ElectionFactory factory = new GridElectionFactory(rand, 5);
 //        final var runner = OpenListFormulaRunner.dhondt();
-        final var runner = OpenListFormulaRunner.sainteLaguë();
-//        final var runner = new OpenListHareRunner();
-//        final var runner = new BasicStvRunner();
-//        final var runner = new SingleVoteRunner();
-//        final var runner = new BlockPluralityRunner();
+        final var runner = Runners.sainteLaguë();
+//        final var runner = Runners.openListHare();
+//        final var runner = Runners.basicStv();
+//        final var runner = Runners.singleVote();
+//        final var runner = Runners.blockPlurality();
         for (int test = 1; test <= 23; ++test) {
             final var db = JImmutables.<DistrictSpec>listBuilder();
             // number and size of districts taken from fairvote.org plan for US house elections
