@@ -88,7 +88,7 @@ public class ResultsReport
         try (PrintWriter out = new PrintWriter(str)) {
             out.printf("%-3s %-3s   ", "", "");
             for (Party party : parties) {
-                out.printf(" %s ", center(party.getName(), 19));
+                out.printf("  %s ", center(party.getName(), 20));
             }
         }
         return str.toString();
@@ -98,7 +98,7 @@ public class ResultsReport
     {
         StringWriter str = new StringWriter();
         try (PrintWriter out = new PrintWriter(str)) {
-            out.printf(" %3s %3s   ", "rsc", "rec");
+            out.printf("%3s %3s   ", "rsc", "rec");
             for (Party party : parties) {
                 out.printf(" %4s   %6s  %6s ", "ps", "eps", "aps");
             }

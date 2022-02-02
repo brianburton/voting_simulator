@@ -20,6 +20,7 @@ public class App
 
     public static void main(String[] args)
     {
+        final var showDistrictResults = false;
         final var rand = new Rand();
 //        final ElectionFactory factory = new LinearElectionFactory(rand);
         final ElectionFactory factory = new GridElectionFactory(rand, 5);
@@ -53,13 +54,21 @@ public class App
                 .stream().parallel()
                 .map(runner::runElection)
                 .collect(listCollector());
-            System.out.printf("%3s  %s%n", "", ResultsReport.printHeader1(factory.allParties()));
-            System.out.printf("%3s  %s%n", "#", ResultsReport.printHeader2(factory.allParties()));
-            for (ElectionResult result : results) {
-                System.out.printf("%3d %s%n", test, ResultsReport.of(result).getRow());
+            if (showDistrictResults || test == 1) {
+                System.out.printf("%3s  %s%n", "", ResultsReport.printHeader1(factory.allParties()));
+                System.out.printf("%3s  %s%n", "#", ResultsReport.printHeader2(factory.allParties()));
             }
-            System.out.printf("%3s %s%n", "TOT", ResultsReport.of(results).getRow());
-            System.out.println();
+            if (showDistrictResults) {
+                for (ElectionResult result : results) {
+                    System.out.printf("%3d %s%n", test, ResultsReport.of(result).getRow());
+                }
+            }
+            System.out.printf("%3s %s%n",
+                              showDistrictResults ? "TOT" : "" + test,
+                              ResultsReport.of(results).getRow());
+            if (showDistrictResults) {
+                System.out.println();
+            }
         }
     }
 
