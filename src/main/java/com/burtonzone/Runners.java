@@ -1,5 +1,9 @@
-package com.burtonzone.runner;
+package com.burtonzone;
 
+import com.burtonzone.runner.BlockPluralityRunner;
+import com.burtonzone.runner.OpenListFormulaRunner;
+import com.burtonzone.runner.OpenListHareRunner;
+import com.burtonzone.runner.SingleVoteRunner;
 import com.burtonzone.runner.basic_stv.BasicStvRunner;
 
 public class Runners
@@ -26,11 +30,11 @@ public class Runners
 
     public static OpenListFormulaRunner dhondt()
     {
-        return OpenListFormulaRunner.dhondt();
+        return new OpenListFormulaRunner(OpenListFormulaRunner.DHondtFormula);
     }
 
     public static OpenListFormulaRunner sainteLaguë()
     {
-        return OpenListFormulaRunner.sainteLaguë();
+        return new OpenListFormulaRunner(OpenListFormulaRunner.SainteLaguëFormula);
     }
 }

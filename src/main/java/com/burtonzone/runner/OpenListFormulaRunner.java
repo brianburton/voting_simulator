@@ -18,24 +18,14 @@ import org.javimmutable.collections.util.JImmutables;
 public class OpenListFormulaRunner
     implements ElectionRunner
 {
-    private static final BiFunction<Decimal, Decimal, Decimal> DHondtFormula = (votes, seats) -> votes.dividedBy(Decimal.ONE.plus(seats));
-    private static final BiFunction<Decimal, Decimal, Decimal> SainteLaguëFormula = (votes, seats) -> votes.dividedBy(Decimal.ONE.plus(seats.times(Decimal.TWO)));
+    public static final BiFunction<Decimal, Decimal, Decimal> DHondtFormula = (votes, seats) -> votes.dividedBy(Decimal.ONE.plus(seats));
+    public static final BiFunction<Decimal, Decimal, Decimal> SainteLaguëFormula = (votes, seats) -> votes.dividedBy(Decimal.ONE.plus(seats.times(Decimal.TWO)));
 
     private final BiFunction<Decimal, Decimal, Decimal> formula;
 
-    private OpenListFormulaRunner(BiFunction<Decimal, Decimal, Decimal> formula)
+    public OpenListFormulaRunner(BiFunction<Decimal, Decimal, Decimal> formula)
     {
         this.formula = formula;
-    }
-
-    public static OpenListFormulaRunner dhondt()
-    {
-        return new OpenListFormulaRunner(DHondtFormula);
-    }
-
-    public static OpenListFormulaRunner sainteLaguë()
-    {
-        return new OpenListFormulaRunner(SainteLaguëFormula);
     }
 
     @Override

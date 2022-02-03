@@ -18,7 +18,8 @@ public class GridElectionFactory
     private static final int MaxCandidateDistance = 10;
     private static final int MinPartyDistance = 25;
     private static final int VotersPerSeat = 500;
-    private static final int VoterTolerance = 20;
+    private static final int VoterTolerance = 30;
+    private static final int CentristPartyDistance = 20;
     private static final Position Center = new Position((MinPos + MaxPos) / 2, (MinPos + MaxPos) / 2);
     private static final JImmutableList<Integer> PartyPoints = JImmutables.list(20, 30, 40, 50, 60, 70, 80);
 
@@ -58,6 +59,11 @@ public class GridElectionFactory
                 positions = positions.deleteAll();
             }
             final Position position = randomPartyPosition(rand, 1);
+            if (positions.size() < 2) {
+                if (position.quickDistance(Center) > CentristPartyDistance * CentristPartyDistance) {
+                    continue;
+                }
+            }
             final var minDistance = positions.stream()
                 .mapToInt(p -> p.realDistance(position))
                 .min()

@@ -7,7 +7,6 @@ import com.burtonzone.election.Election;
 import com.burtonzone.election.ElectionFactory;
 import com.burtonzone.election.ElectionResult;
 import com.burtonzone.grid.GridElectionFactory;
-import com.burtonzone.runner.Runners;
 import lombok.Value;
 import org.javimmutable.collections.JImmutableList;
 import org.javimmutable.collections.util.JImmutables;
@@ -21,9 +20,9 @@ public class App
 //        final ElectionFactory factory = new LinearElectionFactory(rand);
         final ElectionFactory factory = new GridElectionFactory(rand, 5);
 //        final var runner = OpenListFormulaRunner.dhondt();
-        final var runner = Runners.sainteLaguë();
+//        final var runner = Runners.sainteLaguë();
 //        final var runner = Runners.openListHare();
-//        final var runner = Runners.basicStv();
+        final var runner = Runners.basicStv();
 //        final var runner = Runners.singleVote();
 //        final var runner = Runners.blockPlurality();
         for (int test = 1; test <= 23; ++test) {
