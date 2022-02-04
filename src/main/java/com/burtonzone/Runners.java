@@ -23,7 +23,7 @@ public class Runners
         return new BlockPluralityRunner();
     }
 
-    public static OpenListHareRunner openListHare()
+    public static OpenListHareRunner hare()
     {
         return new OpenListHareRunner();
     }
@@ -33,8 +33,8 @@ public class Runners
         return new OpenListFormulaRunner(OpenListFormulaRunner.DHondtFormula);
     }
 
-    public static OpenListFormulaRunner sainteLaguë()
+    public static OpenListFormulaRunner webster()
     {
-        return new OpenListFormulaRunner(OpenListFormulaRunner.SainteLaguëFormula);
+        return new OpenListFormulaRunner(OpenListFormulaRunner.websterFormula);
     }
 }

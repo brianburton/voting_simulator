@@ -19,7 +19,8 @@ public class OpenListFormulaRunner
     implements ElectionRunner
 {
     public static final BiFunction<Decimal, Decimal, Decimal> DHondtFormula = (votes, seats) -> votes.dividedBy(Decimal.ONE.plus(seats));
-    public static final BiFunction<Decimal, Decimal, Decimal> SainteLaguëFormula = (votes, seats) -> votes.dividedBy(Decimal.ONE.plus(seats.times(Decimal.TWO)));
+    // https://en.wikipedia.org/wiki/Webster/Sainte-Lagu%C3%AB_method#Modified_Sainte-Lagu%C3%AB_method
+    public static final BiFunction<Decimal, Decimal, Decimal> websterFormula = (votes, seats) -> votes.dividedBy(Decimal.ONE.plus(seats.times(Decimal.TWO)));
 
     private final BiFunction<Decimal, Decimal, Decimal> formula;
 

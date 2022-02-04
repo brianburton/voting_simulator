@@ -19,23 +19,27 @@ public class App
         final var rand = new Rand();
 //        final ElectionFactory factory = new LinearElectionFactory(rand);
         final ElectionFactory factory = new GridElectionFactory(rand, 5);
-//        final var runner = OpenListFormulaRunner.dhondt();
+//        final var runner = Runners.dhondt();
+        final var runner = Runners.hare();
 //        final var runner = Runners.sainteLaguë();
-//        final var runner = Runners.openListHare();
-        final var runner = Runners.basicStv();
+//        final var runner = Runners.basicStv();
 //        final var runner = Runners.singleVote();
 //        final var runner = Runners.blockPlurality();
         for (int test = 1; test <= 23; ++test) {
             final var db = JImmutables.<DistrictSpec>listBuilder();
+            // all districts single seat to simulate current system
+//            addDistricts(db, 435, 1);
+
             // number and size of districts taken from fairvote.org plan for US house elections
             addDistricts(db, 44, 5);
             addDistricts(db, 9, 4);
             addDistricts(db, 54, 3);
             addDistricts(db, 5, 2);
             addDistricts(db, 7, 1);
-            // double size districts
-//            addDistricts(db, 44, 8);
-//            addDistricts(db, 9, 6);
+
+            // larger districts
+//            addDistricts(db, 44, 9);
+//            addDistricts(db, 9, 7);
 //            addDistricts(db, 54, 5);
 //            addDistricts(db, 5, 3);
 //            addDistricts(db, 7, 2);
