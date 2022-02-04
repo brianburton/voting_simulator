@@ -1,11 +1,13 @@
 package com.burtonzone;
 
+import static com.burtonzone.Runners.basicStv;
 import static org.javimmutable.collections.util.JImmutables.*;
 
 import com.burtonzone.common.Rand;
 import com.burtonzone.election.Election;
 import com.burtonzone.election.ElectionFactory;
 import com.burtonzone.election.ElectionResult;
+import com.burtonzone.election.ElectionRunner;
 import com.burtonzone.grid.GridElectionFactory;
 import lombok.Value;
 import org.javimmutable.collections.JImmutableList;
@@ -16,15 +18,16 @@ public class App
     public static void main(String[] args)
     {
         final var showDistrictResults = false;
-        final var rand = new Rand();
-//        final ElectionFactory factory = new LinearElectionFactory(rand);
+        final var rand = new Rand(1);
         final ElectionFactory factory = new GridElectionFactory(rand, 5);
-//        final var runner = Runners.dhondt();
-        final var runner = Runners.hare();
-//        final var runner = Runners.sainteLaguë();
-//        final var runner = Runners.basicStv();
-//        final var runner = Runners.singleVote();
-//        final var runner = Runners.blockPlurality();
+//        ElectionRunner runner = dhondt();
+//        ElectionRunner runner = hare();
+//        ElectionRunner runner = webster();
+        ElectionRunner runner = basicStv();
+//        ElectionRunner runner = singleVote();
+//        ElectionRunner runner = blockPlurality();
+//        runner = hybrid(runner);
+
         for (int test = 1; test <= 23; ++test) {
             final var db = JImmutables.<DistrictSpec>listBuilder();
             // all districts single seat to simulate current system
@@ -46,7 +49,7 @@ public class App
 
             final JImmutableList<Election> elections =
                 db.build()
-                    .stream().parallel()
+                    .stream() //.parallel()
                     .map(spec -> spec.create(factory))
                     .collect(listCollector());
 

@@ -1,6 +1,8 @@
 package com.burtonzone;
 
+import com.burtonzone.election.ElectionRunner;
 import com.burtonzone.runner.BlockPluralityRunner;
+import com.burtonzone.runner.LargeAndSmallElectionRunner;
 import com.burtonzone.runner.OpenListFormulaRunner;
 import com.burtonzone.runner.OpenListHareRunner;
 import com.burtonzone.runner.SingleVoteRunner;
@@ -36,5 +38,10 @@ public class Runners
     public static OpenListFormulaRunner webster()
     {
         return new OpenListFormulaRunner(OpenListFormulaRunner.websterFormula);
+    }
+
+    public static ElectionRunner hybrid(ElectionRunner largeRunner)
+    {
+        return new LargeAndSmallElectionRunner(basicStv(), largeRunner, 3);
     }
 }
