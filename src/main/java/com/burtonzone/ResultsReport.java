@@ -67,19 +67,19 @@ public class ResultsReport
             .build();
     }
 
+    // https://en.wikipedia.org/wiki/Gallagher_index
     public Decimal computeErrors()
     {
-        var errors = Decimal.ZERO;
+        final var totalSeats = partySeats.getTotal();
+        final var totalVotes = partyVotes.getTotal();
+        var sum = Decimal.ZERO;
         for (Party party : parties) {
-            final var actualSeats = partySeats.get(party);
-            final var expectedSeats = partyVotes.get(party)
-                .dividedBy(partyVotes.getTotal())
-                .times(partySeats.getTotal())
-                .rounded();
-            final var error = expectedSeats.minus(actualSeats);
-            errors = errors.plus(error.squared());
+            final var seatPercentage = partySeats.get(party).dividedBy(totalSeats);
+            final var votePercentage = partyVotes.get(party).dividedBy(totalVotes);
+            final var diffSquared = votePercentage.minus(seatPercentage).squared();
+            sum = sum.plus(diffSquared);
         }
-        return errors.root();
+        return sum.dividedBy(Decimal.TWO).root();
     }
 
     public static String printHeader1(Iterable<Party> parties)
@@ -116,7 +116,7 @@ public class ResultsReport
                 final var pr = new PartyResult(party);
                 out.printf("  %4d   %5s%%  %5s%%", pr.getSeats(), pr.getVotePercent(), pr.getSeatPercent());
             }
-            out.printf("  %5s%%", percent(computeErrors(), new Decimal(seats)));
+            out.printf("  %5s%%", percent(computeErrors(), Decimal.ONE));
         }
         return str.toString();
     }

@@ -15,6 +15,7 @@ public class Decimal
     public static final Decimal ZERO = new Decimal(0);
     public static final Decimal ONE = new Decimal(1);
     public static final Decimal TWO = new Decimal(2);
+    public static final Decimal HUNDRED = new Decimal(100);
 
     private final BigDecimal value;
 
