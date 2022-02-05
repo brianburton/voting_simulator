@@ -1,6 +1,5 @@
 package com.burtonzone;
 
-import static com.burtonzone.Runners.basicStv;
 import static org.javimmutable.collections.util.JImmutables.*;
 
 import com.burtonzone.common.Rand;
@@ -18,15 +17,16 @@ public class App
     public static void main(String[] args)
     {
         final var showDistrictResults = false;
-        final var rand = new Rand(1);
+        final var rand = new Rand();
         final ElectionFactory factory = new GridElectionFactory(rand, 5);
-//        ElectionRunner runner = dhondt();
-//        ElectionRunner runner = hare();
-//        ElectionRunner runner = webster();
-        ElectionRunner runner = basicStv();
-//        ElectionRunner runner = singleVote();
-//        ElectionRunner runner = blockPlurality();
-//        runner = hybrid(runner);
+//        ElectionRunner runner = Runners.hare();
+//        ElectionRunner runner = Runners.dhondt();
+        ElectionRunner runner = Runners.webster();
+//        ElectionRunner runner = Runners.basicStv();
+//        ElectionRunner runner = Runners.singleVote();
+//        ElectionRunner runner = Runners.blockPlurality();
+
+        runner = Runners.hybrid(runner);
 
         for (int test = 1; test <= 23; ++test) {
             final var db = JImmutables.<DistrictSpec>listBuilder();
@@ -49,7 +49,7 @@ public class App
 
             final JImmutableList<Election> elections =
                 db.build()
-                    .stream() //.parallel()
+                    .stream().parallel()
                     .map(spec -> spec.create(factory))
                     .collect(listCollector());
 

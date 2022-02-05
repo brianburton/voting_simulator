@@ -14,7 +14,7 @@ public class GridElectionFactory
 {
     private static final int MinPos = 0;
     private static final int MaxPos = 100;
-    private static final int MaxVoterDistance = 25;
+    private static final int MaxVoterDistance = 50;
     private static final int MaxCandidateDistance = 10;
     private static final int MinPartyDistance = 25;
     private static final int VotersPerSeat = 500;
@@ -37,7 +37,7 @@ public class GridElectionFactory
     public Election createElection(int numSeats)
     {
         final var candidates = createCandidates(numSeats);
-        final var voterCenter = randomPartyPosition(rand, 3);
+        final var voterCenter = randomPartyPosition(rand, 2);
         final var ballotBox = createBallotBox(candidates, voterCenter, numSeats);
         return new Election(parties.transform(GridParty::getParty), candidates.transform(GridCandidate::getCandidate), ballotBox, numSeats);
     }
@@ -90,7 +90,7 @@ public class GridElectionFactory
         final var ballotBox = BallotBox.builder();
         while (ballotBox.count() < numVoters) {
             final var voterPosition = voterCenter
-                .nearBy(rand, MaxVoterDistance)
+                .centeredNearBy(rand, MaxVoterDistance)
                 .wrapped(MinPos, MaxPos);
             final var ballot = createBallot(candidates, voterPosition);
             if (ballot.isNonEmpty()) {
