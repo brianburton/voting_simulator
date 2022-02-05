@@ -45,7 +45,7 @@ public class BasicStvRound
 
     public static BasicStvRound start(Election election)
     {
-        return new BasicStvRound(election).advance();
+        return new BasicStvRound(election);
     }
 
     public BasicStvRound advance()

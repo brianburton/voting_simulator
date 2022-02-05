@@ -55,7 +55,7 @@ public class BasicStvRoundTest
         assertEquals(new Decimal(14), election.getTotalVotes());
         assertEquals(new Decimal(5), election.getQuota());
 
-        final var round1 = BasicStvRound.start(election);
+        final var round1 = BasicStvRound.start(election).advance();
         assertNotNull(round1);
         assertEquals(JImmutables.list(A), round1.getElected());
 
@@ -80,7 +80,7 @@ public class BasicStvRoundTest
         assertEquals(new Decimal(59), election.getTotalVotes());
         assertEquals(new Decimal(20), election.getQuota());
 
-        final var round1 = BasicStvRound.start(election);
+        final var round1 = BasicStvRound.start(election).advance();
         assertNotNull(round1);
         assertEquals(JImmutables.list(A), round1.getElected());
 
@@ -112,7 +112,7 @@ public class BasicStvRoundTest
         assertEquals(new Decimal(15), election.getTotalVotes());
         assertEquals(new Decimal(6), election.getQuota());
 
-        final var round1 = BasicStvRound.start(election);
+        final var round1 = BasicStvRound.start(election).advance();
         assertFalse(round1.isFinished());
         assertEquals(JImmutables.list(), round1.getElected());
 

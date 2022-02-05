@@ -15,12 +15,9 @@ public class BasicStvRunner
     {
         final JImmutableList.Builder<ElectionResult.RoundResult> results = listBuilder();
         BasicStvRound round = BasicStvRound.start(election);
-        while (true) {
-            results.add(round.toElectionResult());
-            if (round.isFinished()) {
-                break;
-            }
+        while (!round.isFinished()) {
             round = round.advance();
+            results.add(round.toElectionResult());
         }
         return new ElectionResult(election, results.build());
     }
