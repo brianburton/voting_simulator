@@ -30,8 +30,8 @@ public class GridCandidate
         public int compare(GridCandidate a,
                            GridCandidate b)
         {
-            var distA = position.quickDistance(a.getPosition());
-            var distB = position.quickDistance(b.getPosition());
+            var distA = position.quickDistanceTo(a.getPosition());
+            var distB = position.quickDistanceTo(b.getPosition());
             return distA - distB;
         }
     }

@@ -63,7 +63,7 @@ public class Rand
             for (int i = 1; i <= bias; ++i) {
                 sum += random.nextInt(max - min + 1);
             }
-            return min + (sum + bias - 1) / bias;
+            return min + (sum + (bias / 2)) / bias;
         }
     }
 

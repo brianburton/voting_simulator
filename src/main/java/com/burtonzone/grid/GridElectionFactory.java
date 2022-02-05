@@ -15,13 +15,14 @@ public class GridElectionFactory
     private static final int MinPos = 0;
     private static final int MaxPos = 100;
     private static final int MaxVoterDistance = 50;
-    private static final int MaxCandidateDistance = 8;
-    private static final int MinPartyDistance = 15;
+    private static final int MaxCandidateDistance = 5;
+    private static final int MinPartyDistance = 30;
     private static final int VotersPerSeat = 500;
-    private static final int VoterTolerance = 40;
-    private static final int PartyPositionBias = 2;
-    private static final int VoterPositionBias = 2;
-    private static final int CandidatePositionBias = 4;
+    private static final int VoterTolerance = 30;
+    private static final int ElectionCenterBias = 4;
+    private static final int PartyPositionBias = 3;
+    private static final int VoterPositionBias = 3;
+    private static final int CandidatePositionBias = 1;
     private static final Position Center = new Position((MinPos + MaxPos) / 2, (MinPos + MaxPos) / 2);
     private static final JImmutableList<Integer> PartyPoints = JImmutables.list(20, 30, 40, 50, 60, 70, 80);
 
@@ -32,14 +33,14 @@ public class GridElectionFactory
                                int numParties)
     {
         this.rand = rand;
-        this.parties = createParties(rand, numParties);
+        this.parties = createParties(numParties);
     }
 
     @Override
     public Election createElection(int numSeats)
     {
         final var candidates = createCandidates(numSeats);
-        final var voterCenter = randomVoterPosition(rand);
+        final var voterCenter = randomCenterPosition();
         final var ballotBox = createBallotBox(candidates, voterCenter, numSeats);
         return new Election(parties.transform(GridParty::getParty), candidates.transform(GridCandidate::getCandidate), ballotBox, numSeats);
     }
@@ -50,8 +51,7 @@ public class GridElectionFactory
         return parties.transform(GridParty::getParty);
     }
 
-    private static JImmutableList<GridParty> createParties(Rand rand,
-                                                           int numParties)
+    private JImmutableList<GridParty> createParties(int numParties)
     {
         var loops = 0;
         var positions = JImmutables.sortedSet(new Position.DistanceComparator(Center));
@@ -60,7 +60,7 @@ public class GridElectionFactory
                 loops = 0;
                 positions = positions.deleteAll();
             }
-            final Position position = randomPartyPosition(rand);
+            final Position position = randomPartyPosition();
             final var minDistance = positions.stream()
                 .mapToInt(p -> p.realDistance(position))
                 .min()
@@ -72,16 +72,16 @@ public class GridElectionFactory
         return positions.transform(JImmutables.list(), p -> new GridParty(p, Center.realDistance(p)));
     }
 
-    private static Position randomPartyPosition(Rand rand)
+    private Position randomPartyPosition()
     {
         return new Position(rand.nextElement(PartyPoints, PartyPositionBias),
                             rand.nextElement(PartyPoints, PartyPositionBias));
     }
 
-    private static Position randomVoterPosition(Rand rand)
+    private Position randomCenterPosition()
     {
-        return new Position(rand.nextInt(MinPos, MaxPos, VoterPositionBias),
-                            rand.nextInt(MinPos, MaxPos, VoterPositionBias));
+        return new Position(rand.nextInt(MinPos, MaxPos, ElectionCenterBias),
+                            rand.nextInt(MinPos, MaxPos, ElectionCenterBias));
     }
 
     private BallotBox createBallotBox(JImmutableList<GridCandidate> candidates,
@@ -105,10 +105,10 @@ public class GridElectionFactory
     private Ballot createBallot(JImmutableList<GridCandidate> candidates,
                                 Position position)
     {
-        var maxDistance = VoterTolerance * VoterTolerance;
+        var maxDistance = Position.toQuickDistance(VoterTolerance);
         var choices = candidates.stream()
             .sorted(new GridCandidate.DistanceComparator(position))
-            .filter(c -> c.getPosition().quickDistance(position) <= maxDistance)
+            .filter(c -> c.getPosition().quickDistanceTo(position) <= maxDistance)
             .map(GridCandidate::getCandidate)
             .collect(JImmutables.listCollector());
         return new Ballot(choices);

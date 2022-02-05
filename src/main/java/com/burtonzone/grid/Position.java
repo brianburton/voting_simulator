@@ -20,16 +20,21 @@ public class Position
         return String.format("%d-%d", x, y);
     }
 
-    public int quickDistance(Position other)
+    public int quickDistanceTo(Position other)
     {
         var sumX = x - other.x;
         var sumY = y - other.y;
         return sumX * sumX + sumY * sumY;
     }
 
+    public static int toQuickDistance(int realDistance)
+    {
+        return realDistance * realDistance;
+    }
+
     public int realDistance(Position other)
     {
-        return new Decimal(quickDistance(other)).root().toInt();
+        return new Decimal(quickDistanceTo(other)).root().toInt();
     }
 
     public Position centeredNearBy(Rand rand,
@@ -101,8 +106,8 @@ public class Position
         public int compare(Position a,
                            Position b)
         {
-            var aDistance = center.quickDistance(a);
-            var bDistance = center.quickDistance(b);
+            var aDistance = center.quickDistanceTo(a);
+            var bDistance = center.quickDistanceTo(b);
             var diff = aDistance - bDistance;
             if (diff == 0) {
                 diff = a.compareTo(b);
