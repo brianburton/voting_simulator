@@ -15,8 +15,8 @@ public class GridElectionFactory
     private static final int MinPos = 0;
     private static final int MaxPos = 100;
     private static final int MaxVoterDistance = 50;
-    private static final int MaxCandidateDistance = 10;
-    private static final int MinPartyDistance = 25;
+    private static final int MaxCandidateDistance = 15;
+    private static final int MinPartyDistance = 10;
     private static final int VotersPerSeat = 500;
     private static final int VoterTolerance = 30;
     private static final int CentristPartyDistance = 20;
@@ -59,11 +59,11 @@ public class GridElectionFactory
                 positions = positions.deleteAll();
             }
             final Position position = randomPartyPosition(rand, 1);
-            if (positions.size() < 2) {
-                if (position.quickDistance(Center) > CentristPartyDistance * CentristPartyDistance) {
-                    continue;
-                }
-            }
+//            if (positions.size() < 2) {
+//                if (position.quickDistance(Center) > CentristPartyDistance * CentristPartyDistance) {
+//                    continue;
+//                }
+//            }
             final var minDistance = positions.stream()
                 .mapToInt(p -> p.realDistance(position))
                 .min()
