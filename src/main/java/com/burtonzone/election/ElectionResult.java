@@ -4,6 +4,7 @@ import com.burtonzone.common.Counter;
 import com.burtonzone.common.Decimal;
 import lombok.Value;
 import org.javimmutable.collections.JImmutableList;
+import org.javimmutable.collections.util.JImmutables;
 
 public class ElectionResult
 {
@@ -55,6 +56,24 @@ public class ElectionResult
             answer = answer.add(candidate.getParty(), Decimal.ONE);
         }
         return answer;
+    }
+
+    /**
+     * @return Number of voters whose first choice candidate was elected.
+     */
+    public int getEffectiveFirstVoteCount()
+    {
+        final var candidateSet = JImmutables.set(getElected());
+        var count = 0;
+        for (Counter.Entry<Ballot> e : election.getBallots().ballots()) {
+            final var ballot = e.getKey();
+            final var votes = e.getCount();
+            final var candidate = ballot.getFirstChoice();
+            if (candidateSet.contains(candidate)) {
+                count = count + votes.toInt();
+            }
+        }
+        return count;
     }
 
     @Value

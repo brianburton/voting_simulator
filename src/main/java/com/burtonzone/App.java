@@ -18,17 +18,18 @@ public class App
     {
         final var showDistrictResults = false;
         final var rand = new Rand();
-        final ElectionFactory factory = new GridElectionFactory(rand, 5);
+        final ElectionFactory factory = new GridElectionFactory(rand, 4);
 //        ElectionRunner runner = Runners.hare();
         ElectionRunner runner = Runners.dhondt();
 //        ElectionRunner runner = Runners.webster();
 //        ElectionRunner runner = Runners.basicStv();
 //        ElectionRunner runner = Runners.singleVote();
+
+//        runner = Runners.hybrid(runner);
+
 //        ElectionRunner runner = Runners.blockPlurality();
 
-        runner = Runners.hybrid(runner);
-
-        for (int test = 1; test <= 23; ++test) {
+        for (int test = 1; test <= 10; ++test) {
             final var db = JImmutables.<DistrictSpec>listBuilder();
             // all districts single seat to simulate current system
 //            addDistricts(db, 435, 1);
@@ -49,7 +50,7 @@ public class App
 
             final JImmutableList<Election> elections =
                 db.build()
-                    .stream().parallel()
+                    .stream()//.parallel()
                     .map(spec -> spec.create(factory))
                     .collect(listCollector());
 

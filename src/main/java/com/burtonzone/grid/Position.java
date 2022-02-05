@@ -33,9 +33,9 @@ public class Position
     }
 
     public Position centeredNearBy(Rand rand,
-                                   int maxOffset)
+                                   int maxOffset,
+                                   int bias)
     {
-        final var bias = 4;
         var x = this.x + rand.nextInt(-maxOffset, maxOffset, bias);
         var y = this.y + rand.nextInt(-maxOffset, maxOffset, bias);
         return new Position(x, y);

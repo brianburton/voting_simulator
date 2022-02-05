@@ -24,6 +24,7 @@ public class ResultsReport
     int seats;
     int elected;
     int votes;
+    int effectiveVotes;
     @Builder.Default
     Counter<Party> partyVotes = new Counter<>();
     @Builder.Default
@@ -34,6 +35,7 @@ public class ResultsReport
         final var seats = result.getElection().getSeats();
         final var elected = result.getFinalRound().getElected().size();
         final var votes = result.getElection().getTotalVotes().toInt();
+        final var effectiveVotes = result.getEffectiveFirstVoteCount();
         final var partyVotes = result.getPartyFirstChoiceCounts();
         final var partyElected = result.getPartyElectedCounts();
         return builder()
@@ -41,6 +43,7 @@ public class ResultsReport
             .seats(seats)
             .elected(elected)
             .votes(votes)
+            .effectiveVotes(effectiveVotes)
             .partyVotes(partyVotes)
             .partySeats(partyElected)
             .build();
@@ -62,6 +65,7 @@ public class ResultsReport
             .seats(seats + other.seats)
             .elected(elected + other.elected)
             .votes(votes + other.votes)
+            .effectiveVotes(effectiveVotes + other.effectiveVotes)
             .partyVotes(partyVotes.add(other.partyVotes))
             .partySeats(partySeats.add(other.partySeats))
             .build();
@@ -102,7 +106,7 @@ public class ResultsReport
             for (Party party : parties) {
                 out.printf(" %4s   %6s  %6s ", "ps", "eps", "aps");
             }
-            out.printf("    %3s", "err");
+            out.printf(" %6s %6s", "err", "eff");
         }
         return str.toString();
     }
@@ -116,7 +120,7 @@ public class ResultsReport
                 final var pr = new PartyResult(party);
                 out.printf("  %4d   %5s%%  %5s%%", pr.getSeats(), pr.getVotePercent(), pr.getSeatPercent());
             }
-            out.printf("  %5s%%", percent(computeErrors(), Decimal.ONE));
+            out.printf("  %5s%% %5s%%", percent(computeErrors(), Decimal.ONE), percent(effectiveVotes, votes));
         }
         return str.toString();
     }
