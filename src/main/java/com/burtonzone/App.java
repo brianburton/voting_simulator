@@ -20,9 +20,9 @@ public class App
         final var rand = new Rand();
         final ElectionFactory factory = new GridElectionFactory(rand, 5);
 //        ElectionRunner runner = Runners.hare();
-        ElectionRunner runner = Runners.dhondt();
+//        ElectionRunner runner = Runners.dhondt();
 //        ElectionRunner runner = Runners.webster();
-//        ElectionRunner runner = Runners.basicStv();
+        ElectionRunner runner = Runners.basicStv();
 //        ElectionRunner runner = Runners.singleVote();
 
 //        runner = Runners.hybrid(runner);
@@ -59,8 +59,8 @@ public class App
                 .map(runner::runElection)
                 .collect(listCollector());
             if (showDistrictResults || test == 1) {
-                System.out.printf("%3s  %s%n", "", ResultsReport.printHeader1(factory.allParties()));
-                System.out.printf("%3s  %s%n", "#", ResultsReport.printHeader2(factory.allParties()));
+                System.out.printf("%3s %s%n", "", ResultsReport.printHeader1(factory.allParties()));
+                System.out.printf("%3s %s%n", "#", ResultsReport.printHeader2(factory.allParties()));
             }
             if (showDistrictResults) {
                 for (ElectionResult result : results) {
