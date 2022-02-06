@@ -89,8 +89,8 @@ public class LinearElectionFactory
             this.parties = list(parties);
         }
 
-        public Ballot randomBallot(int numberOfSeats,
-                                   JImmutableList<Candidate> candidates)
+        public JImmutableList<Candidate> randomBallot(int numberOfSeats,
+                                                      JImmutableList<Candidate> candidates)
         {
             var choices = JImmutables.<Candidate>list();
             var shuffled = rand.shuffle(candidates.getList());
@@ -109,7 +109,7 @@ public class LinearElectionFactory
                     }
                 }
             }
-            return new Ballot(choices);
+            return choices;
         }
 
         @Override

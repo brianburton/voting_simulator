@@ -4,7 +4,6 @@ import static org.javimmutable.collections.util.JImmutables.*;
 
 import com.burtonzone.common.Counter;
 import com.burtonzone.common.Decimal;
-import com.burtonzone.election.Ballot;
 import com.burtonzone.election.Candidate;
 import com.burtonzone.election.CandidateVotes;
 import com.burtonzone.election.Election;
@@ -28,9 +27,8 @@ public class BlockPluralityRunner
     public ElectionResult runElection(Election election)
     {
         var counter = new Counter<Candidate>();
-        for (Counter.Entry<Ballot> ballot : election.getBallots().ballots()) {
+        for (var ballot : election.getBallots()) {
             var topChoices = ballot.getKey()
-                .getChoices()
                 .slice(0, election.getSeats());
             for (Candidate candidate : topChoices) {
                 var count = ballot.getCount();

@@ -4,7 +4,6 @@ import static org.javimmutable.collections.util.JImmutables.*;
 
 import com.burtonzone.common.Counter;
 import com.burtonzone.common.Decimal;
-import com.burtonzone.election.Ballot;
 import com.burtonzone.election.Candidate;
 import com.burtonzone.election.CandidateVotes;
 import com.burtonzone.election.Election;
@@ -52,8 +51,8 @@ public class OpenListFormulaRunner
             var partyVotes = new Counter<Party>();
             var candidateVotes = new Counter<Candidate>()
                 .addZeros(election.getCandidates());
-            for (Counter.Entry<Ballot> e : election.getBallots().ballots()) {
-                final var candidate = e.getKey().getFirstChoice();
+            for (var e : election.getBallots().getFirstChoiceCounts()) {
+                final var candidate = e.getKey();
                 final var party = candidate.getParty();
                 final var count = e.getCount();
                 partyVotes = partyVotes.add(party, count);

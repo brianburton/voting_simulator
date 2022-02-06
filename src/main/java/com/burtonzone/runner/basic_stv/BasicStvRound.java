@@ -3,7 +3,6 @@ package com.burtonzone.runner.basic_stv;
 import static org.javimmutable.collections.util.JImmutables.*;
 
 import com.burtonzone.common.Counter;
-import com.burtonzone.election.Ballot;
 import com.burtonzone.election.BallotBox;
 import com.burtonzone.election.Candidate;
 import com.burtonzone.election.CandidateVotes;
@@ -91,11 +90,9 @@ public class BasicStvRound
     private JImmutableList<CandidateVotes> computeVotes()
     {
         var counter = new Counter<Candidate>();
-        for (Counter.Entry<Ballot> e : ballotBox.ballots()) {
-            var ballot = e.getKey();
-            if (!ballot.isEmpty()) {
-                counter = counter.add(ballot.getFirstChoice(), e.getCount());
-            }
+        for (var e : ballotBox.getFirstChoiceCounts()) {
+            final var candidate = e.getKey();
+            counter = counter.add(candidate, e.getCount());
         }
         var sortedVotes = counter
             .getSortedList(election.getTieBreaker())

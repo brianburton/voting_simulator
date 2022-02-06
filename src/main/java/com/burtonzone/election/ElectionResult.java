@@ -65,10 +65,9 @@ public class ElectionResult
     {
         final var candidateSet = JImmutables.set(getElected());
         var count = 0;
-        for (Counter.Entry<Ballot> e : election.getBallots().ballots()) {
-            final var ballot = e.getKey();
+        for (var e : election.getBallots().getFirstChoiceCounts()) {
+            final var candidate = e.getKey();
             final var votes = e.getCount();
-            final var candidate = ballot.getFirstChoice();
             if (candidateSet.contains(candidate)) {
                 count = count + votes.toInt();
             }

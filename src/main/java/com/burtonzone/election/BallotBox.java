@@ -1,19 +1,36 @@
 package com.burtonzone.election;
 
+import static com.burtonzone.common.Decimal.ZERO;
+import static org.javimmutable.collections.util.JImmutables.*;
+
 import com.burtonzone.common.Counter;
 import com.burtonzone.common.Decimal;
 import java.util.Comparator;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import lombok.Value;
+import org.javimmutable.collections.IterableStreamable;
+import org.javimmutable.collections.JImmutableList;
+import org.javimmutable.collections.JImmutableMap;
 import org.javimmutable.collections.JImmutableSet;
+import org.javimmutable.collections.SplitableIterator;
+import org.javimmutable.collections.iterators.TransformIterator;
+import org.javimmutable.collections.iterators.TransformStreamable;
 import org.javimmutable.collections.util.JImmutables;
 
 public class BallotBox
+    implements IterableStreamable<Counter.Entry<JImmutableList<Candidate>>>
 {
-    private final Counter<Ballot> ballots;
+    private static final JImmutableList<Candidate> NoCandidates = list();
+    private static final JImmutableMap<JImmutableList<Candidate>, Decimal> NoBallots =
+        JImmutables.<JImmutableList<Candidate>, Decimal>map()
+            .assign(NoCandidates, ZERO);
 
-    private BallotBox(Counter<Ballot> ballots)
+    private final JImmutableMap<JImmutableList<Candidate>, Decimal> ballots;
+
+    private BallotBox(JImmutableMap<JImmutableList<Candidate>, Decimal> ballots)
     {
+        assert ballots.get(NoCandidates) != null;
         this.ballots = ballots;
     }
 
@@ -22,18 +39,34 @@ public class BallotBox
         return new Builder();
     }
 
-    public Counter<Ballot> ballots()
+    @Nonnull
+    @Override
+    public SplitableIterator<Counter.Entry<JImmutableList<Candidate>>> iterator()
     {
-        return ballots;
+        return TransformIterator.of(ballots.iterator(),
+                                    e -> new Counter.Entry<>(e.getKey(), e.getValue()));
+    }
+
+    @Override
+    public int getSpliteratorCharacteristics()
+    {
+        return ballots.getSpliteratorCharacteristics();
+    }
+
+    public IterableStreamable<Counter.Entry<Candidate>> getFirstChoiceCounts()
+    {
+        return TransformStreamable.of(ballots.delete(NoCandidates),
+                                      e -> new Counter.Entry<>(e.getKey().get(0), e.getValue()));
     }
 
     public Counter<Party> getPartyFirstChoiceCounts()
     {
         var answer = new Counter<Party>();
-        for (Counter.Entry<Ballot> e : ballots) {
-            if (!e.getKey().isEmpty()) {
-                final var candidate = e.getKey().getFirstChoice();
-                answer = answer.add(candidate.getParty(), e.getCount());
+        for (var e : ballots) {
+            final var candidates = e.getKey();
+            if (candidates.isNonEmpty()) {
+                final var candidate = candidates.get(0);
+                answer = answer.add(candidate.getParty(), e.getValue());
             }
         }
         return answer;
@@ -55,74 +88,72 @@ public class BallotBox
 
     public Decimal getTotalCount()
     {
-        return ballots.getTotal();
+        return ballots.values().reduce(ZERO, Decimal::plus);
     }
 
     public boolean isEmpty()
     {
-        return ballots.stream().map(Counter.Entry::getKey).noneMatch(Ballot::isNonEmpty);
+        // We always have a NoCandidates entry so if that's the only one we're out of candidates.
+        return ballots.size() == 1;
     }
 
     public JImmutableSet<Candidate> getCandidates()
     {
         return ballots
+            .keys()
             .stream()
-            .flatMap(e -> e.getKey().getChoices().stream())
+            .flatMap(IterableStreamable::stream)
             .collect(JImmutables.sortedSetCollector());
     }
 
     public Comparator<Candidate> createCandidateComparator()
     {
-        return new CandidateComparator(ballots);
+        return new CandidateComparator();
     }
 
     private BallotBox removeCandidateImpl(Candidate candidate,
                                           @Nullable Decimal transferWeight)
     {
-        Counter<Ballot> newBallots = ballots;
-        for (Counter.Entry<Ballot> e : ballots) {
-            var ballot = e.getKey();
-            var newBallot = ballot.without(candidate);
-            if (newBallot != ballot) {
-                var count = e.getCount();
-                if (transferWeight != null && ballot.startsWith(candidate)) {
-                    count = count.times(transferWeight);
+        var newBallots = ballots;
+        for (var e : ballots) {
+            var oldCandidates = e.getKey();
+            var newCandidates = oldCandidates.reject(c -> c.equals(candidate));
+            if (newCandidates != oldCandidates) {
+                var transferCount = e.getValue();
+                if (transferWeight != null && oldCandidates.get(0).equals(candidate)) {
+                    transferCount = transferCount.times(transferWeight);
                 }
-                newBallots = newBallots.delete(ballot);
-                newBallots = newBallots.add(newBallot, count);
+                final var oldCount = newBallots.get(newCandidates);
+                newBallots = newBallots
+                    .delete(oldCandidates)
+                    .assign(newCandidates, oldCount == null ? transferCount : oldCount.plus(transferCount));
             }
         }
         return newBallots == ballots ? this : new BallotBox(newBallots);
     }
 
-    public boolean isExhausted()
-    {
-        return ballots.stream().map(b -> b.getKey().ranks()).noneMatch(r -> r > 1);
-    }
-
     public Decimal getExhaustedCount()
     {
-        return ballots.get(Ballot.Empty);
+        return ballots.get(NoCandidates);
     }
 
-    public static class CandidateComparator
+    private class CandidateComparator
         implements Comparator<Candidate>
     {
-        private final Counter<Key> scores;
+        private final Counter<ComparatorKey> scores;
         private final int maxSize;
 
-        private CandidateComparator(Counter<Ballot> ballots)
+        private CandidateComparator()
         {
             var maxSize = 0;
-            var scores = new Counter<Key>();
-            for (Counter.Entry<Ballot> e : ballots) {
-                var ballot = e.getKey();
-                var ballotScore = e.getCount();
-                var choices = ballot.getChoices();
+            var scores = new Counter<ComparatorKey>();
+            for (var e : ballots) {
+                var choices = e.getKey();
+                var ballotScore = e.getValue();
                 maxSize = Math.max(maxSize, choices.size());
                 for (int i = 0; i < choices.size(); ++i) {
                     var candidate = choices.get(i);
-                    var key = new Key(candidate, i);
+                    var key = new ComparatorKey(candidate, i);
                     scores = scores.add(key, ballotScore);
                 }
             }
@@ -148,32 +179,33 @@ public class BallotBox
         private Decimal candidateScoreAt(Candidate candidate,
                                          int index)
         {
-            var key = new Key(candidate, index);
+            var key = new ComparatorKey(candidate, index);
             return scores.get(key);
         }
+    }
 
-        @Value
-        private static class Key
-        {
-            Candidate candidate;
-            int index;
-        }
+    @Value
+    private static class ComparatorKey
+    {
+        Candidate candidate;
+        int index;
     }
 
     public static class Builder
     {
-        private Counter<Ballot> ballots = new Counter<>();
+        private JImmutableMap<JImmutableList<Candidate>, Decimal> ballots = NoBallots;
         private int count;
 
-        public Builder add(Ballot ballot)
+        public Builder add(JImmutableList<Candidate> candidates)
         {
-            return add(ballot, 1);
+            return add(candidates, 1);
         }
 
-        public Builder add(Ballot ballot,
+        public Builder add(JImmutableList<Candidate> candidates,
                            int count)
         {
-            ballots = ballots.add(ballot, count);
+            final var votes = new Decimal(count);
+            ballots = ballots.update(candidates, c -> c.map(votes::plus).orElse(votes));
             this.count += count;
             return this;
         }

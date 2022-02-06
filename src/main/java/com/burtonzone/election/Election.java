@@ -104,24 +104,23 @@ public class Election
         public Builder ballot(int count,
                               Candidate... candidates)
         {
-            var ballot = new Ballot(JImmutables.list(candidates));
-            return ballot(count, ballot);
+            return ballot(count, JImmutables.list(candidates));
         }
 
         @CanIgnoreReturnValue
-        public Builder ballot(Ballot ballot)
+        public Builder ballot(JImmutableList<Candidate> candidates)
         {
-            return ballot(1, ballot);
+            return ballot(1, candidates);
         }
 
         @CanIgnoreReturnValue
         public Builder ballot(int count,
-                              Ballot ballot)
+                              JImmutableList<Candidate> candidates)
         {
             assert count >= 1;
-            ballots.add(ballot, count);
-            for (Candidate candidate : ballot.getChoices()) {
-                candidates.add(candidate);
+            ballots.add(candidates, count);
+            for (Candidate candidate : candidates) {
+                this.candidates.add(candidate);
             }
             return this;
         }

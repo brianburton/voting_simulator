@@ -1,8 +1,8 @@
 package com.burtonzone.grid;
 
 import com.burtonzone.common.Rand;
-import com.burtonzone.election.Ballot;
 import com.burtonzone.election.BallotBox;
+import com.burtonzone.election.Candidate;
 import com.burtonzone.election.Election;
 import com.burtonzone.election.ElectionFactory;
 import com.burtonzone.election.Party;
@@ -102,8 +102,8 @@ public class GridElectionFactory
         return ballotBox.build();
     }
 
-    private Ballot createBallot(JImmutableList<GridCandidate> candidates,
-                                Position position)
+    private JImmutableList<Candidate> createBallot(JImmutableList<GridCandidate> candidates,
+                                                   Position position)
     {
         var maxDistance = Position.toQuickDistance(VoterTolerance);
         var choices = candidates.stream()
@@ -111,7 +111,7 @@ public class GridElectionFactory
             .filter(c -> c.getPosition().quickDistanceTo(position) <= maxDistance)
             .map(GridCandidate::getCandidate)
             .collect(JImmutables.listCollector());
-        return new Ballot(choices);
+        return choices;
     }
 
     private JImmutableList<GridCandidate> createCandidates(int numCandidatesPerParty)
