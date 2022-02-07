@@ -1,8 +1,8 @@
 package com.burtonzone.election;
 
-import static com.burtonzone.election.Party.*;
 import static org.javimmutable.collections.util.JImmutables.*;
 
+import com.burtonzone.common.Decimal;
 import com.burtonzone.common.Rand;
 import lombok.Getter;
 import org.javimmutable.collections.JImmutableList;
@@ -11,6 +11,13 @@ import org.javimmutable.collections.util.JImmutables;
 public class LinearElectionFactory
     implements ElectionFactory
 {
+    public static final Party Left = new Party("Left", "L", new Position(10));
+    public static final Party CenterLeft = new Party("CenterLeft", "CL", new Position(40));
+    public static final Party Center = new Party("Center", "C", new Position(50));
+    public static final Party CenterRight = new Party("CenterRight", "CR", new Position(60));
+    public static final Party Right = new Party("Right", "R", new Position(90));
+    public static final JImmutableList<Party> All = list(Left, CenterLeft, Center, CenterRight, Right);
+
     @Getter
     private final Rand rand;
 
@@ -43,7 +50,7 @@ public class LinearElectionFactory
         final var candidates = cb.build();
 
         final var rb = Election.builder();
-        rb.parties(Party.All);
+        rb.parties(All);
         rb.seats(numberOfSeats);
         var affinity = nextAffinity(nodes);
         for (int b = 1; b <= 1_000 * numberOfSeats; ++b) {
@@ -116,6 +123,23 @@ public class LinearElectionFactory
         public String toString()
         {
             return parties.toString();
+        }
+    }
+
+    public static class Position
+        implements PartyPosition
+    {
+        private final Decimal position;
+
+        private Position(int position)
+        {
+            this.position = new Decimal(position);
+        }
+
+        @Override
+        public Decimal distanceTo(PartyPosition other)
+        {
+            return position.minus(((Position)other).position).abs();
         }
     }
 }

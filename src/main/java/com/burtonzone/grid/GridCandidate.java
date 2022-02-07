@@ -9,11 +9,11 @@ import lombok.Value;
 public class GridCandidate
 {
     GridParty party;
-    Position position;
+    GridPosition position;
     Candidate candidate;
 
     public GridCandidate(GridParty party,
-                         Position position)
+                         GridPosition position)
     {
         this.party = party;
         this.position = position;
@@ -24,7 +24,7 @@ public class GridCandidate
     public static class DistanceComparator
         implements Comparator<GridCandidate>
     {
-        private final Position position;
+        private final GridPosition position;
 
         @Override
         public int compare(GridCandidate a,

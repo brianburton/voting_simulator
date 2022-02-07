@@ -2,6 +2,7 @@ package com.burtonzone.grid;
 
 import com.burtonzone.common.Decimal;
 import com.burtonzone.common.Rand;
+import com.burtonzone.election.PartyPosition;
 import java.util.Comparator;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -9,8 +10,9 @@ import lombok.Value;
 
 @Value
 @EqualsAndHashCode
-public class Position
-    implements Comparable<Position>
+public class GridPosition
+    implements Comparable<GridPosition>,
+               PartyPosition
 {
     int x;
     int y;
@@ -20,7 +22,7 @@ public class Position
         return String.format("%d-%d", x, y);
     }
 
-    public int quickDistanceTo(Position other)
+    public int quickDistanceTo(GridPosition other)
     {
         var sumX = x - other.x;
         var sumY = y - other.y;
@@ -32,30 +34,36 @@ public class Position
         return realDistance * realDistance;
     }
 
-    public int realDistance(Position other)
+    public int realDistance(GridPosition other)
     {
         return new Decimal(quickDistanceTo(other)).root().toInt();
     }
 
-    public Position centeredNearBy(Rand rand,
-                                   int maxOffset,
-                                   int bias)
+    @Override
+    public Decimal distanceTo(PartyPosition other)
+    {
+        return new Decimal(quickDistanceTo((GridPosition)other)).root();
+    }
+
+    public GridPosition centeredNearBy(Rand rand,
+                                       int maxOffset,
+                                       int bias)
     {
         var x = this.x + rand.nextInt(-maxOffset, maxOffset, bias);
         var y = this.y + rand.nextInt(-maxOffset, maxOffset, bias);
-        return new Position(x, y);
+        return new GridPosition(x, y);
     }
 
-    public Position nearBy(Rand rand,
-                           int maxOffset)
+    public GridPosition nearBy(Rand rand,
+                               int maxOffset)
     {
         var x = this.x + rand.nextInt(-maxOffset, maxOffset);
         var y = this.y + rand.nextInt(-maxOffset, maxOffset);
-        return new Position(x, y);
+        return new GridPosition(x, y);
     }
 
-    public Position wrapped(int minValue,
-                            int maxValue)
+    public GridPosition wrapped(int minValue,
+                                int maxValue)
     {
         var newX = wrap(x, minValue, maxValue);
         var newY = wrap(y, minValue, maxValue);
@@ -69,11 +77,11 @@ public class Position
         } else if (newX == x) {
             newX = maxValue - (x - minValue);
         }
-        return new Position(newX, newY);
+        return new GridPosition(newX, newY);
     }
 
     @Override
-    public int compareTo(Position o)
+    public int compareTo(GridPosition o)
     {
         var diff = x - o.x;
         if (diff == 0) {
@@ -98,13 +106,13 @@ public class Position
 
     @AllArgsConstructor
     public static class DistanceComparator
-        implements Comparator<Position>
+        implements Comparator<GridPosition>
     {
-        private final Position center;
+        private final GridPosition center;
 
         @Override
-        public int compare(Position a,
-                           Position b)
+        public int compare(GridPosition a,
+                           GridPosition b)
         {
             var aDistance = center.quickDistanceTo(a);
             var bDistance = center.quickDistanceTo(b);

@@ -24,7 +24,7 @@ public class GridElectionFactory
     private static final int PartyPositionBias = 1;
     private static final int VoterPositionBias = 4;
     private static final int CandidatePositionBias = 1;
-    private static final Position Center = new Position((MinPos + MaxPos) / 2, (MinPos + MaxPos) / 2);
+    private static final GridPosition Center = new GridPosition((MinPos + MaxPos) / 2, (MinPos + MaxPos) / 2);
     private static final JImmutableList<Integer> PartyPoints = JImmutables.list(20, 30, 40, 50, 60, 70, 80);
 
     private final Rand rand;
@@ -54,15 +54,15 @@ public class GridElectionFactory
 
     private JImmutableList<GridParty> createParties(int numParties)
     {
-        final var centristDistance = Position.toQuickDistance(CentristPartyDistance);
+        final var centristDistance = GridPosition.toQuickDistance(CentristPartyDistance);
         var loops = 0;
-        var positions = JImmutables.sortedSet(new Position.DistanceComparator(Center));
+        var positions = JImmutables.sortedSet(new GridPosition.DistanceComparator(Center));
         while (positions.size() < numParties) {
             if (loops++ >= 100) {
                 loops = 0;
                 positions = positions.deleteAll();
             }
-            final Position position = randomPartyPosition();
+            final GridPosition position = randomPartyPosition();
             if (positions.size() < 2) {
                 if (position.quickDistanceTo(Center) > centristDistance) {
                     continue;
@@ -79,20 +79,20 @@ public class GridElectionFactory
         return positions.transform(JImmutables.list(), p -> new GridParty(p, Center.realDistance(p)));
     }
 
-    private Position randomPartyPosition()
+    private GridPosition randomPartyPosition()
     {
-        return new Position(rand.nextElement(PartyPoints, PartyPositionBias),
-                            rand.nextElement(PartyPoints, PartyPositionBias));
+        return new GridPosition(rand.nextElement(PartyPoints, PartyPositionBias),
+                                rand.nextElement(PartyPoints, PartyPositionBias));
     }
 
-    private Position randomCenterPosition()
+    private GridPosition randomCenterPosition()
     {
-        return new Position(rand.nextInt(MinPos, MaxPos, ElectionCenterBias),
-                            rand.nextInt(MinPos, MaxPos, ElectionCenterBias));
+        return new GridPosition(rand.nextInt(MinPos, MaxPos, ElectionCenterBias),
+                                rand.nextInt(MinPos, MaxPos, ElectionCenterBias));
     }
 
     private BallotBox createBallotBox(JImmutableList<GridCandidate> candidates,
-                                      Position voterCenter,
+                                      GridPosition voterCenter,
                                       int numSeats)
     {
         final var numVoters = numSeats * VotersPerSeat;
@@ -110,9 +110,9 @@ public class GridElectionFactory
     }
 
     private JImmutableList<Candidate> createBallot(JImmutableList<GridCandidate> candidates,
-                                                   Position position)
+                                                   GridPosition position)
     {
-        var maxDistance = Position.toQuickDistance(VoterTolerance);
+        var maxDistance = GridPosition.toQuickDistance(VoterTolerance);
         var choices = candidates.stream()
             .sorted(new GridCandidate.DistanceComparator(position))
             .filter(c -> c.getPosition().quickDistanceTo(position) <= maxDistance)
@@ -134,10 +134,10 @@ public class GridElectionFactory
     private JImmutableList<GridCandidate> createPartyCandidates(GridParty party,
                                                                 int numCandidates)
     {
-        final Position center = party.getPosition();
-        var positions = JImmutables.<Position>set();
+        final GridPosition center = party.getPosition();
+        var positions = JImmutables.<GridPosition>set();
         while (positions.size() < numCandidates) {
-            final Position position = center.centeredNearBy(rand, MaxCandidateDistance, CandidatePositionBias);
+            final GridPosition position = center.centeredNearBy(rand, MaxCandidateDistance, CandidatePositionBias);
             positions = positions.insert(position);
         }
         return positions.transform(JImmutables.list(), p -> new GridCandidate(party, p));

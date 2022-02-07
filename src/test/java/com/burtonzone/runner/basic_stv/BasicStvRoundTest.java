@@ -6,17 +6,17 @@ import com.burtonzone.common.Decimal;
 import com.burtonzone.election.Candidate;
 import com.burtonzone.election.Election;
 import com.burtonzone.election.ElectionRunner;
-import com.burtonzone.election.Party;
+import com.burtonzone.election.LinearElectionFactory;
 import org.javimmutable.collections.util.JImmutables;
 import org.junit.Test;
 
 public class BasicStvRoundTest
 {
-    private final Candidate A = new Candidate(Party.CenterLeft, "A");
-    private final Candidate B = new Candidate(Party.CenterLeft, "B");
-    private final Candidate C = new Candidate(Party.CenterLeft, "C");
-    private final Candidate D = new Candidate(Party.CenterLeft, "D");
-    private final Candidate E = new Candidate(Party.CenterLeft, "E");
+    private final Candidate A = new Candidate(LinearElectionFactory.CenterLeft, "A");
+    private final Candidate B = new Candidate(LinearElectionFactory.CenterLeft, "B");
+    private final Candidate C = new Candidate(LinearElectionFactory.CenterLeft, "C");
+    private final Candidate D = new Candidate(LinearElectionFactory.CenterLeft, "D");
+    private final Candidate E = new Candidate(LinearElectionFactory.CenterLeft, "E");
     private final ElectionRunner runner = new BasicStvRunner();
 
     @Test

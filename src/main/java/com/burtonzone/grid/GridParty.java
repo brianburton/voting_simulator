@@ -6,14 +6,15 @@ import lombok.Value;
 @Value
 public class GridParty
 {
-    Position position;
+    GridPosition position;
     Party party;
 
-    public GridParty(Position position,
+    public GridParty(GridPosition position,
                      int distance)
     {
         this.position = position;
         party = new Party(String.format("%s-%d", position, distance),
-                          String.format("%d-%d", position.getX() / 10, position.getY() / 10));
+                          String.format("%d-%d", position.getX() / 10, position.getY() / 10),
+                          position);
     }
 }

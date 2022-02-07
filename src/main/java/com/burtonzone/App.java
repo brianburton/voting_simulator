@@ -58,6 +58,15 @@ public class App
                 .stream().parallel()
                 .map(runner::runElection)
                 .collect(listCollector());
+
+            final ResultsReport resultsReport = ResultsReport.of(results);
+            if (test == 1) {
+                for (String row : resultsReport.getPartyDistanceGrid()) {
+                    System.out.println(row);
+                }
+                System.out.println();
+            }
+
             if (showDistrictResults || test == 1) {
                 System.out.printf("%3s %s%n", "", ResultsReport.printHeader1(factory.allParties()));
                 System.out.printf("%3s %s%n", "#", ResultsReport.printHeader2(factory.allParties()));
@@ -69,7 +78,7 @@ public class App
             }
             System.out.printf("%3s %s%n",
                               showDistrictResults ? "TOT" : "" + test,
-                              ResultsReport.of(results).getRow());
+                              resultsReport.getRow());
             if (showDistrictResults) {
                 System.out.println();
             }

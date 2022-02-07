@@ -1,5 +1,8 @@
 package com.burtonzone;
 
+import static java.lang.String.format;
+import static org.javimmutable.collections.util.JImmutables.*;
+
 import com.burtonzone.common.Counter;
 import com.burtonzone.common.Decimal;
 import com.burtonzone.election.ElectionResult;
@@ -10,6 +13,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import lombok.Builder;
 import lombok.Value;
+import org.javimmutable.collections.JImmutableList;
 import org.javimmutable.collections.JImmutableSet;
 import org.javimmutable.collections.util.JImmutables;
 
@@ -125,6 +129,30 @@ public class ResultsReport
         return str.toString();
     }
 
+    public JImmutableList<String> getPartyDistanceGrid()
+    {
+        final JImmutableList.Builder<String> answer = listBuilder();
+        StringBuffer sb = new StringBuffer();
+        sb.append(format("%10s", ""));
+        for (Party party : parties) {
+            sb.append("  ");
+            sb.append(center(party.getName(), 10, " "));
+        }
+        answer.add(sb.toString());
+        for (Party outer : parties) {
+            sb = new StringBuffer();
+            sb.append("  ");
+            sb.append(center(outer.getName(), 10, " "));
+            for (Party inner : parties) {
+                var distance = outer.getPosition().distanceTo(inner.getPosition()).toInt();
+                sb.append("  ");
+                sb.append(center(format("%3d", distance), 10, " "));
+            }
+            answer.add(sb.toString());
+        }
+        return answer.build();
+    }
+
     public class PartyResult
     {
         private final Party party;
@@ -186,11 +214,18 @@ public class ResultsReport
     private static String center(String s,
                                  int width)
     {
+        return center(s, width, "-");
+    }
+
+    private static String center(String s,
+                                 int width,
+                                 String pad)
+    {
         s = " " + s + " ";
         while (s.length() < width) {
-            s = "-" + s;
+            s = pad + s;
             if (s.length() < width) {
-                s = s + "-";
+                s = s + pad;
             }
         }
         return s;
