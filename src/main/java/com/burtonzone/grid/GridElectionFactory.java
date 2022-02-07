@@ -1,5 +1,7 @@
 package com.burtonzone.grid;
 
+import static org.javimmutable.collections.util.JImmutables.*;
+
 import com.burtonzone.common.Rand;
 import com.burtonzone.election.BallotBox;
 import com.burtonzone.election.Candidate;
@@ -16,16 +18,25 @@ public class GridElectionFactory
     private static final int MaxPos = 100;
     private static final int MaxVoterDistance = 45;
     private static final int MaxCandidateDistance = 10;
-    private static final int MinPartyDistance = 25;
+    private static final int MinPartyDistance = 20;
     private static final int VotersPerSeat = 500;
     private static final int VoterTolerance = 25;
-    private static final int CentristPartyDistance = 25;
     private static final int ElectionCenterBias = 3;
     private static final int PartyPositionBias = 1;
     private static final int VoterPositionBias = 4;
     private static final int CandidatePositionBias = 1;
     private static final GridPosition Center = new GridPosition((MinPos + MaxPos) / 2, (MinPos + MaxPos) / 2);
-    private static final JImmutableList<Integer> PartyPoints = JImmutables.list(20, 30, 40, 50, 60, 70, 80);
+    private static final JImmutableList<Integer> PartyPoints = list(20, 30, 40, 50, 60, 70, 80);
+    private static final JImmutableList<GridPosition> StartingPartyPositions = list(
+        new GridPosition(40, 40),
+        new GridPosition(40, 50),
+        new GridPosition(40, 60),
+        new GridPosition(50, 40),
+        new GridPosition(50, 60),
+        new GridPosition(60, 40),
+        new GridPosition(60, 50),
+        new GridPosition(60, 60)
+    );
 
     private final Rand rand;
     private final JImmutableList<GridParty> parties;
@@ -54,7 +65,6 @@ public class GridElectionFactory
 
     private JImmutableList<GridParty> createParties(int numParties)
     {
-        final var centristDistance = GridPosition.toQuickDistance(CentristPartyDistance);
         var loops = 0;
         var positions = JImmutables.sortedSet(new GridPosition.DistanceComparator(Center));
         while (positions.size() < numParties) {
@@ -62,11 +72,12 @@ public class GridElectionFactory
                 loops = 0;
                 positions = positions.deleteAll();
             }
-            final GridPosition position = randomPartyPosition();
+            final GridPosition position;
+
             if (positions.size() < 2) {
-                if (position.quickDistanceTo(Center) > centristDistance) {
-                    continue;
-                }
+                position = rand.nextElement(StartingPartyPositions);
+            } else {
+                position = randomPartyPosition();
             }
             final var minDistance = positions.stream()
                 .mapToInt(p -> p.realDistance(position))
@@ -76,7 +87,7 @@ public class GridElectionFactory
                 positions = positions.insert(position);
             }
         }
-        return positions.transform(JImmutables.list(), p -> new GridParty(p, Center.realDistance(p)));
+        return positions.transform(list(), p -> new GridParty(p, Center.realDistance(p)));
     }
 
     private GridPosition randomPartyPosition()
@@ -140,6 +151,6 @@ public class GridElectionFactory
             final GridPosition position = center.centeredNearBy(rand, MaxCandidateDistance, CandidatePositionBias);
             positions = positions.insert(position);
         }
-        return positions.transform(JImmutables.list(), p -> new GridCandidate(party, p));
+        return positions.transform(list(), p -> new GridCandidate(party, p));
     }
 }
