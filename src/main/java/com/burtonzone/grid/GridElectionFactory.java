@@ -17,8 +17,8 @@ public class GridElectionFactory
     private static final int MinPos = 0;
     private static final int MaxPos = 100;
     private static final int MaxVoterDistance = 45;
-    private static final int MaxCandidateDistance = 8;
-    private static final int MinPartyDistance = 12;
+    private static final int MaxCandidateDistance = 10;
+    private static final int MinPartyDistance = 15;
     private static final int VotersPerSeat = 500;
     private static final int VoterTolerance = 25;
     private static final int ElectionCenterBias = 3;
@@ -27,16 +27,7 @@ public class GridElectionFactory
     private static final int CandidatePositionBias = 1;
     private static final GridPosition Center = new GridPosition((MinPos + MaxPos) / 2, (MinPos + MaxPos) / 2);
     private static final JImmutableList<Integer> PartyPoints = list(10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90);
-    private static final JImmutableList<GridPosition> StartingPartyPositions = list(
-        new GridPosition(40, 40),
-        new GridPosition(40, 50),
-        new GridPosition(40, 60),
-        new GridPosition(50, 40),
-        new GridPosition(50, 60),
-        new GridPosition(60, 40),
-        new GridPosition(60, 50),
-        new GridPosition(60, 60)
-    );
+    private static final JImmutableList<Integer> StartingPartyPoints = list(40, 45, 50, 55, 60);
 
     private final Rand rand;
     private final JImmutableList<GridParty> parties;
@@ -75,9 +66,9 @@ public class GridElectionFactory
             final GridPosition position;
 
             if (positions.size() < 2) {
-                position = rand.nextElement(StartingPartyPositions);
+                position = randomPartyPosition(StartingPartyPoints);
             } else {
-                position = randomPartyPosition();
+                position = randomPartyPosition(PartyPoints);
             }
             final var minDistance = positions.stream()
                 .mapToInt(p -> p.realDistance(position))
@@ -90,10 +81,10 @@ public class GridElectionFactory
         return positions.transform(list(), p -> new GridParty(p, Center.realDistance(p)));
     }
 
-    private GridPosition randomPartyPosition()
+    private GridPosition randomPartyPosition(JImmutableList<Integer> points)
     {
-        return new GridPosition(rand.nextElement(PartyPoints, PartyPositionBias),
-                                rand.nextElement(PartyPoints, PartyPositionBias));
+        return new GridPosition(rand.nextElement(points, PartyPositionBias),
+                                rand.nextElement(points, PartyPositionBias));
     }
 
     private GridPosition randomCenterPosition()
