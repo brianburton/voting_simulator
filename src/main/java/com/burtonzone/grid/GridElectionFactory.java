@@ -21,6 +21,7 @@ public class GridElectionFactory
     private static final int MinPartyDistance = 15;
     private static final int VotersPerSeat = 500;
     private static final int VoterTolerance = 25;
+    private static final int VoterMaxRanks = 10;
     private static final int ElectionCenterBias = 3;
     private static final int PartyPositionBias = 1;
     private static final int VoterPositionBias = 4;
@@ -117,6 +118,7 @@ public class GridElectionFactory
         var maxDistance = GridPosition.toQuickDistance(VoterTolerance);
         var choices = candidates.stream()
             .sorted(new GridCandidate.DistanceComparator(position))
+            .limit(VoterMaxRanks)
             .filter(c -> c.getPosition().quickDistanceTo(position) <= maxDistance)
             .map(GridCandidate::getCandidate)
             .collect(JImmutables.listCollector());

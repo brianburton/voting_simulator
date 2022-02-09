@@ -21,11 +21,11 @@ public class App
         final ElectionFactory factory = new GridElectionFactory(rand, 6);
 //        ElectionRunner runner = Runners.hare();
 //        ElectionRunner runner = Runners.dhondt();
-//        ElectionRunner runner = Runners.webster();
-        ElectionRunner runner = Runners.basicStv();
+        ElectionRunner runner = Runners.webster();
+        runner = Runners.hybrid(runner);
+//        ElectionRunner runner = Runners.basicStv();
 //        ElectionRunner runner = Runners.singleVote();
 
-//        runner = Runners.hybrid(runner);
 
 //        ElectionRunner runner = Runners.blockPlurality();
 
