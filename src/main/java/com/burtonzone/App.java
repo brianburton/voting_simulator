@@ -7,6 +7,7 @@ import com.burtonzone.election.Election;
 import com.burtonzone.election.ElectionFactory;
 import com.burtonzone.election.ElectionResult;
 import com.burtonzone.election.ElectionRunner;
+import com.burtonzone.election.ElectionSettings;
 import com.burtonzone.grid.GridElectionFactory;
 import lombok.Value;
 import org.javimmutable.collections.JImmutableList;
@@ -18,6 +19,11 @@ public class App
     {
         final var showDistrictResults = false;
         final var rand = new Rand();
+        final var electionSettings =
+            ElectionSettings.builder()
+                .voteType(ElectionSettings.VoteType.Candidate)
+                .build();
+
         final ElectionFactory factory = new GridElectionFactory(rand, 6);
 //        ElectionRunner runner = Runners.hare();
 //        ElectionRunner runner = Runners.dhondt();
@@ -35,11 +41,11 @@ public class App
 //            addDistricts(db, 435, 1);
 
             // number and size of districts taken from fairvote.org plan for US house elections
-            addDistricts(db, 44, 5);
-            addDistricts(db, 9, 4);
-            addDistricts(db, 54, 3);
-            addDistricts(db, 5, 2);
-            addDistricts(db, 7, 1);
+            addDistricts(db, 44, electionSettings.withNumberOfSeats(5));
+            addDistricts(db, 9, electionSettings.withNumberOfSeats(4));
+            addDistricts(db, 54, electionSettings.withNumberOfSeats(3));
+            addDistricts(db, 5, electionSettings.withNumberOfSeats(2));
+            addDistricts(db, 7, electionSettings.withNumberOfSeats(1));
 
             // larger districts
 //            addDistricts(db, 44, 9);
@@ -87,9 +93,9 @@ public class App
 
     private static void addDistricts(JImmutableList.Builder<DistrictSpec> db,
                                      int numberOfDistricts,
-                                     int numberOfSeatsPerDistrict)
+                                     ElectionSettings settings)
     {
-        final var districtSpec = new DistrictSpec(numberOfSeatsPerDistrict);
+        final var districtSpec = new DistrictSpec(settings);
         for (int i = 1; i <= numberOfDistricts; ++i) {
             db.add(districtSpec);
         }
@@ -98,11 +104,11 @@ public class App
     @Value
     private static class DistrictSpec
     {
-        int numberOfSeats;
+        ElectionSettings settings;
 
         Election create(ElectionFactory factory)
         {
-            return factory.createElection(numberOfSeats);
+            return factory.createElection(settings);
         }
     }
 }

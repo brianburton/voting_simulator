@@ -7,6 +7,7 @@ import com.burtonzone.election.BallotBox;
 import com.burtonzone.election.Candidate;
 import com.burtonzone.election.Election;
 import com.burtonzone.election.ElectionFactory;
+import com.burtonzone.election.ElectionSettings;
 import com.burtonzone.election.Party;
 import org.javimmutable.collections.JImmutableList;
 import org.javimmutable.collections.util.JImmutables;
@@ -41,8 +42,10 @@ public class GridElectionFactory
     }
 
     @Override
-    public Election createElection(int numSeats)
+    public Election createElection(ElectionSettings settings)
     {
+        assert settings.getVoteType() == ElectionSettings.VoteType.Candidate;
+        final int numSeats = settings.getNumberOfSeats();
         final var candidates = createCandidates(numSeats);
         final var voterCenter = randomCenterPosition();
         final var ballotBox = createBallotBox(candidates, voterCenter, numSeats);

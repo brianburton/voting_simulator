@@ -4,7 +4,7 @@ import org.javimmutable.collections.JImmutableList;
 
 public interface ElectionFactory
 {
-    Election createElection(int numberOfSeats);
+    Election createElection(ElectionSettings settings);
 
     JImmutableList<Party> allParties();
 }

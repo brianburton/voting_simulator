@@ -27,9 +27,11 @@ public class LinearElectionFactory
     }
 
     @Override
-    public Election createElection(int numberOfSeats)
+    public Election createElection(ElectionSettings settings)
     {
-        var allAffinities = list(
+        assert settings.getVoteType() == ElectionSettings.VoteType.Candidate;
+        final int numberOfSeats = settings.getNumberOfSeats();
+        final var allAffinities = list(
             new Affinity(Left, CenterLeft),
             new Affinity(CenterLeft, Center),
             new Affinity(Center, CenterRight),
