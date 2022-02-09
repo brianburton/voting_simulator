@@ -14,7 +14,7 @@ public class GridParty
     {
         this.position = position;
         party = new Party(String.format("%s-%d", position, distance),
-                          String.format("%d-%d", position.getX() / 10, position.getY() / 10),
+                          position.toString(),
                           position);
     }
 }
