@@ -18,7 +18,7 @@ public class App
     {
         final var showDistrictResults = false;
         final var rand = new Rand();
-        final ElectionFactory factory = new GridElectionFactory(rand, 5);
+        final ElectionFactory factory = new GridElectionFactory(rand, 6);
 //        ElectionRunner runner = Runners.hare();
 //        ElectionRunner runner = Runners.dhondt();
 //        ElectionRunner runner = Runners.webster();

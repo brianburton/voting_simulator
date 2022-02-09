@@ -96,7 +96,7 @@ public class ResultsReport
         try (PrintWriter out = new PrintWriter(str)) {
             out.printf("%-3s %-3s ", "", "");
             for (Party party : parties) {
-                out.printf(" %s ", center(party.getName(), 19));
+                out.printf(" %s ", center(party.getName(), 14));
             }
         }
         return str.toString();
@@ -108,7 +108,7 @@ public class ResultsReport
         try (PrintWriter out = new PrintWriter(str)) {
             out.printf("%3s %3s ", "rsc", "rec");
             for (Party party : parties) {
-                out.printf("%4s  %6s  %6s ", "ps", "eps", "aps");
+                out.printf("%7s  %6s ", "eps", "aps");
             }
             out.printf(" %6s %6s", "err", "eff");
         }
@@ -122,7 +122,7 @@ public class ResultsReport
             out.printf("%3d %3d", seats, elected);
             for (Party party : parties) {
                 final var pr = new PartyResult(party);
-                out.printf(" %4d  %5s%%  %5s%%", pr.getSeats(), pr.getVotePercent(), pr.getSeatPercent());
+                out.printf(" %6s%%  %5s%%", pr.getVotePercent(), pr.getSeatPercent());
             }
             out.printf("  %5s%% %5s%%", percent(computeErrors(), Decimal.ONE), percent(effectiveVotes, votes));
         }
