@@ -20,7 +20,7 @@ public class GridElectionFactory
     private static final int MaxPos = 100;
     private static final int MaxVoterDistance = 45;
     private static final int MaxCandidateDistance = 10;
-    private static final int MinPartyDistance = 15;
+    private static final int MinPartyDistance = 10;
     private static final int VotersPerSeat = 500;
     private static final int VoterTolerance = GridPosition.toQuickDistance(25);
     private static final int ElectionCenterBias = 3;
