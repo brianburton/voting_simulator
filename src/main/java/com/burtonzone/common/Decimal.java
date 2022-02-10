@@ -29,7 +29,7 @@ public class Decimal
         this(new BigDecimal(value));
     }
 
-    private Decimal(BigDecimal value)
+    public Decimal(BigDecimal value)
     {
         this.value = value.setScale(PRECISION, RoundingMode.HALF_UP);
     }

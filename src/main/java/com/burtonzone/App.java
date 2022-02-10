@@ -24,7 +24,7 @@ public class App
 //                .voteType(ElectionSettings.VoteType.Party)
                 .build();
 
-        final ElectionFactory factory = new GridElectionFactory(rand, 6);
+        final ElectionFactory factory = new GridElectionFactory(rand, 5);
 //        ElectionRunner runner = Runners.hare();
         ElectionRunner runner = Runners.dhondt();
 //        ElectionRunner runner = Runners.webster();
@@ -73,10 +73,8 @@ public class App
                 System.out.println();
             }
 
-            if (showDistrictResults || test == 1) {
-                System.out.printf("%3s %s%n", "", ResultsReport.printHeader1(factory.allParties()));
-                System.out.printf("%3s %s%n", "#", ResultsReport.printHeader2(factory.allParties()));
-            }
+            System.out.printf("%3s %s%n", "", ResultsReport.printHeader1(factory.allParties()));
+            System.out.printf("%3s %s%n", "#", ResultsReport.printHeader2(factory.allParties()));
             if (showDistrictResults) {
                 for (ElectionResult result : results) {
                     System.out.printf("%3d %s%n", test, ResultsReport.of(result).getRow());
@@ -88,6 +86,11 @@ public class App
             if (showDistrictResults) {
                 System.out.println();
             }
+
+            for (String line : resultsReport.getCoalitionGrid(39)) {
+                System.out.println("     " + line);
+            }
+            System.out.println();
         }
     }
 

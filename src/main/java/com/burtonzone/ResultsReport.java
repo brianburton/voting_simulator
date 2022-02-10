@@ -4,6 +4,7 @@ import static java.lang.String.format;
 import static org.javimmutable.collections.util.JImmutables.*;
 
 import com.burtonzone.common.Counter;
+import com.burtonzone.common.DataUtils;
 import com.burtonzone.common.Decimal;
 import com.burtonzone.election.ElectionResult;
 import com.burtonzone.election.Party;
@@ -11,6 +12,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Comparator;
 import lombok.Builder;
 import lombok.Value;
 import org.javimmutable.collections.JImmutableList;
@@ -153,6 +155,64 @@ public class ResultsReport
         return answer.build();
     }
 
+    public JImmutableList<String> getCoalitionGrid(int maxDistance)
+    {
+        final var allCoalitions =
+            getCoalitions(maxDistance)
+                .stream()
+                .sorted(Comparator
+                            .comparing(Coalition::getPartyDistance)
+                            .thenComparing(Coalition::getSeatPercent))
+                .collect(listCollector());
+        if (allCoalitions.isEmpty()) {
+            return list("NO WORKING COALITIONS FOUND");
+        }
+
+        final JImmutableList.Builder<String> answer = listBuilder();
+        answer.add(format("%4s %6s %6s %5s  %s", "Dist", "Vote%", "Seat%", "Seats", "Parties"));
+        for (Coalition coalition : allCoalitions) {
+            answer.add(format("%4d %5s%% %5s%% %5d %s",
+                              coalition.getPartyDistance().toInt(),
+                              coalition.getVotePercent(),
+                              coalition.getSeatPercent(),
+                              coalition.getSeats(),
+                              coalition.getMembers().transform(Party::getName)));
+        }
+        return answer.build();
+    }
+
+    public <T> JImmutableList<Coalition> getCoalitions(int maxDistance)
+    {
+        final var maxDistanceDecimal = new Decimal(maxDistance);
+        var answer = JImmutables.<Coalition>list();
+        final var allParties = parties
+            .stream()
+            .map(PartyResult::new)
+            .collect(listCollector());
+        for (int count = 1; count <= (parties.size() + 1) / 2; ++count) {
+            for (var combo : DataUtils.combos(allParties, count)) {
+                var members = JImmutables.<Party>list();
+                int seats = 0;
+                int votes = 0;
+                for (PartyResult member : combo) {
+                    members = members.insertLast(member.party);
+                    seats = seats + member.getSeats();
+                    votes = votes + member.getVotes();
+                }
+                final Decimal partyDistance = Party.maxInterPartyDistance(members);
+                final Coalition coalition = new Coalition(partyDistance, members, seats, votes);
+                if (coalition.getSeatPercent().intValue() <= 50) {
+                    continue;
+                }
+                if (partyDistance.isGreaterThan(maxDistanceDecimal)) {
+                    continue;
+                }
+                answer = answer.insertLast(coalition);
+            }
+        }
+        return answer;
+    }
+
     public class PartyResult
     {
         private final Party party;
@@ -191,6 +251,25 @@ public class ResultsReport
         public BigDecimal getSeatPercent()
         {
             return percent(getSeats(), seats);
+        }
+    }
+
+    @Value
+    public class Coalition
+    {
+        Decimal partyDistance;
+        JImmutableList<Party> members;
+        int seats;
+        int votes;
+
+        public BigDecimal getVotePercent()
+        {
+            return percent(votes, ResultsReport.this.votes);
+        }
+
+        public BigDecimal getSeatPercent()
+        {
+            return percent(seats, ResultsReport.this.seats);
         }
     }
 
