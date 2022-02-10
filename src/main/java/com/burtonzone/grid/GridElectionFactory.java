@@ -23,8 +23,6 @@ public class GridElectionFactory
     private static final int MinPartyDistance = 15;
     private static final int VotersPerSeat = 500;
     private static final int VoterTolerance = GridPosition.toQuickDistance(25);
-    private static final int VoterMaxRanks = 10;
-    private static final int VoterMaxParties = 3;
     private static final int ElectionCenterBias = 3;
     private static final int PartyPositionBias = 1;
     private static final int VoterPositionBias = 4;
@@ -113,8 +111,8 @@ public class GridElectionFactory
                 .wrapped(MinPos, MaxPos);
             final var ballot =
                 settings.getVoteType() == ElectionSettings.VoteType.Candidate
-                ? createCandidateOrientedBallot(candidates, voterPosition)
-                : createPartyOrientedBallot(partyLists, voterPosition);
+                ? createCandidateOrientedBallot(candidates, voterPosition, settings.getMaxCandidateChoices())
+                : createPartyOrientedBallot(partyLists, voterPosition, settings.getMaxPartyChoices());
             if (ballot.isNonEmpty()) {
                 ballotBox.add(ballot);
             }
@@ -123,23 +121,25 @@ public class GridElectionFactory
     }
 
     private JImmutableList<Candidate> createCandidateOrientedBallot(JImmutableList<GridCandidate> candidates,
-                                                                    GridPosition position)
+                                                                    GridPosition position,
+                                                                    int maxCandidates)
     {
         return candidates.stream()
             .filter(c -> c.getPosition().quickDistanceTo(position) <= VoterTolerance)
             .sorted(GridCandidate.distanceComparator(position))
-            .limit(VoterMaxRanks)
+            .limit(maxCandidates)
             .map(GridCandidate::getCandidate)
             .collect(JImmutables.listCollector());
     }
 
     private JImmutableList<Candidate> createPartyOrientedBallot(JImmutableListMap<GridParty, GridCandidate> partyLists,
-                                                                GridPosition voterPosition)
+                                                                GridPosition voterPosition,
+                                                                int maxParties)
     {
         return parties.stream()
             .filter(p -> p.getPosition().quickDistanceTo(voterPosition) <= VoterTolerance)
             .sorted(GridParty.distanceComparator(voterPosition))
-            .limit(VoterMaxParties)
+            .limit(maxParties)
             .flatMap(p -> partyLists.getList(p).stream())
             .map(GridCandidate::getCandidate)
             .collect(listCollector());
