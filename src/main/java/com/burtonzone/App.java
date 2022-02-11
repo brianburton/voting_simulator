@@ -25,7 +25,7 @@ public class App
 //                .voteType(ElectionSettings.VoteType.Party)
                 .build();
 
-        final ElectionFactory factory = new PositionalElectionFactory(IssueSpaces.linear(rand), 5);
+        final ElectionFactory factory = new PositionalElectionFactory(IssueSpaces.grid(rand), 5);
 //        ElectionRunner runner = Runners.hare();
         ElectionRunner runner = Runners.dhondt();
 //        ElectionRunner runner = Runners.webster();

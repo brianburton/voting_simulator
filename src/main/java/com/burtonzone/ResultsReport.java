@@ -134,21 +134,18 @@ public class ResultsReport
     public JImmutableList<String> getPartyDistanceGrid()
     {
         final JImmutableList.Builder<String> answer = listBuilder();
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(format("%10s", ""));
         for (Party party : parties) {
-            sb.append("  ");
-            sb.append(center(party.getName(), 10, " "));
+            sb.append(format("  %10s", party.getName()));
         }
         answer.add(sb.toString());
         for (Party outer : parties) {
-            sb = new StringBuffer();
-            sb.append("  ");
-            sb.append(center(outer.getName(), 10, " "));
+            sb = new StringBuilder();
+            sb.append(format("%10s", outer.getName()));
             for (Party inner : parties) {
                 var distance = outer.getPosition().distanceTo(inner.getPosition()).toInt();
-                sb.append("  ");
-                sb.append(center(format("%3d", distance), 10, " "));
+                sb.append(format("  %10d", distance));
             }
             answer.add(sb.toString());
         }
