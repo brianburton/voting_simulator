@@ -8,7 +8,8 @@ import com.burtonzone.election.ElectionFactory;
 import com.burtonzone.election.ElectionResult;
 import com.burtonzone.election.ElectionRunner;
 import com.burtonzone.election.ElectionSettings;
-import com.burtonzone.grid.GridElectionFactory;
+import com.burtonzone.election.IssueSpaces;
+import com.burtonzone.election.PositionalElectionFactory;
 import lombok.Value;
 import org.javimmutable.collections.JImmutableList;
 import org.javimmutable.collections.util.JImmutables;
@@ -24,7 +25,7 @@ public class App
 //                .voteType(ElectionSettings.VoteType.Party)
                 .build();
 
-        final ElectionFactory factory = new GridElectionFactory(rand, 5);
+        final ElectionFactory factory = new PositionalElectionFactory(IssueSpaces.linear(rand), 5);
 //        ElectionRunner runner = Runners.hare();
         ElectionRunner runner = Runners.dhondt();
 //        ElectionRunner runner = Runners.webster();

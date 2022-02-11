@@ -22,4 +22,18 @@ public class DataUtils
         }
         return answer;
     }
+
+    public static int wrap(int value,
+                           int minValue,
+                           int maxValue)
+    {
+        if (value < minValue) {
+            value = maxValue - (minValue - value);
+        } else if (value > maxValue) {
+            value = minValue + (value - maxValue);
+        }
+        assert value >= minValue;
+        assert value <= maxValue;
+        return value;
+    }
 }

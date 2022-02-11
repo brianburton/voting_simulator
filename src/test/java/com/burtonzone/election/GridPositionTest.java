@@ -1,4 +1,4 @@
-package com.burtonzone.grid;
+package com.burtonzone.election;
 
 import static org.junit.Assert.*;
 

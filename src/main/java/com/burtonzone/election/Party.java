@@ -1,14 +1,13 @@
 package com.burtonzone.election;
 
 import com.burtonzone.common.Decimal;
+import java.util.Comparator;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.Value;
 import org.javimmutable.collections.JImmutableList;
 
-@Getter
+@Value
 @AllArgsConstructor
-@EqualsAndHashCode
 public class Party
 {
     String name;
@@ -35,5 +34,10 @@ public class Party
             }
         }
         return max;
+    }
+
+    public static Comparator<Party> distanceComparator(PartyPosition position)
+    {
+        return new DistanceComparator<>(position, Party::getPosition);
     }
 }
