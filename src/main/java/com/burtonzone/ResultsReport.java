@@ -31,6 +31,7 @@ public class ResultsReport
     int elected;
     int votes;
     int effectiveVotes;
+    Party winningParty;
     @Builder.Default
     Counter<Party> partyVotes = new Counter<>();
     @Builder.Default
@@ -52,6 +53,7 @@ public class ResultsReport
             .effectiveVotes(effectiveVotes)
             .partyVotes(partyVotes)
             .partySeats(partyElected)
+            .winningParty(computeWinningParty(partyElected))
             .build();
     }
 
@@ -66,6 +68,7 @@ public class ResultsReport
 
     public ResultsReport add(ResultsReport other)
     {
+        final Counter<Party> partySeats = this.partySeats.add(other.partySeats);
         return builder()
             .parties(parties.insertAll(other.parties))
             .seats(seats + other.seats)
@@ -73,7 +76,8 @@ public class ResultsReport
             .votes(votes + other.votes)
             .effectiveVotes(effectiveVotes + other.effectiveVotes)
             .partyVotes(partyVotes.add(other.partyVotes))
-            .partySeats(partySeats.add(other.partySeats))
+            .partySeats(partySeats)
+            .winningParty(computeWinningParty(partySeats))
             .build();
     }
 
@@ -162,13 +166,14 @@ public class ResultsReport
                             .thenComparing(Coalition::getSeatPercent))
                 .collect(listCollector());
         if (allCoalitions.isEmpty()) {
-            return list("NO WORKING COALITIONS FOUND");
+            return list("  NO WORKING COALITIONS FOUND");
         }
 
         final JImmutableList.Builder<String> answer = listBuilder();
-        answer.add(format("%4s %6s %6s %5s  %s", "Dist", "Vote%", "Seat%", "Seats", "Parties"));
+        answer.add(format("%s %4s %6s %6s %5s  %s", "W", "Dist", "Vote%", "Seat%", "Seats", "Parties"));
         for (Coalition coalition : allCoalitions) {
-            answer.add(format("%4d %5s%% %5s%% %5d %s",
+            answer.add(format("%s %4d %5s%% %5s%% %5d %s",
+                              containsWinner(coalition.getMembers()) ? "*" : " ",
                               coalition.getPartyDistance().toInt(),
                               coalition.getVotePercent(),
                               coalition.getSeatPercent(),
@@ -196,6 +201,9 @@ public class ResultsReport
                     seats = seats + member.getSeats();
                     votes = votes + member.getVotes();
                 }
+                members = members.stream()
+                    .sorted(partySeats.keysHighestFirstOrder())
+                    .collect(listCollector());
                 final Decimal partyDistance = Party.maxInterPartyDistance(members);
                 final Coalition coalition = new Coalition(partyDistance, members, seats, votes);
                 if (coalition.getSeatPercent().intValue() <= 50) {
@@ -208,6 +216,11 @@ public class ResultsReport
             }
         }
         return answer;
+    }
+
+    private boolean containsWinner(JImmutableList<Party> parties)
+    {
+        return parties.anyMatch(p -> p == winningParty);
     }
 
     public class PartyResult
@@ -305,5 +318,13 @@ public class ResultsReport
             }
         }
         return s;
+    }
+
+    private static Party computeWinningParty(Counter<Party> partySeats)
+    {
+        return partySeats
+            .getSortedList()
+            .get(0)
+            .getKey();
     }
 }

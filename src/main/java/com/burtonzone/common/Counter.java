@@ -115,19 +115,30 @@ public class Counter<T>
 
     public JImmutableList<Entry<T>> getSortedList(Comparator<T> tieBreaker)
     {
-        var comparator = highestFirstOrder(tieBreaker);
-        return counts.stream()
-            .map(Entry::new)
-            .sorted(comparator)
-            .collect(JImmutables.listCollector());
+        return sortEntries(highestFirstOrder(tieBreaker));
+    }
+
+    public JImmutableList<Entry<T>> getSortedList()
+    {
+        return sortEntries(highestFirstOrder());
     }
 
     public Comparator<Entry<T>> highestFirstOrder(Comparator<T> tieBreaker)
     {
+        return highestFirstOrder()
+            .thenComparing(e -> e.key, tieBreaker);
+    }
+
+    public Comparator<Entry<T>> highestFirstOrder()
+    {
         return Comparator
             .<Entry<T>, Decimal>comparing(e -> e.count)
-            .reversed()
-            .thenComparing(e -> e.key, tieBreaker);
+            .reversed();
+    }
+
+    public Comparator<T> keysHighestFirstOrder()
+    {
+        return Comparator.comparing(this::get).reversed();
     }
 
     @Nonnull
@@ -141,6 +152,14 @@ public class Counter<T>
     public int getSpliteratorCharacteristics()
     {
         return counts.getSpliteratorCharacteristics();
+    }
+
+    private JImmutableList<Entry<T>> sortEntries(Comparator<Entry<T>> comparator)
+    {
+        return counts.stream()
+            .map(Entry::new)
+            .sorted(comparator)
+            .collect(JImmutables.listCollector());
     }
 
     @Getter
