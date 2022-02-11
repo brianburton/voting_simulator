@@ -1,5 +1,6 @@
 package com.burtonzone;
 
+import static com.burtonzone.common.Decimal.ZERO;
 import static java.lang.String.format;
 import static org.javimmutable.collections.util.JImmutables.*;
 
@@ -81,12 +82,17 @@ public class ResultsReport
             .build();
     }
 
+    public int getMajority()
+    {
+        return seats / 2 + 1;
+    }
+
     // https://en.wikipedia.org/wiki/Gallagher_index
     public Decimal computeErrors()
     {
         final var totalSeats = partySeats.getTotal();
         final var totalVotes = partyVotes.getTotal();
-        var sum = Decimal.ZERO;
+        var sum = ZERO;
         for (Party party : parties) {
             final var seatPercentage = partySeats.get(party).dividedBy(totalSeats);
             final var votePercentage = partyVotes.get(party).dividedBy(totalVotes);
@@ -185,6 +191,10 @@ public class ResultsReport
 
     public <T> JImmutableList<Coalition> getCoalitions(int maxDistance)
     {
+        var winner = new PartyResult(winningParty);
+        if (winner.hasMajority()) {
+            return list(new Coalition(ZERO, list(winningParty), winner.getSeats(), winner.getVotes()));
+        }
         final var maxDistanceDecimal = new Decimal(maxDistance);
         var answer = JImmutables.<Coalition>list();
         final var allParties = parties
@@ -261,6 +271,11 @@ public class ResultsReport
         public BigDecimal getSeatPercent()
         {
             return percent(getSeats(), seats);
+        }
+
+        public boolean hasMajority()
+        {
+            return getSeats() >= getMajority();
         }
     }
 

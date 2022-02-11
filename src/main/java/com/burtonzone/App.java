@@ -25,12 +25,12 @@ public class App
 //                .voteType(ElectionSettings.VoteType.Party)
                 .build();
 
-        final ElectionFactory factory = new PositionalElectionFactory(IssueSpaces.grid(rand), 5);
+        final ElectionFactory factory = new PositionalElectionFactory(IssueSpaces.linear(rand), 3);
 //        ElectionRunner runner = Runners.hare();
-        ElectionRunner runner = Runners.dhondt();
+//        ElectionRunner runner = Runners.dhondt();
 //        ElectionRunner runner = Runners.webster();
-        runner = Runners.hybrid(runner);
-//        ElectionRunner runner = Runners.basicStv();
+//        runner = Runners.hybrid(runner);
+        ElectionRunner runner = Runners.basicStv();
 //        ElectionRunner runner = Runners.singleVote();
 
 
