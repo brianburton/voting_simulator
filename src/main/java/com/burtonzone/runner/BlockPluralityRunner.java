@@ -26,11 +26,10 @@ public class BlockPluralityRunner
     @Override
     public ElectionResult runElection(Election election)
     {
+        final var effectiveBallots = election.getBallots().toPrefixBallots(election.getSeats());
         var counter = new Counter<Candidate>();
-        for (var ballot : election.getBallots()) {
-            var topChoices = ballot.getKey()
-                .slice(0, election.getSeats());
-            for (Candidate candidate : topChoices) {
+        for (var ballot : effectiveBallots) {
+            for (Candidate candidate : ballot.getKey()) {
                 var count = ballot.getCount();
                 counter = counter.add(candidate, count);
             }
@@ -42,6 +41,6 @@ public class BlockPluralityRunner
         var elected = votes.transform(CandidateVotes::getCandidate);
         final var exhausted = Decimal.ZERO;
         final var round = new ElectionResult.RoundResult(votes, elected, exhausted);
-        return new ElectionResult(election, list(round));
+        return new ElectionResult(election, list(round), effectiveBallots);
     }
 }

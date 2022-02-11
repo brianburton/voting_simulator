@@ -23,15 +23,17 @@ public class App
         final var electionSettings =
             ElectionSettings.builder()
 //                .voteType(ElectionSettings.VoteType.Party)
+                .maxCandidateChoices(15)
                 .build();
 
-        final ElectionFactory factory = new PositionalElectionFactory(IssueSpaces.linear(rand), 3);
+        final ElectionFactory factory = new PositionalElectionFactory(IssueSpaces.linear(rand), 5);
 //        ElectionRunner runner = Runners.hare();
 //        ElectionRunner runner = Runners.dhondt();
 //        ElectionRunner runner = Runners.webster();
 //        runner = Runners.hybrid(runner);
         ElectionRunner runner = Runners.basicStv();
 //        ElectionRunner runner = Runners.singleVote();
+//        ElectionRunner runner = Runners.blockPlurality();
 
 
 //        ElectionRunner runner = Runners.blockPlurality();
@@ -39,7 +41,7 @@ public class App
         for (int test = 1; test <= 10; ++test) {
             final var db = JImmutables.<DistrictSpec>listBuilder();
             // all districts single seat to simulate current system
-//            addDistricts(db, 435, 1);
+//            addDistricts(db, 435, electionSettings.withNumberOfSeats(1));
 
             // number and size of districts taken from fairvote.org plan for US house elections
             addDistricts(db, 44, electionSettings.withNumberOfSeats(5));
@@ -88,7 +90,7 @@ public class App
                 System.out.println();
             }
 
-            for (String line : resultsReport.getCoalitionGrid(39)) {
+            for (String line : resultsReport.getCoalitionGrid(31)) {
                 System.out.println("     " + line);
             }
             System.out.println();

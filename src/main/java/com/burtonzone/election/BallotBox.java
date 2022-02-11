@@ -1,11 +1,12 @@
 package com.burtonzone.election;
 
-import static com.burtonzone.common.Decimal.ZERO;
+import static com.burtonzone.common.Decimal.*;
 import static org.javimmutable.collections.util.JImmutables.*;
 
 import com.burtonzone.common.Counter;
 import com.burtonzone.common.Decimal;
 import java.util.Comparator;
+import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import lombok.Value;
@@ -39,6 +40,36 @@ public class BallotBox
         return new Builder();
     }
 
+    public BallotBox toSingleChoiceBallots()
+    {
+        return toPrefixBallots(1);
+    }
+
+    public BallotBox toPrefixBallots(int maxRanks)
+    {
+        var answer = builder();
+        for (var ballot : ballots) {
+            answer.add(ballot.getKey().slice(0, maxRanks), ballot.getValue());
+        }
+        return answer.build();
+    }
+
+    public BallotBox toFirstChoicePartyBallots()
+    {
+        var answer = builder();
+        for (var ballot : ballots) {
+            var choices = ballot.getKey();
+            if (choices.isNonEmpty()) {
+                var firstChoiceParty = ballot.getKey().get(0).getParty();
+                var filteredChoices = choices.select(c -> c.getParty().equals(firstChoiceParty));
+                answer.add(filteredChoices, ballot.getValue());
+            } else {
+                answer.add(ballot.getKey(), ballot.getValue());
+            }
+        }
+        return answer.build();
+    }
+
     @Nonnull
     @Override
     public SplitableIterator<Counter.Entry<JImmutableList<Candidate>>> iterator()
@@ -70,6 +101,30 @@ public class BallotBox
             }
         }
         return answer;
+    }
+
+    /**
+     * Returns a number which is a fraction of the total number of votes in the ballot box.
+     * For each ballot the first choice to have a true value from the predicate generates a score.
+     * The ballot's first choice scores 1, the second choice scores 1/2, the third scores 1/4 etc.
+     *
+     * @param isElected return true if the candidate should be considered elected
+     * @return the total score for all ballots in the box
+     */
+    public Decimal getEffectiveVoteScore(Predicate<Candidate> isElected)
+    {
+        var sum = ZERO;
+        for (var ballot : ballots) {
+            var divisor = ONE;
+            for (Candidate candidate : ballot.getKey()) {
+                if (isElected.test(candidate)) {
+                    sum = sum.plus(ballot.getValue().dividedBy(divisor));
+                    break;
+                }
+                divisor = divisor.plus(ONE);
+            }
+        }
+        return sum;
     }
 
     public BallotBox remove(Candidate candidate)
@@ -207,6 +262,14 @@ public class BallotBox
             final var votes = new Decimal(count);
             ballots = ballots.update(candidates, c -> c.map(votes::plus).orElse(votes));
             this.count += count;
+            return this;
+        }
+
+        public Builder add(JImmutableList<Candidate> candidates,
+                           Decimal votes)
+        {
+            ballots = ballots.update(candidates, c -> c.map(votes::plus).orElse(votes));
+            this.count += votes.toInt();
             return this;
         }
 

@@ -10,13 +10,22 @@ public class ElectionResult
 {
     private final Election election;
     private final JImmutableList<RoundResult> results;
+    private final BallotBox effectiveBallots;
 
     public ElectionResult(Election election,
-                          JImmutableList<RoundResult> results)
+                          JImmutableList<RoundResult> results,
+                          BallotBox effectiveBallots)
     {
         assert results.isNonEmpty();
         this.election = election;
         this.results = results;
+        this.effectiveBallots = effectiveBallots;
+    }
+
+    public ElectionResult(Election election,
+                          JImmutableList<RoundResult> results)
+    {
+        this(election, results, election.getBallots());
     }
 
     public Election getElection()
@@ -27,6 +36,11 @@ public class ElectionResult
     public RoundResult getFinalRound()
     {
         return results.get(results.size() - 1);
+    }
+
+    public BallotBox getEffectiveBallots()
+    {
+        return effectiveBallots;
     }
 
     public boolean isComplete()
@@ -58,21 +72,10 @@ public class ElectionResult
         return answer;
     }
 
-    /**
-     * @return Number of voters whose first choice candidate was elected.
-     */
-    public int getEffectiveFirstVoteCount()
+    public Decimal getEffectiveVoteScore()
     {
         final var candidateSet = JImmutables.set(getElected());
-        var count = 0;
-        for (var e : election.getBallots().getFirstChoiceCounts()) {
-            final var candidate = e.getKey();
-            final var votes = e.getCount();
-            if (candidateSet.contains(candidate)) {
-                count = count + votes.toInt();
-            }
-        }
-        return count;
+        return effectiveBallots.getEffectiveVoteScore(candidateSet::contains);
     }
 
     @Value

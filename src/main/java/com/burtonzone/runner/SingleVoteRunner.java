@@ -24,11 +24,11 @@ public class SingleVoteRunner
         }
         var votes = counter
             .getSortedList(election.getTieBreaker())
-            .prefix(election.getSeats())
+            .slice(0, election.getSeats())
             .transform(CandidateVotes::new);
         var elected = votes.transform(CandidateVotes::getCandidate);
         final var exhausted = Decimal.ZERO;
         final var round = new ElectionResult.RoundResult(votes, elected, exhausted);
-        return new ElectionResult(election, list(round));
+        return new ElectionResult(election, list(round), election.getBallots().toSingleChoiceBallots());
     }
 }

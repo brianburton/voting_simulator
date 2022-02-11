@@ -30,9 +30,11 @@ public class ResultsReport
     JImmutableSet<Party> parties = JImmutables.insertOrderSet();
     int seats;
     int elected;
+    int exhausted;
     int votes;
-    int effectiveVotes;
     Party winningParty;
+    @Builder.Default
+    Decimal effectiveVoteScore = ZERO;
     @Builder.Default
     Counter<Party> partyVotes = new Counter<>();
     @Builder.Default
@@ -40,21 +42,16 @@ public class ResultsReport
 
     public static ResultsReport of(ElectionResult result)
     {
-        final var seats = result.getElection().getSeats();
-        final var elected = result.getFinalRound().getElected().size();
-        final var votes = result.getElection().getTotalVotes().toInt();
-        final var effectiveVotes = result.getEffectiveFirstVoteCount();
-        final var partyVotes = result.getPartyFirstChoiceCounts();
-        final var partyElected = result.getPartyElectedCounts();
         return builder()
             .parties(JImmutables.insertOrderSet(result.getElection().getParties()))
-            .seats(seats)
-            .elected(elected)
-            .votes(votes)
-            .effectiveVotes(effectiveVotes)
-            .partyVotes(partyVotes)
-            .partySeats(partyElected)
-            .winningParty(computeWinningParty(partyElected))
+            .seats(result.getElection().getSeats())
+            .elected(result.getFinalRound().getElected().size())
+            .votes(result.getElection().getTotalVotes().toInt())
+            .exhausted(result.getFinalRound().getExhausted().toInt())
+            .effectiveVoteScore(result.getEffectiveVoteScore())
+            .partyVotes(result.getPartyFirstChoiceCounts())
+            .partySeats(result.getPartyElectedCounts())
+            .winningParty(computeWinningParty(result.getPartyElectedCounts()))
             .build();
     }
 
@@ -75,7 +72,8 @@ public class ResultsReport
             .seats(seats + other.seats)
             .elected(elected + other.elected)
             .votes(votes + other.votes)
-            .effectiveVotes(effectiveVotes + other.effectiveVotes)
+            .exhausted(exhausted + other.exhausted)
+            .effectiveVoteScore(effectiveVoteScore.plus(other.effectiveVoteScore))
             .partyVotes(partyVotes.add(other.partyVotes))
             .partySeats(partySeats)
             .winningParty(computeWinningParty(partySeats))
@@ -122,7 +120,7 @@ public class ResultsReport
             for (Party party : parties) {
                 out.printf("%8s  %6s ", "eps", "aps");
             }
-            out.printf(" %6s %6s", "err", "eff");
+            out.printf(" %6s %6s %6s", "waste", "err", "eff");
         }
         return str.toString();
     }
@@ -136,7 +134,10 @@ public class ResultsReport
                 final var pr = new PartyResult(party);
                 out.printf(" %7s%%  %5s%%", pr.getVotePercent(), pr.getSeatPercent());
             }
-            out.printf("  %5s%% %5s%%", percent(computeErrors(), Decimal.ONE), percent(effectiveVotes, votes));
+            out.printf("  %5s%% %5s%% %5s%%",
+                       percent(exhausted, votes),
+                       percent(computeErrors(), Decimal.ONE),
+                       percent(effectiveVoteScore, new Decimal(votes)));
         }
         return str.toString();
     }
@@ -265,7 +266,7 @@ public class ResultsReport
 
         public BigDecimal getVotePercent()
         {
-            return percent(getVotes(), votes);
+            return percent(getVotes(), ResultsReport.this.votes);
         }
 
         public BigDecimal getSeatPercent()

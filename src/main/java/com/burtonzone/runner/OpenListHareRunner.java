@@ -125,7 +125,8 @@ public class OpenListHareRunner
             final var elected = electedCandidates.transform(CandidateVotes::getCandidate);
             final var exhausted = getUnused();
             final var round = new ElectionResult.RoundResult(electedCandidates, elected, exhausted);
-            return new ElectionResult(election, list(round));
+            final var effectiveBallots = election.getBallots().toFirstChoicePartyBallots();
+            return new ElectionResult(election, list(round), effectiveBallots);
         }
     }
 }
