@@ -22,8 +22,8 @@ public class ElectionSettings
     VoteType voteType = VoteType.Candidate;
 
     @Builder.Default
-    int maxCandidateChoices = 9;
+    int maxCandidateChoices = 7;
 
     @Builder.Default
-    int maxPartyChoices = 3;
+    int maxPartyChoices = 2;
 }
