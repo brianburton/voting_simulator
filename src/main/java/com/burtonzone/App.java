@@ -20,22 +20,25 @@ public class App
     {
         final var showDistrictResults = false;
         final var rand = new Rand();
+        final var issueSpace = IssueSpaces.linear(rand);
+        final var factory = new PositionalElectionFactory(issueSpace);
+        final var parties = factory.createParties(5);
         final var electionSettings =
             ElectionSettings.builder()
+                .parties(parties)
+                .maxCandidateChoices(5)
+                .maxPartyChoices(Math.max(1, parties.size() / 2))
+                .voteType(ElectionSettings.VoteType.Candidate)
 //                .voteType(ElectionSettings.VoteType.Party)
                 .build();
 
-        final ElectionFactory factory = new PositionalElectionFactory(IssueSpaces.linear(rand), 5);
 //        ElectionRunner runner = Runners.hare();
 //        ElectionRunner runner = Runners.dhondt();
-//        ElectionRunner runner = Runners.webster();
-//        runner = Runners.hybrid(runner);
-        ElectionRunner runner = Runners.basicStv();
+        ElectionRunner runner = Runners.webster();
+        runner = Runners.hybrid(runner);
+//        ElectionRunner runner = Runners.basicStv();
 //        ElectionRunner runner = Runners.singleVote();
 //        ElectionRunner runner = Runners.blockVote();
-
-
-//        ElectionRunner runner = Runners.blockPlurality();
 
         for (int test = 1; test <= 10; ++test) {
             final var db = JImmutables.<DistrictSpec>listBuilder();
@@ -75,8 +78,8 @@ public class App
                 System.out.println();
             }
 
-            System.out.printf("%3s %s%n", "", ResultsReport.printHeader1(factory.allParties()));
-            System.out.printf("%3s %s%n", "#", ResultsReport.printHeader2(factory.allParties()));
+            System.out.printf("%3s %s%n", "", ResultsReport.printHeader1(parties));
+            System.out.printf("%3s %s%n", "#", ResultsReport.printHeader2(parties));
             if (showDistrictResults) {
                 for (ElectionResult result : results) {
                     System.out.printf("%3d %s%n", test, ResultsReport.of(result).getRow());

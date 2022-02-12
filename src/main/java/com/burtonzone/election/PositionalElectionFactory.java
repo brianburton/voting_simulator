@@ -16,34 +16,27 @@ public class PositionalElectionFactory
 
     private final IssueSpace issueSpace;
     private final PartyPosition center;
-    private final JImmutableList<Party> parties;
 
-    public PositionalElectionFactory(IssueSpace issueSpace,
-                                     int numParties)
+    public PositionalElectionFactory(IssueSpace issueSpace)
     {
         this.issueSpace = issueSpace;
         this.center = issueSpace.center();
-        this.parties = createParties(numParties);
     }
 
     @Override
     public Election createElection(ElectionSettings settings)
     {
+        final var parties = settings.getParties();
         final int numSeats = settings.getNumberOfSeats();
-        final var candidates = createCandidates(numSeats);
-        final var partyLists = createPartyLists(candidates);
+        final var candidates = createCandidates(parties, numSeats);
+        final var partyLists = createPartyLists(parties, candidates);
         final var voterCenter = issueSpace.voterCenterPosition();
-        final var ballotBox = createBallotBox(candidates, partyLists, voterCenter, settings);
+        final var ballotBox = createBallotBox(parties, candidates, partyLists, voterCenter, settings);
         return new Election(parties, candidates, ballotBox, numSeats);
     }
 
     @Override
-    public JImmutableList<Party> allParties()
-    {
-        return parties;
-    }
-
-    private JImmutableList<Party> createParties(int numParties)
+    public JImmutableList<Party> createParties(int numParties)
     {
         var loops = 0;
         var positions = JImmutables.sortedSet(new PartyPosition.DistanceComparator(center));
@@ -70,7 +63,8 @@ public class PositionalElectionFactory
         return positions.transform(list(), p -> new Party(String.format("%s-%d", p, center.distanceTo(p).toInt()), p.toString(), p));
     }
 
-    private BallotBox createBallotBox(JImmutableList<Candidate> candidates,
+    private BallotBox createBallotBox(JImmutableList<Party> parties,
+                                      JImmutableList<Candidate> candidates,
                                       JImmutableListMap<Party, Candidate> partyLists,
                                       PartyPosition voterCenter,
                                       ElectionSettings settings)
@@ -83,7 +77,7 @@ public class PositionalElectionFactory
             final var ballot =
                 settings.getVoteType() == ElectionSettings.VoteType.Candidate
                 ? createCandidateOrientedBallot(candidates, voterPosition, settings.getMaxCandidateChoices())
-                : createPartyOrientedBallot(partyLists, voterPosition, settings.getMaxPartyChoices());
+                : createPartyOrientedBallot(parties, partyLists, voterPosition, settings.getMaxPartyChoices());
             if (ballot.isNonEmpty()) {
                 ballotBox.add(ballot);
             }
@@ -102,7 +96,8 @@ public class PositionalElectionFactory
             .collect(JImmutables.listCollector());
     }
 
-    private JImmutableList<Candidate> createPartyOrientedBallot(JImmutableListMap<Party, Candidate> partyLists,
+    private JImmutableList<Candidate> createPartyOrientedBallot(JImmutableList<Party> parties,
+                                                                JImmutableListMap<Party, Candidate> partyLists,
                                                                 PartyPosition voterPosition,
                                                                 int maxParties)
     {
@@ -114,7 +109,8 @@ public class PositionalElectionFactory
             .collect(listCollector());
     }
 
-    private JImmutableList<Candidate> createCandidates(int numCandidatesPerParty)
+    private JImmutableList<Candidate> createCandidates(JImmutableList<Party> parties,
+                                                       int numCandidatesPerParty)
     {
         var candidates = JImmutables.<Candidate>list();
         for (Party party : parties) {
@@ -136,7 +132,8 @@ public class PositionalElectionFactory
         return positions.transform(list(), p -> new Candidate(party, p.toString(), p));
     }
 
-    private JImmutableListMap<Party, Candidate> createPartyLists(JImmutableList<Candidate> candidates)
+    private JImmutableListMap<Party, Candidate> createPartyLists(JImmutableList<Party> parties,
+                                                                 JImmutableList<Candidate> candidates)
     {
         JImmutableListMap<Party, Candidate> answer = listMap();
         for (Party party : parties) {

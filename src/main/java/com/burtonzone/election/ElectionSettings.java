@@ -1,8 +1,11 @@
 package com.burtonzone.election;
 
+import static org.javimmutable.collections.util.JImmutables.*;
+
 import lombok.Builder;
 import lombok.Value;
 import lombok.With;
+import org.javimmutable.collections.JImmutableList;
 
 @Value
 @With
@@ -26,4 +29,7 @@ public class ElectionSettings
 
     @Builder.Default
     int maxPartyChoices = 2;
+
+    @Builder.Default
+    JImmutableList<Party> parties = list();
 }

@@ -6,5 +6,5 @@ public interface ElectionFactory
 {
     Election createElection(ElectionSettings settings);
 
-    JImmutableList<Party> allParties();
+    JImmutableList<Party> createParties(int numberOfParties);
 }
