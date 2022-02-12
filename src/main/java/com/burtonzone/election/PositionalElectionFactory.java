@@ -12,7 +12,7 @@ public class PositionalElectionFactory
 {
     private static final int MinPartyDistance = 10;
     private static final int VotersPerSeat = 500;
-    private static final int VoterTolerance = PartyPosition.toSquaredDistance(25);
+    private static final int VoterTolerance = PartyPosition.toSquaredDistance(20);
 
     private final IssueSpace issueSpace;
     private final PartyPosition center;
@@ -76,7 +76,7 @@ public class PositionalElectionFactory
             final var voterPosition = issueSpace.voterPosition(voterCenter);
             final var ballot =
                 settings.getVoteType() == ElectionSettings.VoteType.Candidate
-                ? createCandidateOrientedBallot(candidates, voterPosition, settings.getMaxCandidateChoices())
+                ? createCandidateOrientedBallot(candidates, voterPosition, settings)
                 : createPartyOrientedBallot(parties, partyLists, voterPosition, settings.getMaxPartyChoices());
             if (ballot.isNonEmpty()) {
                 ballotBox.add(ballot);
@@ -87,8 +87,10 @@ public class PositionalElectionFactory
 
     private JImmutableList<Candidate> createCandidateOrientedBallot(JImmutableList<Candidate> candidates,
                                                                     PartyPosition position,
-                                                                    int maxCandidates)
+                                                                    ElectionSettings settings)
     {
+        final var maxCandidates = Math.min(settings.getMaxCandidateChoices(),
+                                           settings.getMaxPartyChoices() * settings.getNumberOfSeats());
         return candidates.stream()
             .filter(c -> c.getPosition().squaredDistanceTo(position) <= VoterTolerance)
             .sorted(Candidate.distanceComparator(position))

@@ -141,6 +141,11 @@ public class Counter<T>
         return Comparator.comparing(this::get).reversed();
     }
 
+    public JImmutableMap<T, Decimal> toMap()
+    {
+        return counts;
+    }
+
     @Nonnull
     @Override
     public SplitableIterator<Entry<T>> iterator()

@@ -26,7 +26,7 @@ public class App
         final var electionSettings =
             ElectionSettings.builder()
                 .parties(parties)
-                .maxCandidateChoices(5)
+                .maxCandidateChoices(Integer.MAX_VALUE)
                 .maxPartyChoices(Math.max(1, parties.size() / 2))
                 .voteType(ElectionSettings.VoteType.Candidate)
 //                .voteType(ElectionSettings.VoteType.Party)
@@ -34,9 +34,9 @@ public class App
 
 //        ElectionRunner runner = Runners.hare();
 //        ElectionRunner runner = Runners.dhondt();
-        ElectionRunner runner = Runners.webster();
-        runner = Runners.hybrid(runner);
-//        ElectionRunner runner = Runners.basicStv();
+//        ElectionRunner runner = Runners.webster();
+//        runner = Runners.hybrid(runner);
+        ElectionRunner runner = Runners.basicStv();
 //        ElectionRunner runner = Runners.singleVote();
 //        ElectionRunner runner = Runners.blockVote();
 
@@ -61,7 +61,7 @@ public class App
 
             final JImmutableList<Election> elections =
                 db.build()
-                    .stream()//.parallel()
+                    .stream().parallel()
                     .map(spec -> spec.create(factory))
                     .collect(listCollector());
 

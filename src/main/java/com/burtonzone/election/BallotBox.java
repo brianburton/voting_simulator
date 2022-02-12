@@ -40,6 +40,28 @@ public class BallotBox
         return new Builder();
     }
 
+    public BallotBox add(BallotBox other)
+    {
+        var counter = new Counter<>(ballots);
+        for (Counter.Entry<JImmutableList<Candidate>> entry : other) {
+            counter = counter.add(entry.getKey(), entry.getCount());
+        }
+        return new BallotBox(counter.toMap());
+    }
+
+    public Decimal getAverageNumberOfChoices()
+    {
+        int count = 0;
+        var sum = 0;
+        for (var e : ballots) {
+            if (e.getKey().isNonEmpty()) {
+                count += 1;
+                sum += e.getKey().size();
+            }
+        }
+        return (count == 0) ? ZERO : new Decimal(sum).dividedBy(new Decimal(count));
+    }
+
     public BallotBox toSingleChoiceBallots()
     {
         return toPrefixBallots(1);

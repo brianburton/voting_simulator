@@ -7,6 +7,7 @@ import static org.javimmutable.collections.util.JImmutables.*;
 import com.burtonzone.common.Counter;
 import com.burtonzone.common.DataUtils;
 import com.burtonzone.common.Decimal;
+import com.burtonzone.election.BallotBox;
 import com.burtonzone.election.ElectionResult;
 import com.burtonzone.election.Party;
 import java.io.PrintWriter;
@@ -39,6 +40,8 @@ public class ResultsReport
     Counter<Party> partyVotes = new Counter<>();
     @Builder.Default
     Counter<Party> partySeats = new Counter<>();
+    @Builder.Default
+    BallotBox allBallots = BallotBox.builder().build();
 
     public static ResultsReport of(ElectionResult result)
     {
@@ -52,6 +55,7 @@ public class ResultsReport
             .partyVotes(result.getPartyFirstChoiceCounts())
             .partySeats(result.getPartyElectedCounts())
             .winningParty(computeWinningParty(result.getPartyElectedCounts()))
+            .allBallots(result.getEffectiveBallots())
             .build();
     }
 
@@ -77,12 +81,18 @@ public class ResultsReport
             .partyVotes(partyVotes.add(other.partyVotes))
             .partySeats(partySeats)
             .winningParty(computeWinningParty(partySeats))
+            .allBallots(allBallots.add(other.getAllBallots()))
             .build();
     }
 
     public int getMajority()
     {
         return seats / 2 + 1;
+    }
+
+    public Decimal getAverageNumberOfChoices()
+    {
+        return allBallots.getAverageNumberOfChoices();
     }
 
     // https://en.wikipedia.org/wiki/Gallagher_index
@@ -120,7 +130,7 @@ public class ResultsReport
             for (Party party : parties) {
                 out.printf("%8s  %6s ", "eps", "aps");
             }
-            out.printf(" %6s %6s %6s", "waste", "err", "eff");
+            out.printf(" %5s %6s %6s %6s", "ranks", "waste", "err", "eff");
         }
         return str.toString();
     }
@@ -134,7 +144,8 @@ public class ResultsReport
                 final var pr = new PartyResult(party);
                 out.printf(" %7s%%  %5s%%", pr.getVotePercent(), pr.getSeatPercent());
             }
-            out.printf("  %5s%% %5s%% %5s%%",
+            out.printf("  %5s %5s%% %5s%% %5s%%",
+                       tenths(getAverageNumberOfChoices()),
                        percent(exhausted, votes),
                        percent(computeErrors(), Decimal.ONE),
                        percent(effectiveVoteScore, new Decimal(votes)));
@@ -297,6 +308,11 @@ public class ResultsReport
         {
             return percent(seats, ResultsReport.this.seats);
         }
+    }
+
+    private static BigDecimal tenths(Decimal value)
+    {
+        return value.toBigDecimal().setScale(1, RoundingMode.HALF_UP);
     }
 
     private static BigDecimal percent(Decimal numer,
