@@ -1,5 +1,6 @@
 package com.burtonzone.runner.basic_stv;
 
+import static com.burtonzone.common.Decimal.ZERO;
 import static org.javimmutable.collections.util.JImmutables.*;
 
 import com.burtonzone.common.Counter;
@@ -65,10 +66,14 @@ public class BasicStvRound
             finished = newElected.size() == seats || newBallots.isEmpty();
         } else if (sortedVotes.size() <= seats - elected.size()) {
             // we won't be able to improve any so just fill in with whatever we have
-            final JImmutableList<Candidate> pluralityWinners = sortedVotes
-                .slice(0, seats - newElected.size())
-                .transform(CandidateVotes::getCandidate);
-            newElected = newElected.insertAllLast(pluralityWinners);
+            for (CandidateVotes cv : sortedVotes) {
+                if (newElected.size() >= seats) {
+                    break;
+                }
+                final var candidate = cv.getCandidate();
+                newElected = newElected.insertLast(candidate);
+                newBallots = newBallots.removeAndTransfer(candidate, ZERO);
+            }
             finished = true;
         } else {
             final var lastPlace = sortedVotes.get(sortedVotes.size() - 1);

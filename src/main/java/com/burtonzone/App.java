@@ -22,7 +22,7 @@ public class App
         final var rand = new Rand();
         final var electionSettings =
             ElectionSettings.builder()
-                .voteType(ElectionSettings.VoteType.Party)
+//                .voteType(ElectionSettings.VoteType.Party)
                 .build();
 
         final ElectionFactory factory = new PositionalElectionFactory(IssueSpaces.linear(rand), 5);
