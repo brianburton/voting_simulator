@@ -1,5 +1,7 @@
 package com.burtonzone.election;
 
+import static org.javimmutable.collections.util.JImmutables.*;
+
 import com.burtonzone.common.Counter;
 import com.burtonzone.common.Decimal;
 import lombok.Value;
@@ -26,6 +28,19 @@ public class ElectionResult
                           JImmutableList<RoundResult> results)
     {
         this(election, results, election.getBallots());
+    }
+
+    public static ElectionResult ofPartyListResults(Election election,
+                                                    JImmutableList<CandidateVotes> electedCandidates)
+    {
+        final var elected = electedCandidates.transform(CandidateVotes::getCandidate);
+        final var electedParties = elected.transform(set(), Candidate::getParty);
+        final var exhausted = election.getBallots()
+            .withoutFirstChoiceMatching(c -> electedParties.contains(c.getParty()))
+            .getTotalCount();
+        final var round = new ElectionResult.RoundResult(electedCandidates, elected, exhausted);
+        final var effectiveBallots = election.getBallots().toFirstChoicePartyBallots();
+        return new ElectionResult(election, list(round), effectiveBallots);
     }
 
     public Election getElection()

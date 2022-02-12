@@ -192,6 +192,59 @@ public class BallotBox
         return ballots.get(NoCandidates);
     }
 
+    /**
+     * Add all ballot counts to the exhausted count and remove them.
+     *
+     * @return new BallotBox
+     */
+    public BallotBox exhaustAllRemaining()
+    {
+        return new BallotBox(NoBallots.assign(NoCandidates, getTotalCount()));
+    }
+
+    /**
+     * Removes any ballots with a first choice candidate that matches a predicate.
+     * Votes are not exhausted just removed.
+     *
+     * @param matcher When true causes ballot to be removed.
+     * @return new BallotBox
+     */
+    public BallotBox withoutFirstChoiceMatching(Predicate<Candidate> matcher)
+    {
+        var ballots = this.ballots;
+        for (var e : this.ballots) {
+            var ballot = e.getKey();
+            if (ballot.size() > 0 && matcher.test(ballot.get(0))) {
+                ballots = ballots.delete(ballot);
+            }
+        }
+        return new BallotBox(ballots);
+    }
+
+    /**
+     * Removes any ballots with a first prefixLength choice candidate that matches a predicate.
+     * Votes are not exhausted just removed.
+     *
+     * @param prefixLength Number of preferred candidates to test
+     * @param matcher      When true causes ballot to be removed.
+     * @return new BallotBox
+     */
+    public BallotBox withoutPrefixChoiceMatching(int prefixLength,
+                                                 Predicate<Candidate> matcher)
+    {
+        var ballots = this.ballots;
+        for (var e : this.ballots) {
+            var ballot = e.getKey();
+            if (ballot.size() > 0) {
+                if (ballot.stream().limit(prefixLength).anyMatch(matcher)) {
+                    ballots = ballots.delete(ballot);
+
+                }
+            }
+        }
+        return new BallotBox(ballots);
+    }
+
     private class CandidateComparator
         implements Comparator<Candidate>
     {

@@ -109,24 +109,9 @@ public class OpenListHareRunner
                 .collect(listCollector());
         }
 
-        private Decimal getUnused()
-        {
-            var electedParties = electedCandidates
-                .stream()
-                .map(cv -> cv.getCandidate().getParty())
-                .collect(setCollector());
-            return unelectedCandidates
-                .reject(cv -> electedParties.contains(cv.getCandidate().getParty()))
-                .reduce(Decimal.ZERO, (s, cv) -> s.plus(cv.getVotes()));
-        }
-
         private ElectionResult getElectionResult()
         {
-            final var elected = electedCandidates.transform(CandidateVotes::getCandidate);
-            final var exhausted = getUnused();
-            final var round = new ElectionResult.RoundResult(electedCandidates, elected, exhausted);
-            final var effectiveBallots = election.getBallots().toFirstChoicePartyBallots();
-            return new ElectionResult(election, list(round), effectiveBallots);
+            return ElectionResult.ofPartyListResults(election, electedCandidates);
         }
     }
 }

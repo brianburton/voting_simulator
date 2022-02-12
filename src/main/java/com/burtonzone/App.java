@@ -29,11 +29,11 @@ public class App
         final ElectionFactory factory = new PositionalElectionFactory(IssueSpaces.linear(rand), 5);
 //        ElectionRunner runner = Runners.hare();
 //        ElectionRunner runner = Runners.dhondt();
-//        ElectionRunner runner = Runners.webster();
-//        runner = Runners.hybrid(runner);
-        ElectionRunner runner = Runners.basicStv();
+        ElectionRunner runner = Runners.webster();
+        runner = Runners.hybrid(runner);
+//        ElectionRunner runner = Runners.basicStv();
 //        ElectionRunner runner = Runners.singleVote();
-//        ElectionRunner runner = Runners.blockPlurality();
+//        ElectionRunner runner = Runners.blockVote();
 
 
 //        ElectionRunner runner = Runners.blockPlurality();
