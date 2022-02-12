@@ -243,6 +243,11 @@ public class BallotBox
         return new BallotBox(ballots);
     }
 
+    public BallotBox withoutAnyChoiceMatching(Predicate<Candidate> matcher)
+    {
+        return withoutPrefixChoiceMatching(Integer.MAX_VALUE, matcher);
+    }
+
     /**
      * Removes any ballots with a first prefixLength choice candidate that matches a predicate.
      * Votes are not exhausted just removed.

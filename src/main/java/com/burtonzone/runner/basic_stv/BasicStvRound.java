@@ -89,7 +89,14 @@ public class BasicStvRound
 
     public ElectionResult.RoundResult toElectionResult()
     {
-        return new ElectionResult.RoundResult(votes, elected, ballotBox.getExhaustedCount());
+        var exhausted = ZERO;
+        if (finished) {
+            final var electedSet = set(elected);
+            exhausted = election.getBallots()
+                .withoutAnyChoiceMatching(electedSet::contains)
+                .getTotalCount();
+        }
+        return new ElectionResult.RoundResult(votes, elected, exhausted);
     }
 
     private JImmutableList<CandidateVotes> computeVotes()

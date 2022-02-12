@@ -20,7 +20,7 @@ public class App
     {
         final var showDistrictResults = false;
         final var rand = new Rand();
-        final var issueSpace = IssueSpaces.linear(rand);
+        final var issueSpace = IssueSpaces.grid(rand);
         final var factory = new PositionalElectionFactory(issueSpace);
         final var parties = factory.createParties(5);
         final var electionSettings =
@@ -92,7 +92,7 @@ public class App
                 System.out.println();
             }
 
-            for (String line : resultsReport.getCoalitionGrid(31)) {
+            for (String line : resultsReport.getCoalitionGrid(40)) {
                 System.out.println("     " + line);
             }
             System.out.println();

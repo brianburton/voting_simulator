@@ -12,7 +12,7 @@ public class PositionalElectionFactory
 {
     private static final int MinPartyDistance = 10;
     private static final int VotersPerSeat = 500;
-    private static final int VoterTolerance = PartyPosition.toSquaredDistance(20);
+    private static final int VoterTolerance = PartyPosition.toSquaredDistance(25);
 
     private final IssueSpace issueSpace;
     private final PartyPosition center;
