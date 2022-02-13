@@ -31,7 +31,7 @@ public class ResultsReport
     JImmutableSet<Party> parties = JImmutables.insertOrderSet();
     int seats;
     int elected;
-    int exhausted;
+    int wasted;
     int votes;
     Party winningParty;
     @Builder.Default
@@ -50,7 +50,7 @@ public class ResultsReport
             .seats(result.getElection().getSeats())
             .elected(result.getFinalRound().getElected().size())
             .votes(result.getElection().getTotalVotes().toInt())
-            .exhausted(result.getFinalRound().getExhausted().toInt())
+            .wasted(result.getWasted().toInt())
             .effectiveVoteScore(result.getEffectiveVoteScore())
             .partyVotes(result.getPartyFirstChoiceCounts())
             .partySeats(result.getPartyElectedCounts())
@@ -76,7 +76,7 @@ public class ResultsReport
             .seats(seats + other.seats)
             .elected(elected + other.elected)
             .votes(votes + other.votes)
-            .exhausted(exhausted + other.exhausted)
+            .wasted(wasted + other.wasted)
             .effectiveVoteScore(effectiveVoteScore.plus(other.effectiveVoteScore))
             .partyVotes(partyVotes.add(other.partyVotes))
             .partySeats(partySeats)
@@ -146,7 +146,7 @@ public class ResultsReport
             }
             out.printf("  %5s %5s%% %5s%% %5s%%",
                        tenths(getAverageNumberOfChoices()),
-                       percent(exhausted, votes),
+                       percent(wasted, votes),
                        percent(computeErrors(), Decimal.ONE),
                        percent(effectiveVoteScore, new Decimal(votes)));
         }

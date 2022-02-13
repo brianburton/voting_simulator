@@ -33,10 +33,10 @@ public class App
                 .build();
 
 //        ElectionRunner runner = Runners.hare();
-//        ElectionRunner runner = Runners.dhondt();
+        ElectionRunner runner = Runners.dhondt();
 //        ElectionRunner runner = Runners.webster();
-//        runner = Runners.hybrid(runner);
-        ElectionRunner runner = Runners.basicStv();
+        runner = Runners.hybrid(runner);
+//        ElectionRunner runner = Runners.basicStv();
 //        ElectionRunner runner = Runners.singleVote();
 //        ElectionRunner runner = Runners.blockVote();
 

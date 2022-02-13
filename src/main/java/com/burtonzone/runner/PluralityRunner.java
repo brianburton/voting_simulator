@@ -48,10 +48,10 @@ public class PluralityRunner
             .transform(CandidateVotes::new);
         final var elected = votes.transform(CandidateVotes::getCandidate);
         final var electedSet = set(elected);
-        final var exhausted = election.getBallots()
+        final var wasted = election.getBallots()
             .withoutPrefixChoiceMatching(maxChoices, electedSet::contains)
             .getTotalCount();
-        final var round = new ElectionResult.RoundResult(votes, elected, exhausted);
-        return new ElectionResult(election, list(round), effectiveBallots);
+        final var round = new ElectionResult.RoundResult(votes, elected);
+        return new ElectionResult(election, list(round), effectiveBallots, wasted);
     }
 }

@@ -19,6 +19,10 @@ public class BasicStvRunner
             round = round.advance();
             results.add(round.toElectionResult());
         }
-        return new ElectionResult(election, results.build());
+        final var electedSet = set(round.getElected());
+        final var wasted = election.getBallots()
+            .withoutAnyChoiceMatching(electedSet::contains)
+            .getTotalCount();
+        return new ElectionResult(election, results.build(), wasted);
     }
 }

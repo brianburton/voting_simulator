@@ -13,21 +13,25 @@ public class ElectionResult
     private final Election election;
     private final JImmutableList<RoundResult> results;
     private final BallotBox effectiveBallots;
+    private final Decimal wasted;
 
     public ElectionResult(Election election,
                           JImmutableList<RoundResult> results,
-                          BallotBox effectiveBallots)
+                          BallotBox effectiveBallots,
+                          Decimal wasted)
     {
         assert results.isNonEmpty();
         this.election = election;
         this.results = results;
         this.effectiveBallots = effectiveBallots;
+        this.wasted = wasted;
     }
 
     public ElectionResult(Election election,
-                          JImmutableList<RoundResult> results)
+                          JImmutableList<RoundResult> results,
+                          Decimal wasted)
     {
-        this(election, results, election.getBallots());
+        this(election, results, election.getBallots(), wasted);
     }
 
     public static ElectionResult ofPartyListResults(Election election,
@@ -35,12 +39,12 @@ public class ElectionResult
     {
         final var elected = electedCandidates.transform(CandidateVotes::getCandidate);
         final var electedParties = elected.transform(set(), Candidate::getParty);
-        final var exhausted = election.getBallots()
+        final var wasted = election.getBallots()
             .withoutFirstChoiceMatching(c -> electedParties.contains(c.getParty()))
             .getTotalCount();
-        final var round = new ElectionResult.RoundResult(electedCandidates, elected, exhausted);
+        final var round = new ElectionResult.RoundResult(electedCandidates, elected);
         final var effectiveBallots = election.getBallots().toFirstChoicePartyBallots();
-        return new ElectionResult(election, list(round), effectiveBallots);
+        return new ElectionResult(election, list(round), effectiveBallots, wasted);
     }
 
     public Election getElection()
@@ -73,6 +77,11 @@ public class ElectionResult
         return getFinalRound().getVotes();
     }
 
+    public Decimal getWasted()
+    {
+        return wasted;
+    }
+
     public Counter<Party> getPartyFirstChoiceCounts()
     {
         return election.getBallots().getPartyFirstChoiceCounts();
@@ -98,7 +107,6 @@ public class ElectionResult
     {
         JImmutableList<CandidateVotes> votes;
         JImmutableList<Candidate> elected;
-        Decimal exhausted;
 
         public int getSeats()
         {
