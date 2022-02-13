@@ -187,9 +187,26 @@ public class ResultsReport
             return list("  NO WORKING COALITIONS FOUND");
         }
 
+        var previousMembers = JImmutables.<JImmutableSet<Party>>list();
+        var filtered = JImmutables.<Coalition>list();
+        for (Coalition coalition : allCoalitions) {
+            var redundant = false;
+            var members = set(coalition.members);
+            for (var pm : previousMembers) {
+                var shared = pm.intersection(members);
+                if (shared.equals(pm)) {
+                    redundant = true;
+                }
+            }
+            if (!redundant) {
+                filtered = filtered.insertLast(coalition);
+                previousMembers = previousMembers.insert(members);
+            }
+        }
+
         final JImmutableList.Builder<String> answer = listBuilder();
         answer.add(format("%s %4s %6s %6s %5s  %s", "W", "Dist", "Vote%", "Seat%", "Seats", "Parties"));
-        for (Coalition coalition : allCoalitions) {
+        for (Coalition coalition : filtered) {
             answer.add(format("%s %4d %5s%% %5s%% %5d %s",
                               containsWinner(coalition.getMembers()) ? "*" : " ",
                               coalition.getPartyDistance().toInt(),
