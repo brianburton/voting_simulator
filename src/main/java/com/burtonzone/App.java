@@ -84,12 +84,15 @@ public class App
             System.out.printf("%3s %s%n", "#", ResultsReport.printHeader2(parties));
             if (showDistrictResults) {
                 for (ElectionResult result : results) {
-                    System.out.printf("%3d %s%n", test, ResultsReport.of(result).getRow());
+                    final ResultsReport districtReport = ResultsReport.of(result);
+                    System.out.printf("%3d %s%n", test, districtReport.getRow1());
+                    System.out.printf("%3s %s%n", "", districtReport.getRow2());
                 }
             }
             System.out.printf("%3s %s%n",
                               showDistrictResults ? "TOT" : "" + test,
-                              resultsReport.getRow());
+                              resultsReport.getRow1());
+            System.out.printf("%3s %s%n", "", resultsReport.getRow2());
             if (showDistrictResults) {
                 System.out.println();
             }

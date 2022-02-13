@@ -135,7 +135,7 @@ public class ResultsReport
         return str.toString();
     }
 
-    public String getRow()
+    public String getRow1()
     {
         StringWriter str = new StringWriter();
         try (PrintWriter out = new PrintWriter(str)) {
@@ -149,6 +149,19 @@ public class ResultsReport
                        percent(wasted, votes),
                        percent(computeErrors(), Decimal.ONE),
                        percent(effectiveVoteScore, new Decimal(votes)));
+        }
+        return str.toString();
+    }
+
+    public String getRow2()
+    {
+        StringWriter str = new StringWriter();
+        try (PrintWriter out = new PrintWriter(str)) {
+            out.printf("%3s %3s", "", "");
+            for (Party party : parties) {
+                final var pr = new PartyResult(party);
+                out.printf(" %8d  %6d", pr.getExpectedSeats(), pr.getSeats());
+            }
         }
         return str.toString();
     }
