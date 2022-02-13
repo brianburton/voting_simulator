@@ -22,7 +22,7 @@ public class App
         final var rand = new Rand();
         final var issueSpace = IssueSpaces.grid(rand);
         final var factory = new PositionalElectionFactory(issueSpace);
-        final var parties = factory.createParties(5);
+        final var parties = factory.createParties(6);
         final var electionSettings =
             ElectionSettings.builder()
                 .parties(parties)
@@ -33,10 +33,10 @@ public class App
                 .build();
 
 //        ElectionRunner runner = Runners.hare();
-        ElectionRunner runner = Runners.dhondt();
+//        ElectionRunner runner = Runners.dhondt();
 //        ElectionRunner runner = Runners.webster();
-        runner = Runners.hybrid(runner);
-//        ElectionRunner runner = Runners.basicStv();
+//        runner = Runners.hybrid(runner);
+        ElectionRunner runner = Runners.basicStv();
 //        ElectionRunner runner = Runners.singleVote();
 //        ElectionRunner runner = Runners.blockVote();
 
@@ -44,6 +44,8 @@ public class App
             final var db = JImmutables.<DistrictSpec>listBuilder();
             // all districts single seat to simulate current system
 //            addDistricts(db, 435, electionSettings.withNumberOfSeats(1));
+
+//            addDistricts(db, 145, electionSettings.withNumberOfSeats(3));
 
             // number and size of districts taken from fairvote.org plan for US house elections
             addDistricts(db, 44, electionSettings.withNumberOfSeats(5));

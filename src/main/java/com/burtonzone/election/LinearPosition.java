@@ -6,6 +6,7 @@ import com.burtonzone.common.Rand;
 import javax.annotation.Nonnull;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
+import org.javimmutable.collections.JImmutableList;
 
 @AllArgsConstructor
 @EqualsAndHashCode
@@ -56,5 +57,14 @@ public class LinearPosition
     {
         var otherPosition = (LinearPosition)other;
         return x - otherPosition.x;
+    }
+
+    public static PartyPosition centerOf(JImmutableList<PartyPosition> positions)
+    {
+        var sumX = 0;
+        for (PartyPosition position : positions) {
+            sumX += ((LinearPosition)position).x;
+        }
+        return new LinearPosition(sumX / positions.size());
     }
 }

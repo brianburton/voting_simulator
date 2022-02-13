@@ -5,6 +5,7 @@ import com.burtonzone.common.Rand;
 import javax.annotation.Nonnull;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
+import org.javimmutable.collections.JImmutableList;
 
 @AllArgsConstructor
 @EqualsAndHashCode
@@ -69,5 +70,16 @@ public class GridPosition
             diff = y - otherPosition.y;
         }
         return diff;
+    }
+
+    public static PartyPosition centerOf(JImmutableList<PartyPosition> positions)
+    {
+        var sumX = 0;
+        var sumY = 0;
+        for (PartyPosition position : positions) {
+            sumX += ((GridPosition)position).x;
+            sumY += ((GridPosition)position).y;
+        }
+        return new GridPosition(sumX / positions.size(), sumY / positions.size());
     }
 }

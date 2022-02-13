@@ -1,22 +1,14 @@
 package com.burtonzone.election;
 
-import static com.burtonzone.election.PartyPosition.*;
-
 import com.burtonzone.common.Rand;
+import org.javimmutable.collections.JImmutableList;
 
 public class LinearIssueSpace
-    implements IssueSpace
+    extends IssueSpace
 {
-    private static final int MaxVoterDistance = 45;
-    private static final int ElectionCenterBias = 3;
-    private static final int PartyPositionBias = 1;
-    private static final int VoterPositionBias = 4;
-
-    private final Rand rand;
-
     public LinearIssueSpace(Rand rand)
     {
-        this.rand = rand;
+        super(rand);
     }
 
     @Override
@@ -38,26 +30,8 @@ public class LinearIssueSpace
     }
 
     @Override
-    public PartyPosition voterCenterPosition()
+    public PartyPosition centerOf(JImmutableList<PartyPosition> positions)
     {
-        return new LinearPosition(rand.nextInt(MinPos, MaxPos, ElectionCenterBias));
+        return LinearPosition.centerOf(positions);
     }
-
-    @Override
-    public PartyPosition voterPosition(PartyPosition voterCenterPosition)
-    {
-        return ((LinearPosition)voterCenterPosition)
-            .nearBy(rand, MaxVoterDistance, VoterPositionBias)
-            .wrapped(MinPos, MaxPos);
-    }
-
-    @Override
-    public PartyPosition candidatePosition(PartyPosition partyPosition)
-    {
-        return ((LinearPosition)partyPosition)
-            .nearBy(rand, MaxVoterDistance, VoterPositionBias)
-            .wrapped(MinPos, MaxPos);
-
-    }
-
 }

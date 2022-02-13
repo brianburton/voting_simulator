@@ -9,6 +9,7 @@ public interface PartyPosition
     extends Comparable<PartyPosition>
 {
     int MaxPos = 100;
+    int MidPos = 50;
     int MinPos = 0;
 
     int squaredDistanceTo(PartyPosition other);

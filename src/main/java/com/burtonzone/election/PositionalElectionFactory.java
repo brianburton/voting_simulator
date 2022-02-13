@@ -30,7 +30,7 @@ public class PositionalElectionFactory
         final int numSeats = settings.getNumberOfSeats();
         final var candidates = createCandidates(parties, numSeats);
         final var partyLists = createPartyLists(parties, candidates);
-        final var voterCenter = issueSpace.voterCenterPosition();
+        final var voterCenter = issueSpace.voterCenterPosition(parties);
         final var ballotBox = createBallotBox(parties, candidates, partyLists, voterCenter, settings);
         return new Election(parties, candidates, ballotBox, numSeats);
     }
