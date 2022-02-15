@@ -53,6 +53,6 @@ public class Runners
 
     public static ElectionRunner hybrid(ElectionRunner largeRunner)
     {
-        return new LargeAndSmallElectionRunner(basicStv(), largeRunner, 3);
+        return new LargeAndSmallElectionRunner(basicStv(), largeRunner, 2);
     }
 }
