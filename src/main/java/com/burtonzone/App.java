@@ -22,7 +22,8 @@ public class App
         final var rand = new Rand();
         final var issueSpace = IssueSpaces.grid(rand);
         final var factory = new PositionalElectionFactory(issueSpace);
-        final var parties = factory.createParties(6);
+        final int numParties = 6;
+        final var parties = factory.createParties(numParties);
         final var electionSettings =
             ElectionSettings.builder()
                 .parties(parties)
@@ -40,29 +41,31 @@ public class App
 //        ElectionRunner runner = Runners.singleVote();
 //        ElectionRunner runner = Runners.blockVote();
 
+        final var db = JImmutables.<DistrictSpec>listBuilder();
+        // all districts single seat to simulate current system
+//        addDistricts(db, 435, electionSettings.withNumberOfSeats(1));
+
+//        addDistricts(db, 145, electionSettings.withNumberOfSeats(3));
+
+        // number and size of districts taken from fairvote.org plan for US house elections
+        addDistricts(db, 44, electionSettings.withNumberOfSeats(5));
+        addDistricts(db, 9, electionSettings.withNumberOfSeats(4));
+        addDistricts(db, 54, electionSettings.withNumberOfSeats(3));
+        addDistricts(db, 5, electionSettings.withNumberOfSeats(2));
+        addDistricts(db, 7, electionSettings.withNumberOfSeats(1));
+
+        // larger districts
+//        addDistricts(db, 44, 9);
+//        addDistricts(db, 9, 7);
+//        addDistricts(db, 54, 5);
+//        addDistricts(db, 5, 3);
+//        addDistricts(db, 7, 2);
+
+        final var districts = db.build();
+
         for (int test = 1; test <= 10; ++test) {
-            final var db = JImmutables.<DistrictSpec>listBuilder();
-            // all districts single seat to simulate current system
-//            addDistricts(db, 435, electionSettings.withNumberOfSeats(1));
-
-//            addDistricts(db, 145, electionSettings.withNumberOfSeats(3));
-
-            // number and size of districts taken from fairvote.org plan for US house elections
-            addDistricts(db, 44, electionSettings.withNumberOfSeats(5));
-            addDistricts(db, 9, electionSettings.withNumberOfSeats(4));
-            addDistricts(db, 54, electionSettings.withNumberOfSeats(3));
-            addDistricts(db, 5, electionSettings.withNumberOfSeats(2));
-            addDistricts(db, 7, electionSettings.withNumberOfSeats(1));
-
-            // larger districts
-//            addDistricts(db, 44, 9);
-//            addDistricts(db, 9, 7);
-//            addDistricts(db, 54, 5);
-//            addDistricts(db, 5, 3);
-//            addDistricts(db, 7, 2);
-
             final JImmutableList<Election> elections =
-                db.build()
+                districts
                     .stream().parallel()
                     .map(spec -> spec.create(factory))
                     .collect(listCollector());
