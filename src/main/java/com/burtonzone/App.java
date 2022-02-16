@@ -21,16 +21,17 @@ public class App
         final var showDistrictResults = false;
         final var rand = new Rand();
         final var issueSpace = IssueSpaces.grid(rand);
-        final var factory = new PositionalElectionFactory(issueSpace);
-        final int numParties = 6;
+        final var factory = new PositionalElectionFactory(rand, issueSpace);
+        final int numParties = 7;
         final var parties = factory.createParties(numParties);
         final var electionSettings =
             ElectionSettings.builder()
                 .parties(parties)
                 .maxCandidateChoices(Integer.MAX_VALUE)
                 .maxPartyChoices(Math.max(1, parties.size() / 2))
-                .voteType(ElectionSettings.VoteType.Candidate)
+//                .voteType(ElectionSettings.VoteType.Candidate)
 //                .voteType(ElectionSettings.VoteType.Party)
+                .voteType(ElectionSettings.VoteType.Mixed)
                 .build();
 
 //        ElectionRunner runner = Runners.hare();
@@ -83,19 +84,19 @@ public class App
                 System.out.println();
             }
 
-            System.out.printf("%3s %s%n", "", ResultsReport.printHeader1(parties));
-            System.out.printf("%3s %s%n", "#", ResultsReport.printHeader2(parties));
+            System.out.printf("%2s %s%n", "", ResultsReport.printHeader1(parties));
+            System.out.printf("%2s %s%n", "#", ResultsReport.printHeader2(parties));
             if (showDistrictResults) {
                 for (ElectionResult result : results) {
                     final ResultsReport districtReport = ResultsReport.of(result);
-                    System.out.printf("%3d %s%n", test, districtReport.getRow1());
-                    System.out.printf("%3s %s%n", "", districtReport.getRow2());
+                    System.out.printf("%2d %s%n", test, districtReport.getRow1());
+                    System.out.printf("%2s %s%n", "", districtReport.getRow2());
                 }
             }
-            System.out.printf("%3s %s%n",
-                              showDistrictResults ? "TOT" : "" + test,
+            System.out.printf("%2s %s%n",
+                              showDistrictResults ? "TL" : "" + test,
                               resultsReport.getRow1());
-            System.out.printf("%3s %s%n", "", resultsReport.getRow2());
+            System.out.printf("%2s %s%n", "", resultsReport.getRow2());
             if (showDistrictResults) {
                 System.out.println();
             }

@@ -15,7 +15,8 @@ public class ElectionSettings
     public enum VoteType
     {
         Candidate,
-        Party
+        Party,
+        Mixed
     }
 
     @Builder.Default
@@ -29,6 +30,9 @@ public class ElectionSettings
 
     @Builder.Default
     int maxPartyChoices = 2;
+
+    @Builder.Default
+    int mixedPartyVotePercentage = 75;
 
     @Builder.Default
     JImmutableList<Party> parties = list();

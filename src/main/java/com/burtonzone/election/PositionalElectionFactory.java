@@ -3,6 +3,7 @@ package com.burtonzone.election;
 import static com.burtonzone.election.PartyPosition.MaxPos;
 import static org.javimmutable.collections.util.JImmutables.*;
 
+import com.burtonzone.common.Rand;
 import org.javimmutable.collections.JImmutableList;
 import org.javimmutable.collections.JImmutableListMap;
 import org.javimmutable.collections.util.JImmutables;
@@ -14,11 +15,14 @@ public class PositionalElectionFactory
     private static final int VotersPerSeat = 500;
     private static final int VoterTolerance = PartyPosition.toSquaredDistance(25);
 
+    private final Rand rand;
     private final IssueSpace issueSpace;
     private final PartyPosition center;
 
-    public PositionalElectionFactory(IssueSpace issueSpace)
+    public PositionalElectionFactory(Rand rand,
+                                     IssueSpace issueSpace)
     {
+        this.rand = rand;
         this.issueSpace = issueSpace;
         this.center = issueSpace.center();
     }
@@ -74,10 +78,15 @@ public class PositionalElectionFactory
         final var ballotBox = BallotBox.builder();
         while (ballotBox.count() < numVoters) {
             final var voterPosition = issueSpace.voterPosition(voterCenter);
-            final var ballot =
-                settings.getVoteType() == ElectionSettings.VoteType.Candidate
-                ? createCandidateOrientedBallot(candidates, voterPosition, settings)
-                : createPartyOrientedBallot(parties, partyLists, voterPosition, settings.getMaxPartyChoices());
+            var ballot = JImmutables.<Candidate>list();
+            if (settings.getVoteType() == ElectionSettings.VoteType.Party) {
+                ballot = createPartyOrientedBallot(parties, partyLists, voterPosition, settings.getMaxPartyChoices());
+            } else if (settings.getVoteType() == ElectionSettings.VoteType.Mixed
+                       && rand.nextInt(1, 100) <= settings.getMixedPartyVotePercentage()) {
+                ballot = createPartyOrientedBallot(parties, partyLists, voterPosition, settings.getMaxPartyChoices());
+            } else {
+                ballot = createCandidateOrientedBallot(candidates, voterPosition, settings);
+            }
             if (ballot.isNonEmpty()) {
                 ballotBox.add(ballot);
             }
