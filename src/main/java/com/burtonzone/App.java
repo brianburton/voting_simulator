@@ -1,18 +1,11 @@
 package com.burtonzone;
 
-import static org.javimmutable.collections.util.JImmutables.*;
-
 import com.burtonzone.common.Rand;
-import com.burtonzone.election.Election;
-import com.burtonzone.election.ElectionFactory;
 import com.burtonzone.election.ElectionResult;
 import com.burtonzone.election.ElectionRunner;
 import com.burtonzone.election.ElectionSettings;
 import com.burtonzone.election.IssueSpaces;
 import com.burtonzone.election.PositionalElectionFactory;
-import lombok.Value;
-import org.javimmutable.collections.JImmutableList;
-import org.javimmutable.collections.util.JImmutables;
 
 public class App
 {
@@ -22,7 +15,7 @@ public class App
         final var rand = new Rand();
         final var issueSpace = IssueSpaces.grid(rand);
         final var factory = new PositionalElectionFactory(rand, issueSpace);
-        final int numParties = 7;
+        final int numParties = 3;
         final var parties = factory.createParties(numParties);
         final var electionSettings =
             ElectionSettings.builder()
@@ -38,47 +31,18 @@ public class App
 //        ElectionRunner runner = Runners.dhondt();
 //        ElectionRunner runner = Runners.webster();
 //        runner = Runners.hybrid(runner);
-        ElectionRunner runner = Runners.basicStv();
-//        ElectionRunner runner = Runners.singleVote();
+//        ElectionRunner runner = Runners.basicStv();
+        ElectionRunner runner = Runners.singleVote();
 //        ElectionRunner runner = Runners.blockVote();
 
-        final var db = JImmutables.<DistrictSpec>listBuilder();
-        // all districts single seat to simulate current system
-//        addDistricts(db, 435, electionSettings.withNumberOfSeats(1));
-
-//        addDistricts(db, 145, electionSettings.withNumberOfSeats(3));
-
-        // number and size of districts taken from fairvote.org plan for US house elections
-        addDistricts(db, 44, electionSettings.withNumberOfSeats(5));
-        addDistricts(db, 9, electionSettings.withNumberOfSeats(4));
-        addDistricts(db, 54, electionSettings.withNumberOfSeats(3));
-        addDistricts(db, 5, electionSettings.withNumberOfSeats(2));
-        addDistricts(db, 7, electionSettings.withNumberOfSeats(1));
-
-        // larger districts
-//        addDistricts(db, 44, 9);
-//        addDistricts(db, 9, 7);
-//        addDistricts(db, 54, 5);
-//        addDistricts(db, 5, 3);
-//        addDistricts(db, 7, 2);
-
-        final var districts = db.build();
+        final var districts =
+//            DistrictMaps.congressFairVote(electionSettings);
+            DistrictMaps.marylandDelegatesMax7(electionSettings);
 
         for (int test = 1; test <= 10; ++test) {
-            final JImmutableList<Election> elections =
-                districts
-                    .stream().parallel()
-                    .map(spec -> spec.create(factory))
-                    .collect(listCollector());
-
-            final var results = elections
-                .stream().parallel()
-                .map(runner::runElection)
-                .collect(listCollector());
-
-            final ResultsReport resultsReport = ResultsReport.of(results);
+            final var results = districts.parallelCreate(factory).run(runner);
             if (test == 1) {
-                for (String row : resultsReport.getPartyDistanceGrid()) {
+                for (String row : results.getReport().getPartyDistanceGrid()) {
                     System.out.println(row);
                 }
                 System.out.println();
@@ -87,7 +51,7 @@ public class App
             System.out.printf("%2s %s%n", "", ResultsReport.printHeader1(parties));
             System.out.printf("%2s %s%n", "#", ResultsReport.printHeader2(parties));
             if (showDistrictResults) {
-                for (ElectionResult result : results) {
+                for (ElectionResult result : results.getResults()) {
                     final ResultsReport districtReport = ResultsReport.of(result);
                     System.out.printf("%2d %s%n", test, districtReport.getRow1());
                     System.out.printf("%2s %s%n", "", districtReport.getRow2());
@@ -95,37 +59,16 @@ public class App
             }
             System.out.printf("%2s %s%n",
                               showDistrictResults ? "TL" : "" + test,
-                              resultsReport.getRow1());
-            System.out.printf("%2s %s%n", "", resultsReport.getRow2());
+                              results.getReport().getRow1());
+            System.out.printf("%2s %s%n", "", results.getReport().getRow2());
             if (showDistrictResults) {
                 System.out.println();
             }
 
-            for (String line : resultsReport.getCoalitionGrid(40)) {
+            for (String line : results.getReport().getCoalitionGrid(40)) {
                 System.out.println("     " + line);
             }
             System.out.println();
-        }
-    }
-
-    private static void addDistricts(JImmutableList.Builder<DistrictSpec> db,
-                                     int numberOfDistricts,
-                                     ElectionSettings settings)
-    {
-        final var districtSpec = new DistrictSpec(settings);
-        for (int i = 1; i <= numberOfDistricts; ++i) {
-            db.add(districtSpec);
-        }
-    }
-
-    @Value
-    private static class DistrictSpec
-    {
-        ElectionSettings settings;
-
-        Election create(ElectionFactory factory)
-        {
-            return factory.createElection(settings);
         }
     }
 }
