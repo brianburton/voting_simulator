@@ -11,7 +11,7 @@ public class App
 {
     public static void main(String[] args)
     {
-        final var showDistrictResults = false;
+        final var showDistrictResults = true;
         final var rand = new Rand();
         final var issueSpace = IssueSpaces.grid(rand);
         final var factory = new PositionalElectionFactory(rand, issueSpace);
@@ -21,24 +21,26 @@ public class App
             ElectionSettings.builder()
                 .parties(parties)
                 .maxCandidateChoices(Integer.MAX_VALUE)
-                .maxPartyChoices(Math.max(1, parties.size() / 2))
+//                .maxPartyChoices(Math.max(1, parties.size() / 2))
+//                .maxPartyChoices(1)
 //                .voteType(ElectionSettings.VoteType.Candidate)
 //                .voteType(ElectionSettings.VoteType.Party)
-                .voteType(ElectionSettings.VoteType.Mixed)
+//                .voteType(ElectionSettings.VoteType.Mixed)
+                .voteType(ElectionSettings.VoteType.SinglePartyCandidates)
                 .build();
 
         ElectionRunner runner;
 //        runner = Runners.hare();
-//        runner = Runners.dhondt();
+        runner = Runners.dhondt();
 //        runner = Runners.webster();
 //        runner = Runners.hybrid(runner);
-        runner = Runners.basicStv();
+//        runner = Runners.basicStv();
 //        runner = Runners.singleVote();
 //        runner = Runners.blockVote();
 
         final var districts =
-            DistrictMaps.congressFairVote(electionSettings);
-//            DistrictMaps.marylandDelegatesMax7(electionSettings);
+//            DistrictMaps.congressFairVote(electionSettings);
+            DistrictMaps.marylandDelegatesMax7(electionSettings);
 //        DistrictMaps.congressSingles(electionSettings);
 
         for (int test = 1; test <= 10; ++test) {

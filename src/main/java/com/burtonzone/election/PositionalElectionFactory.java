@@ -84,6 +84,8 @@ public class PositionalElectionFactory
             } else if (settings.getVoteType() == ElectionSettings.VoteType.Mixed
                        && rand.nextInt(1, 100) <= settings.getMixedPartyVotePercentage()) {
                 ballot = createPartyOrientedBallot(parties, partyLists, voterPosition, settings.getMaxPartyChoices());
+            } else if (settings.getVoteType() == ElectionSettings.VoteType.SinglePartyCandidates) {
+                ballot = createSinglePartyCandidateOrientedBallot(candidates, voterPosition, settings);
             } else {
                 ballot = createCandidateOrientedBallot(candidates, voterPosition, settings);
             }
@@ -105,6 +107,21 @@ public class PositionalElectionFactory
             .sorted(Candidate.distanceComparator(position))
             .limit(maxCandidates)
             .collect(JImmutables.listCollector());
+    }
+
+    private JImmutableList<Candidate> createSinglePartyCandidateOrientedBallot(JImmutableList<Candidate> candidates,
+                                                                               PartyPosition position,
+                                                                               ElectionSettings settings)
+    {
+        final var maxCandidates = settings.getMaxCandidateChoices();
+        final var sortedCandidates = candidates.stream()
+            .sorted(Candidate.distanceComparator(position))
+            .collect(listCollector());
+        final var firstParty = sortedCandidates.get(0).getParty();
+        return sortedCandidates.stream()
+            .filter(c -> c.getParty().equals(firstParty))
+            .limit(maxCandidates)
+            .collect(listCollector());
     }
 
     private JImmutableList<Candidate> createPartyOrientedBallot(JImmutableList<Party> parties,
