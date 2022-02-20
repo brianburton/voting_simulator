@@ -13,27 +13,43 @@ public class PluralityRunner
     implements ElectionRunner
 
 {
-    private final int maxChoices;
+    private final Mode mode;
 
-    private PluralityRunner(int maxChoices)
+    private enum Mode
     {
-        this.maxChoices = maxChoices;
+        One,
+        All,
+        Limited
+    }
+
+    private PluralityRunner(Mode mode)
+    {
+        this.mode = mode;
     }
 
     public static PluralityRunner singleVote()
     {
-        return new PluralityRunner(1);
+        return new PluralityRunner(Mode.One);
     }
 
     public static PluralityRunner blockVote()
     {
-        return new PluralityRunner(Integer.MAX_VALUE);
+        return new PluralityRunner(Mode.All);
+    }
+
+    public static PluralityRunner limitedVote()
+    {
+        return new PluralityRunner(Mode.Limited);
     }
 
     @Override
     public ElectionResult runElection(Election election)
     {
-        final int maxChoices = Math.min(this.maxChoices, election.getSeats());
+        final int maxChoices = switch (mode) {
+            case One -> 1;
+            case All -> election.getSeats();
+            case Limited -> (election.getSeats() + 1) / 2;
+        };
         final var effectiveBallots = election.getBallots().toPrefixBallots(maxChoices);
         var counter = new Counter<Candidate>();
         for (var ballot : effectiveBallots) {

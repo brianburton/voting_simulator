@@ -15,7 +15,7 @@ public class App
         final var rand = new Rand();
         final var issueSpace = IssueSpaces.grid(rand);
         final var factory = new PositionalElectionFactory(rand, issueSpace);
-        final int numParties = 4;
+        final int numParties = 3;
         final var parties = factory.createParties(numParties);
         final var electionSettings =
             ElectionSettings.builder()
@@ -31,16 +31,17 @@ public class App
 
         ElectionRunner runner;
 //        runner = Runners.hare();
-        runner = Runners.dhondt();
+//        runner = Runners.dhondt();
 //        runner = Runners.webster();
 //        runner = Runners.hybrid(runner);
-//        runner = Runners.basicStv();
+        runner = Runners.basicStv();
 //        runner = Runners.singleVote();
 //        runner = Runners.blockVote();
+//        runner = Runners.limitedVote();
 
         final var districts =
-//            DistrictMaps.congressFairVote(electionSettings);
-            DistrictMaps.marylandDelegatesMax7(electionSettings);
+            DistrictMaps.congressFairVote(electionSettings);
+//            DistrictMaps.marylandDelegatesMax7(electionSettings);
 //        DistrictMaps.congressSingles(electionSettings);
 
         for (int test = 1; test <= 10; ++test) {

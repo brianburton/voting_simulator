@@ -24,8 +24,7 @@ public class Runners
 
     /**
      * NOT a PR system at all.  In fact this is the opposite since it produces false majorities.
-     * It can allow a majority of voters to capture all seats in an election or a plurality to
-     * win a majority of the seats.
+     * It can allow a plurality of voters to capture all seats in an election.
      *
      * Included here simply to demonstrate a bad system.
      *
@@ -34,6 +33,17 @@ public class Runners
     public static PluralityRunner blockVote()
     {
         return PluralityRunner.blockVote();
+    }
+
+    /**
+     * Better than block vote but still allows false majorities.  Just less spectacular than block
+     * voting which can give one party with a plurality of the vote to win all seats.
+     *
+     * Each voter can cast a vote for no more than a majority of the available seats.
+     */
+    public static PluralityRunner limitedVote()
+    {
+        return PluralityRunner.limitedVote();
     }
 
     public static OpenListHareRunner hare()

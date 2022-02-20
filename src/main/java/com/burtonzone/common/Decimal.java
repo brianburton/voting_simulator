@@ -36,7 +36,7 @@ public class Decimal
 
     public Decimal rounded()
     {
-        return new Decimal(value.setScale(0, RoundingMode.HALF_UP));
+        return rounded(RoundingMode.HALF_UP);
     }
 
     public Decimal plus(Decimal other)
