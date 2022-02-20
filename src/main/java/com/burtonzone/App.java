@@ -15,7 +15,7 @@ public class App
         final var rand = new Rand();
         final var issueSpace = IssueSpaces.grid(rand);
         final var factory = new PositionalElectionFactory(rand, issueSpace);
-        final int numParties = 3;
+        final int numParties = 5;
         final var parties = factory.createParties(numParties);
         final var electionSettings =
             ElectionSettings.builder()
@@ -27,13 +27,14 @@ public class App
                 .voteType(ElectionSettings.VoteType.Mixed)
                 .build();
 
-//        ElectionRunner runner = Runners.hare();
-//        ElectionRunner runner = Runners.dhondt();
-//        ElectionRunner runner = Runners.webster();
+        ElectionRunner runner;
+//        runner = Runners.hare();
+//        runner = Runners.dhondt();
+//        runner = Runners.webster();
 //        runner = Runners.hybrid(runner);
-//        ElectionRunner runner = Runners.basicStv();
-        ElectionRunner runner = Runners.singleVote();
-//        ElectionRunner runner = Runners.blockVote();
+        runner = Runners.basicStv();
+//        runner = Runners.singleVote();
+//        runner = Runners.blockVote();
 
         final var districts =
 //            DistrictMaps.congressFairVote(electionSettings);
