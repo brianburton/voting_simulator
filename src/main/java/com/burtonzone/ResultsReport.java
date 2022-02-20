@@ -1,6 +1,6 @@
 package com.burtonzone;
 
-import static com.burtonzone.common.Decimal.ZERO;
+import static com.burtonzone.common.Decimal.*;
 import static java.lang.String.format;
 import static org.javimmutable.collections.util.JImmutables.*;
 
@@ -52,13 +52,15 @@ public class ResultsReport
 
     public static ResultsReport of(ElectionResult result)
     {
+        final Decimal totalVotes = result.getElection().getTotalVotes();
         return builder()
             .parties(JImmutables.insertOrderSet(result.getElection().getParties()))
             .seats(result.getElection().getSeats())
             .elected(result.getFinalRound().getElected().size())
-            .votes(result.getElection().getTotalVotes().toInt())
+            .votes(totalVotes.toInt())
             .wasted(result.getWasted().toInt())
-            .averageEffectiveVoteScore(result.getEffectiveVoteScore())
+            .averageWasted(result.getWasted().dividedBy(totalVotes))
+            .averageEffectiveVoteScore(result.getEffectiveVoteScore().dividedBy(totalVotes))
             .effectiveVoteScore(result.getEffectiveVoteScore())
             .averageError(result.computeErrors())
             .partyVotes(result.getPartyFirstChoiceCounts())
@@ -178,7 +180,7 @@ public class ResultsReport
             out.printf("  %5s %5s%% %5s%% %5s%%",
                        tenths(getAverageNumberOfChoices()),
                        percent(wasted, votes),
-                       percent(computeErrors(), Decimal.ONE),
+                       percent(computeErrors(), ONE),
                        percent(effectiveVoteScore, new Decimal(votes)));
         }
         return str.toString();
@@ -196,7 +198,7 @@ public class ResultsReport
             out.printf("  %5s %5s%% %5s%% %5s%%",
                        "",
                        tenths(averageWasted.times(Decimal.HUNDRED)),
-                       percent(averageError, Decimal.ONE),
+                       percent(averageError, ONE),
                        tenths(averageEffectiveVoteScore.times(Decimal.HUNDRED)));
         }
         return str.toString();
@@ -335,9 +337,9 @@ public class ResultsReport
             final var ourVotes = partyVotes.get(party);
             final var totalVotes = partyVotes.getTotal();
             final var totalSeats = new Decimal(elected);
+            final var quota = totalVotes.dividedBy(ONE.plus(totalSeats));
             return ourVotes
-                .dividedBy(totalVotes)
-                .times(totalSeats)
+                .dividedBy(quota)
                 .toInt();
         }
 
