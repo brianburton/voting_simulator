@@ -1,5 +1,6 @@
 package com.burtonzone.election;
 
+import static com.burtonzone.common.Decimal.ZERO;
 import static org.javimmutable.collections.util.JImmutables.*;
 
 import com.burtonzone.common.Counter;
@@ -100,6 +101,23 @@ public class ElectionResult
     {
         final var candidateSet = JImmutables.set(getElected());
         return effectiveBallots.getEffectiveVoteScore(candidateSet::contains);
+    }
+
+    // https://en.wikipedia.org/wiki/Gallagher_index
+    public Decimal computeErrors()
+    {
+        final var totalSeats = getPartyElectedCounts().getTotal();
+        final var totalVotes = getElection().getTotalVotes();
+        final var partySeats = getPartyElectedCounts();
+        final var partyVotes = getPartyFirstChoiceCounts();
+        var sum = ZERO;
+        for (Party party : getElection().getParties()) {
+            final var seatPercentage = partySeats.get(party).dividedBy(totalSeats);
+            final var votePercentage = partyVotes.get(party).dividedBy(totalVotes);
+            final var diffSquared = votePercentage.minus(seatPercentage).squared();
+            sum = sum.plus(diffSquared);
+        }
+        return sum.dividedBy(Decimal.TWO).root();
     }
 
     @Value

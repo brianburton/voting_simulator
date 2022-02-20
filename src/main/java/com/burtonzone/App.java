@@ -15,7 +15,7 @@ public class App
         final var rand = new Rand();
         final var issueSpace = IssueSpaces.grid(rand);
         final var factory = new PositionalElectionFactory(rand, issueSpace);
-        final int numParties = 5;
+        final int numParties = 4;
         final var parties = factory.createParties(numParties);
         final var electionSettings =
             ElectionSettings.builder()
@@ -37,8 +37,9 @@ public class App
 //        runner = Runners.blockVote();
 
         final var districts =
-//            DistrictMaps.congressFairVote(electionSettings);
-            DistrictMaps.marylandDelegatesMax7(electionSettings);
+            DistrictMaps.congressFairVote(electionSettings);
+//            DistrictMaps.marylandDelegatesMax7(electionSettings);
+//        DistrictMaps.congressSingles(electionSettings);
 
         for (int test = 1; test <= 10; ++test) {
             final var results = districts.parallelCreate(factory).run(runner);

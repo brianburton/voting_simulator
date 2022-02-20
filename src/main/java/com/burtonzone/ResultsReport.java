@@ -4,6 +4,7 @@ import static com.burtonzone.common.Decimal.ZERO;
 import static java.lang.String.format;
 import static org.javimmutable.collections.util.JImmutables.*;
 
+import com.burtonzone.common.Averager;
 import com.burtonzone.common.Counter;
 import com.burtonzone.common.DataUtils;
 import com.burtonzone.common.Decimal;
@@ -37,6 +38,12 @@ public class ResultsReport
     @Builder.Default
     Decimal effectiveVoteScore = ZERO;
     @Builder.Default
+    Decimal averageEffectiveVoteScore = ZERO;
+    @Builder.Default
+    Decimal averageError = ZERO;
+    @Builder.Default
+    Decimal averageWasted = ZERO;
+    @Builder.Default
     Counter<Party> partyVotes = new Counter<>();
     @Builder.Default
     Counter<Party> partySeats = new Counter<>();
@@ -51,7 +58,9 @@ public class ResultsReport
             .elected(result.getFinalRound().getElected().size())
             .votes(result.getElection().getTotalVotes().toInt())
             .wasted(result.getWasted().toInt())
+            .averageEffectiveVoteScore(result.getEffectiveVoteScore())
             .effectiveVoteScore(result.getEffectiveVoteScore())
+            .averageError(result.computeErrors())
             .partyVotes(result.getPartyFirstChoiceCounts())
             .partySeats(result.getPartyElectedCounts())
             .winningParty(computeWinningParty(result.getPartyElectedCounts()))
@@ -61,27 +70,49 @@ public class ResultsReport
 
     public static ResultsReport of(Iterable<ElectionResult> results)
     {
-        var answer = builder().build();
+        final var averageError = new Averager();
+        final var averageWasted = new Averager();
+        final var averageEffectiveVoteScore = new Averager();
+        var parties = JImmutables.<Party>insertOrderSet();
+        int seats = 0;
+        int elected = 0;
+        int wasted = 0;
+        int votes = 0;
+        var partyVotes = new Counter<Party>();
+        var partySeats = new Counter<Party>();
+        var allBallots = BallotBox.builder();
+        var partyElectedCounts = new Counter<Party>();
+        var effectiveVoteScore = ZERO;
         for (ElectionResult result : results) {
-            answer = answer.add(of(result));
+            parties = parties.insertAll(result.getElection().getParties());
+            seats = seats + result.getElection().getSeats();
+            elected = elected + result.getFinalRound().getElected().size();
+            final Decimal electionTotalVotes = result.getElection().getTotalVotes();
+            votes = votes + electionTotalVotes.toInt();
+            wasted = wasted + result.getWasted().toInt();
+            averageWasted.add(result.getWasted().dividedBy(electionTotalVotes));
+            effectiveVoteScore = effectiveVoteScore.plus(result.getEffectiveVoteScore());
+            averageEffectiveVoteScore.add(result.getEffectiveVoteScore().dividedBy(electionTotalVotes));
+            averageError.add(result.computeErrors());
+            partyVotes = partyVotes.add(result.getPartyFirstChoiceCounts());
+            partySeats = partySeats.add(result.getPartyElectedCounts());
+            partyElectedCounts = partyElectedCounts.add(result.getPartyElectedCounts());
+            allBallots.add(result.getEffectiveBallots());
         }
-        return answer;
-    }
-
-    public ResultsReport add(ResultsReport other)
-    {
-        final Counter<Party> partySeats = this.partySeats.add(other.partySeats);
         return builder()
-            .parties(parties.insertAll(other.parties))
-            .seats(seats + other.seats)
-            .elected(elected + other.elected)
-            .votes(votes + other.votes)
-            .wasted(wasted + other.wasted)
-            .effectiveVoteScore(effectiveVoteScore.plus(other.effectiveVoteScore))
-            .partyVotes(partyVotes.add(other.partyVotes))
+            .parties(parties)
+            .seats(seats)
+            .elected(elected)
+            .votes(votes)
+            .wasted(wasted)
+            .effectiveVoteScore(effectiveVoteScore)
+            .averageEffectiveVoteScore(averageEffectiveVoteScore.average())
+            .averageError(averageError.average())
+            .averageWasted(averageWasted.average())
+            .partyVotes(partyVotes)
             .partySeats(partySeats)
-            .winningParty(computeWinningParty(partySeats))
-            .allBallots(allBallots.add(other.getAllBallots()))
+            .winningParty(computeWinningParty(partyElectedCounts))
+            .allBallots(allBallots.build())
             .build();
     }
 
@@ -96,7 +127,7 @@ public class ResultsReport
     }
 
     // https://en.wikipedia.org/wiki/Gallagher_index
-    public Decimal computeErrors()
+    private Decimal computeErrors()
     {
         final var totalSeats = partySeats.getTotal();
         final var totalVotes = partyVotes.getTotal();
@@ -162,6 +193,11 @@ public class ResultsReport
                 final var pr = new PartyResult(party);
                 out.printf(" %8d  %6d", pr.getExpectedSeats(), pr.getSeats());
             }
+            out.printf("  %5s %5s%% %5s%% %5s%%",
+                       "",
+                       tenths(averageWasted.times(Decimal.HUNDRED)),
+                       percent(averageError, Decimal.ONE),
+                       tenths(averageEffectiveVoteScore.times(Decimal.HUNDRED)));
         }
         return str.toString();
     }

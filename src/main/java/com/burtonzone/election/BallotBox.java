@@ -353,6 +353,14 @@ public class BallotBox
             return this;
         }
 
+        public Builder add(BallotBox ballots)
+        {
+            for (Counter.Entry<JImmutableList<Candidate>> ballot : ballots) {
+                add(ballot.getKey(), ballot.getCount());
+            }
+            return this;
+        }
+
         public int count()
         {
             return count;
