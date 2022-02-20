@@ -13,6 +13,13 @@ public class Averager
         count = count.plus(ONE);
     }
 
+    public void add(Decimal value,
+                    Decimal weight)
+    {
+        sum = sum.plus(value.squared().times(weight));
+        count = count.plus(weight);
+    }
+
     public void add(int value)
     {
         add(new Decimal(value));

@@ -15,7 +15,7 @@ public class App
         final var rand = new Rand();
         final var issueSpace = IssueSpaces.grid(rand);
         final var factory = new PositionalElectionFactory(rand, issueSpace);
-        final int numParties = 3;
+        final int numParties = 5;
         final var parties = factory.createParties(numParties);
         final var electionSettings =
             ElectionSettings.builder()

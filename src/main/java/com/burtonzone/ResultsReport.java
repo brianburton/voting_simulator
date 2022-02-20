@@ -92,14 +92,15 @@ public class ResultsReport
             final Decimal electionTotalVotes = result.getElection().getTotalVotes();
             votes = votes + electionTotalVotes.toInt();
             wasted = wasted + result.getWasted().toInt();
-            averageWasted.add(result.getWasted().dividedBy(electionTotalVotes));
             effectiveVoteScore = effectiveVoteScore.plus(result.getEffectiveVoteScore());
-            averageEffectiveVoteScore.add(result.getEffectiveVoteScore().dividedBy(electionTotalVotes));
-            averageError.add(result.computeErrors());
             partyVotes = partyVotes.add(result.getPartyFirstChoiceCounts());
             partySeats = partySeats.add(result.getPartyElectedCounts());
             partyElectedCounts = partyElectedCounts.add(result.getPartyElectedCounts());
             allBallots.add(result.getEffectiveBallots());
+            final var weight = new Decimal(result.getElection().getSeats());
+            averageWasted.add(result.getWasted().dividedBy(electionTotalVotes), weight);
+            averageEffectiveVoteScore.add(result.getEffectiveVoteScore().dividedBy(electionTotalVotes), weight);
+            averageError.add(result.computeErrors(), weight);
         }
         return builder()
             .parties(parties)
