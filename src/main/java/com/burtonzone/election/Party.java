@@ -12,7 +12,7 @@ public class Party
 {
     String name;
     String abbrev;
-    PartyPosition position;
+    Position position;
 
     @Override
     public String toString()
@@ -36,7 +36,7 @@ public class Party
         return max;
     }
 
-    public static Comparator<Party> distanceComparator(PartyPosition position)
+    public static Comparator<Party> distanceComparator(Position position)
     {
         return new DistanceComparator<>(position, Party::getPosition);
     }

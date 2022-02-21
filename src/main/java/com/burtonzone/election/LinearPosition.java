@@ -11,7 +11,7 @@ import org.javimmutable.collections.JImmutableList;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class LinearPosition
-    implements PartyPosition
+    implements Position
 {
     public static LinearPosition Center = new LinearPosition((MinPos + MaxPos) / 2);
 
@@ -24,7 +24,7 @@ public class LinearPosition
     }
 
     @Override
-    public int squaredDistanceTo(PartyPosition other)
+    public int squaredDistanceTo(Position other)
     {
         var otherPosition = (LinearPosition)other;
         var diff = x - otherPosition.x;
@@ -53,16 +53,16 @@ public class LinearPosition
     }
 
     @Override
-    public int compareTo(@Nonnull PartyPosition other)
+    public int compareTo(@Nonnull Position other)
     {
         var otherPosition = (LinearPosition)other;
         return x - otherPosition.x;
     }
 
-    public static PartyPosition centerOf(JImmutableList<PartyPosition> positions)
+    public static Position centerOf(JImmutableList<Position> positions)
     {
         var sumX = 0;
-        for (PartyPosition position : positions) {
+        for (Position position : positions) {
             sumX += ((LinearPosition)position).x;
         }
         return new LinearPosition(sumX / positions.size());

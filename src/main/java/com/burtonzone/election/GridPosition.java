@@ -10,7 +10,7 @@ import org.javimmutable.collections.JImmutableList;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class GridPosition
-    implements PartyPosition
+    implements Position
 {
     public static final GridPosition Center = new GridPosition((MinPos + MaxPos) / 2, (MinPos + MaxPos) / 2);
 
@@ -24,7 +24,7 @@ public class GridPosition
     }
 
     @Override
-    public int squaredDistanceTo(PartyPosition other)
+    public int squaredDistanceTo(Position other)
     {
         final GridPosition otherPosition = (GridPosition)other;
         var sumX = x - otherPosition.x;
@@ -62,7 +62,7 @@ public class GridPosition
     }
 
     @Override
-    public int compareTo(@Nonnull PartyPosition other)
+    public int compareTo(@Nonnull Position other)
     {
         final GridPosition otherPosition = (GridPosition)other;
         var diff = x - otherPosition.x;
@@ -72,11 +72,11 @@ public class GridPosition
         return diff;
     }
 
-    public static PartyPosition centerOf(JImmutableList<PartyPosition> positions)
+    public static Position centerOf(JImmutableList<Position> positions)
     {
         var sumX = 0;
         var sumY = 0;
-        for (PartyPosition position : positions) {
+        for (Position position : positions) {
             sumX += ((GridPosition)position).x;
             sumY += ((GridPosition)position).y;
         }

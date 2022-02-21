@@ -5,26 +5,26 @@ import com.burtonzone.common.Rand;
 import java.util.Comparator;
 import lombok.AllArgsConstructor;
 
-public interface PartyPosition
-    extends Comparable<PartyPosition>
+public interface Position
+    extends Comparable<Position>
 {
     int MaxPos = 100;
     int MidPos = 50;
     int MinPos = 0;
 
-    int squaredDistanceTo(PartyPosition other);
+    int squaredDistanceTo(Position other);
 
-    default Decimal distanceTo(PartyPosition other)
+    default Decimal distanceTo(Position other)
     {
         return new Decimal(squaredDistanceTo(other)).root();
     }
 
-    PartyPosition nearBy(Rand rand,
-                         int maxOffset,
-                         int bias);
+    Position nearBy(Rand rand,
+                    int maxOffset,
+                    int bias);
 
-    PartyPosition wrapped(int minValue,
-                          int maxValue);
+    Position wrapped(int minValue,
+                     int maxValue);
 
     static int toSquaredDistance(int realDistance)
     {
@@ -33,13 +33,13 @@ public interface PartyPosition
 
     @AllArgsConstructor
     class DistanceComparator
-        implements Comparator<PartyPosition>
+        implements Comparator<Position>
     {
-        private final PartyPosition center;
+        private final Position center;
 
         @Override
-        public int compare(PartyPosition a,
-                           PartyPosition b)
+        public int compare(Position a,
+                           Position b)
         {
             var aDistance = center.squaredDistanceTo(a);
             var bDistance = center.squaredDistanceTo(b);

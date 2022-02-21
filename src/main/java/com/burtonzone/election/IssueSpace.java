@@ -1,6 +1,6 @@
 package com.burtonzone.election;
 
-import static com.burtonzone.election.PartyPosition.*;
+import static com.burtonzone.election.Position.*;
 import static org.javimmutable.collections.util.JImmutables.*;
 
 import com.burtonzone.common.Rand;
@@ -21,15 +21,15 @@ public abstract class IssueSpace
         this.rand = rand;
     }
 
-    public abstract PartyPosition centristPartyPosition();
+    public abstract Position centristPartyPosition();
 
-    public abstract PartyPosition anyPartyPosition();
+    public abstract Position anyPartyPosition();
 
-    public abstract PartyPosition center();
+    public abstract Position center();
 
-    public abstract PartyPosition centerOf(JImmutableList<PartyPosition> positions);
+    public abstract Position centerOf(JImmutableList<Position> positions);
 
-    public PartyPosition voterCenterPosition(JImmutableList<Party> parties)
+    public Position voterCenterPosition(JImmutableList<Party> parties)
     {
         var positions = parties.transform(Party::getPosition);
         // remove one random party
@@ -41,16 +41,16 @@ public abstract class IssueSpace
         return centerOf(positions);
     }
 
-    public PartyPosition voterPosition(PartyPosition voterCenterPosition)
+    public Position voterPosition(Position voterCenterPosition)
     {
         return voterCenterPosition
             .nearBy(rand, MaxVoterDistance, VoterPositionBias)
             .wrapped(MinPos, MaxPos);
     }
 
-    public PartyPosition candidatePosition(PartyPosition partyPosition)
+    public Position candidatePosition(Position position)
     {
-        return partyPosition
+        return position
             .nearBy(rand, MaxVoterDistance, VoterPositionBias)
             .wrapped(MinPos, MaxPos);
     }

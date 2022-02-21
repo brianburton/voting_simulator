@@ -11,7 +11,7 @@ public class Candidate
 {
     Party party;
     String name;
-    PartyPosition position;
+    Position position;
 
     public Candidate(Party party,
                      String name)
@@ -31,7 +31,7 @@ public class Candidate
         return String.format("%s (%s)", name, party.getAbbrev());
     }
 
-    public static Comparator<Candidate> distanceComparator(PartyPosition position)
+    public static Comparator<Candidate> distanceComparator(Position position)
     {
         return new DistanceComparator<>(position, Candidate::getPosition);
     }

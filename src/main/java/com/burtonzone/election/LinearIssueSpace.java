@@ -12,25 +12,25 @@ public class LinearIssueSpace
     }
 
     @Override
-    public PartyPosition center()
+    public Position center()
     {
         return LinearPosition.Center;
     }
 
     @Override
-    public PartyPosition centristPartyPosition()
+    public Position centristPartyPosition()
     {
         return new LinearPosition(rand.nextElement(CenterPartyPoints, PartyPositionBias));
     }
 
     @Override
-    public PartyPosition anyPartyPosition()
+    public Position anyPartyPosition()
     {
         return new LinearPosition(rand.nextElement(PartyPoints, PartyPositionBias));
     }
 
     @Override
-    public PartyPosition centerOf(JImmutableList<PartyPosition> positions)
+    public Position centerOf(JImmutableList<Position> positions)
     {
         return LinearPosition.centerOf(positions);
     }

@@ -12,27 +12,27 @@ public class GridIssueSpace
     }
 
     @Override
-    public PartyPosition center()
+    public Position center()
     {
         return GridPosition.Center;
     }
 
     @Override
-    public PartyPosition centristPartyPosition()
+    public Position centristPartyPosition()
     {
         return new GridPosition(rand.nextElement(CenterPartyPoints, PartyPositionBias),
                                 rand.nextElement(CenterPartyPoints, PartyPositionBias));
     }
 
     @Override
-    public PartyPosition anyPartyPosition()
+    public Position anyPartyPosition()
     {
         return new GridPosition(rand.nextElement(PartyPoints, PartyPositionBias),
                                 rand.nextElement(PartyPoints, PartyPositionBias));
     }
 
     @Override
-    public PartyPosition centerOf(JImmutableList<PartyPosition> positions)
+    public Position centerOf(JImmutableList<Position> positions)
     {
         return GridPosition.centerOf(positions);
     }

@@ -8,8 +8,8 @@ import lombok.AllArgsConstructor;
 public class DistanceComparator<T>
     implements Comparator<T>
 {
-    private final PartyPosition position;
-    private final Function<T, PartyPosition> getter;
+    private final Position position;
+    private final Function<T, Position> getter;
 
     @Override
     public int compare(T a,

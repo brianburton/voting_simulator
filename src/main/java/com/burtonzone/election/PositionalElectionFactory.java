@@ -14,11 +14,11 @@ public class PositionalElectionFactory
 {
     private static final int MinPartyDistance = 10;
     private static final int VotersPerSeat = 500;
-    private static final int VoterTolerance = PartyPosition.toSquaredDistance(25);
+    private static final int VoterTolerance = Position.toSquaredDistance(25);
 
     private final Rand rand;
     private final IssueSpace issueSpace;
-    private final PartyPosition center;
+    private final Position center;
 
     public PositionalElectionFactory(Rand rand,
                                      IssueSpace issueSpace)
@@ -69,7 +69,7 @@ public class PositionalElectionFactory
             }
         }
         return positions.stream()
-            .sorted(new PartyPosition.DistanceComparator(center))
+            .sorted(new Position.DistanceComparator(center))
             .map(p -> new Party(String.format("%s-%d", p, center.distanceTo(p).toInt()), p.toString(), p))
             .collect(listCollector());
     }
@@ -100,7 +100,7 @@ public class PositionalElectionFactory
     }
 
     private JImmutableList<Voter> createVoters(JImmutableList<Party> parties,
-                                               PartyPosition voterCenter,
+                                               Position voterCenter,
                                                int maxVoters)
     {
         return Stream.generate(() -> issueSpace.voterPosition(voterCenter))
@@ -114,7 +114,7 @@ public class PositionalElectionFactory
     }
 
     private JImmutableList<Candidate> createCandidateOrientedBallot(JImmutableList<Candidate> candidates,
-                                                                    PartyPosition position,
+                                                                    Position position,
                                                                     ElectionSettings settings)
     {
         final var maxCandidates = Math.min(settings.getMaxCandidateChoices(),
@@ -127,7 +127,7 @@ public class PositionalElectionFactory
     }
 
     private JImmutableList<Candidate> createSinglePartyCandidateOrientedBallot(JImmutableList<Candidate> candidates,
-                                                                               PartyPosition position,
+                                                                               Position position,
                                                                                ElectionSettings settings)
     {
         final var maxCandidates = settings.getMaxCandidateChoices();
@@ -162,9 +162,9 @@ public class PositionalElectionFactory
     private JImmutableList<Candidate> createPartyCandidates(Party party,
                                                             int numCandidates)
     {
-        var positions = JImmutables.<PartyPosition>set();
+        var positions = JImmutables.<Position>set();
         while (positions.size() < numCandidates) {
-            final PartyPosition position = issueSpace.candidatePosition(party.getPosition());
+            final Position position = issueSpace.candidatePosition(party.getPosition());
             positions = positions.insert(position);
         }
         return positions.transform(list(), p -> new Candidate(party, p.toString(), p));
@@ -187,7 +187,7 @@ public class PositionalElectionFactory
     @AllArgsConstructor
     private static class Voter
     {
-        PartyPosition position;
+        Position position;
         JImmutableList<Party> parties;
     }
 }
