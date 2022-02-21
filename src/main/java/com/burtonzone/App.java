@@ -15,7 +15,7 @@ public class App
         final var rand = new Rand();
         final var issueSpace = IssueSpaces.grid(rand);
         final var factory = new PositionalElectionFactory(rand, issueSpace);
-        final int numParties = 6;
+        final int numParties = 5;
         final var parties = factory.createParties(numParties);
         final var electionSettings =
             ElectionSettings.builder()
@@ -30,11 +30,11 @@ public class App
                 .build();
 
         ElectionRunner runner;
-//        runner = Runners.hare();
+        runner = Runners.hare();
 //        runner = Runners.dhondt();
 //        runner = Runners.webster();
 //        runner = Runners.hybrid(runner);
-        runner = Runners.basicStv();
+//        runner = Runners.basicStv();
 //        runner = Runners.singleVote();
 //        runner = Runners.blockVote();
 //        runner = Runners.limitedVote();
@@ -53,8 +53,8 @@ public class App
                 System.out.println();
             }
 
-            System.out.printf("%2s %s%n", "", ResultsReport.printHeader1(parties));
-            System.out.printf("%2s %s%n", "#", ResultsReport.printHeader2(parties));
+            System.out.printf("%2s %s%n", "", results.getReport().printHeader1(parties));
+            System.out.printf("%2s %s%n", "#", results.getReport().printHeader2(parties));
             if (showDistrictResults) {
                 for (ElectionResult result : results.getResults()) {
                     final ResultsReport districtReport = ResultsReport.of(result);

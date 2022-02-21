@@ -108,6 +108,7 @@ public class ResultsReport
             .elected(elected)
             .votes(votes)
             .wasted(wasted)
+            .winningParty(computeWinningParty(partySeats))
             .effectiveVoteScore(effectiveVoteScore)
             .averageEffectiveVoteScore(averageEffectiveVoteScore.average())
             .averageError(averageError.average())
@@ -144,19 +145,20 @@ public class ResultsReport
         return sum.dividedBy(Decimal.TWO).root();
     }
 
-    public static String printHeader1(Iterable<Party> parties)
+    public String printHeader1(Iterable<Party> parties)
     {
         StringWriter str = new StringWriter();
         try (PrintWriter out = new PrintWriter(str)) {
             out.printf("%-3s %-3s ", "", "");
             for (Party party : parties) {
-                out.printf(" %s ", center(party.getName(), 15));
+                var pad = party.equals(winningParty) ? "*" : "-";
+                out.printf(" %s ", center(party.getName(), 15, pad));
             }
         }
         return str.toString();
     }
 
-    public static String printHeader2(Iterable<Party> parties)
+    public String printHeader2(Iterable<Party> parties)
     {
         StringWriter str = new StringWriter();
         try (PrintWriter out = new PrintWriter(str)) {
