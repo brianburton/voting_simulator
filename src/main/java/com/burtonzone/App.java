@@ -11,11 +11,11 @@ public class App
 {
     public static void main(String[] args)
     {
-        final var showDistrictResults = true;
+        final var showDistrictResults = false;
         final var rand = new Rand();
         final var issueSpace = IssueSpaces.grid(rand);
         final var factory = new PositionalElectionFactory(rand, issueSpace);
-        final int numParties = 5;
+        final int numParties = 4;
         final var parties = factory.createParties(numParties);
         final var electionSettings =
             ElectionSettings.builder()
