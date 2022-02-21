@@ -152,7 +152,7 @@ public class ResultsReport
             out.printf("%-3s %-3s ", "", "");
             for (Party party : parties) {
                 var pad = party.equals(winningParty) ? "*" : "-";
-                out.printf(" %s ", center(party.getName(), 15, pad));
+                out.printf(" %s ", center(party.getName(), 14, pad));
             }
         }
         return str.toString();
@@ -164,7 +164,7 @@ public class ResultsReport
         try (PrintWriter out = new PrintWriter(str)) {
             out.printf("%3s %3s ", "rsc", "rec");
             for (Party party : parties) {
-                out.printf("%8s  %6s ", "eps", "aps");
+                out.printf("%7s  %6s ", "eps", "aps");
             }
             out.printf(" %5s %6s %6s %6s", "ranks", "waste", "err", "eff");
         }
@@ -178,7 +178,7 @@ public class ResultsReport
             out.printf("%3d %3d", seats, elected);
             for (Party party : parties) {
                 final var pr = new PartyResult(party);
-                out.printf(" %7s%%  %5s%%", pr.getVotePercent(), pr.getSeatPercent());
+                out.printf(" %6s%%  %5s%%", pr.getVotePercent(), pr.getSeatPercent());
             }
             out.printf("  %5s %5s%% %5s%% %5s%%",
                        tenths(getAverageNumberOfChoices()),
@@ -196,7 +196,7 @@ public class ResultsReport
             out.printf("%3s %3s", "", "");
             for (Party party : parties) {
                 final var pr = new PartyResult(party);
-                out.printf(" %8d  %6d", pr.getExpectedSeats(), pr.getSeats());
+                out.printf(" %7d  %6d", pr.getExpectedSeats(), pr.getSeats());
             }
             out.printf("  %5s %5s%% %5s%% %5s%%",
                        "",
