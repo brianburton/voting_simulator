@@ -44,4 +44,14 @@ public class DistrictMaps
             .add(electionSettings, 3, 3)
             .build();
     }
+
+    public static DistrictMap marylandDelegatesMax10(ElectionSettings electionSettings)
+    {
+//        final var totalSeats = 141;
+        return DistrictMap.builder()
+            .add(electionSettings, 10, 10)
+            .add(electionSettings, 9, 1)
+            .add(electionSettings, 8, 4)
+            .build();
+    }
 }

@@ -15,26 +15,28 @@ public class App
         final var rand = new Rand();
         final var issueSpace = IssueSpaces.grid(rand);
         final var factory = new PositionalElectionFactory(rand, issueSpace);
-        final int numParties = 5;
+        final var numParties = 5;
         final var parties = factory.createParties(numParties);
         final var electionSettings =
             ElectionSettings.builder()
                 .parties(parties)
-                .maxCandidateChoices(Integer.MAX_VALUE)
+                .maxCandidateChoices(numParties)
+                .maxPartyChoices(numParties)
+                .mixedPartyVotePercentage(10)
 //                .maxPartyChoices(Math.max(1, parties.size() / 2))
 //                .maxPartyChoices(1)
 //                .voteType(ElectionSettings.VoteType.Candidate)
 //                .voteType(ElectionSettings.VoteType.Party)
-//                .voteType(ElectionSettings.VoteType.Mixed)
-                .voteType(ElectionSettings.VoteType.SinglePartyCandidates)
+                .voteType(ElectionSettings.VoteType.Mixed)
+//                .voteType(ElectionSettings.VoteType.SinglePartyCandidates)
                 .build();
 
         ElectionRunner runner;
-        runner = Runners.hare();
+//        runner = Runners.hare();
 //        runner = Runners.dhondt();
 //        runner = Runners.webster();
 //        runner = Runners.hybrid(runner);
-//        runner = Runners.basicStv();
+        runner = Runners.basicStv();
 //        runner = Runners.singleVote();
 //        runner = Runners.blockVote();
 //        runner = Runners.limitedVote();
@@ -42,6 +44,7 @@ public class App
         final var districts =
             DistrictMaps.congressFairVote(electionSettings);
 //            DistrictMaps.marylandDelegatesMax7(electionSettings);
+//        DistrictMaps.marylandDelegatesMax10(electionSettings);
 //        DistrictMaps.congressSingles(electionSettings);
 
         for (int test = 1; test <= 10; ++test) {
