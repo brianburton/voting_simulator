@@ -15,7 +15,7 @@ public class App
         final var rand = new Rand();
         final var issueSpace = IssueSpaces.grid(rand);
         final var factory = new PositionalElectionFactory(rand, issueSpace);
-        final int numParties = 4;
+        final int numParties = 6;
         final var parties = factory.createParties(numParties);
         final var electionSettings =
             ElectionSettings.builder()
@@ -70,7 +70,7 @@ public class App
                 System.out.println();
             }
 
-            for (String line : results.getReport().getCoalitionGrid(40)) {
+            for (String line : results.getReport().getCoalitionGrid(45)) {
                 System.out.println("     " + line);
             }
             System.out.println();

@@ -1,6 +1,5 @@
 package com.burtonzone.election;
 
-import static com.burtonzone.election.PartyPosition.MaxPos;
 import static org.javimmutable.collections.util.JImmutables.*;
 
 import com.burtonzone.common.Rand;
@@ -46,29 +45,33 @@ public class PositionalElectionFactory
     @Override
     public JImmutableList<Party> createParties(int numParties)
     {
+        final var coreSize = numParties <= 5 ? 2 : 3;
+        final var minAllowedDistance = Math.min(30, 100 / numParties);
         var loops = 0;
-        var positions = JImmutables.sortedSet(new PartyPosition.DistanceComparator(center));
+        var positions = list(issueSpace.centristPartyPosition());
         while (positions.size() < numParties) {
             if (loops++ >= 100) {
                 loops = 0;
-                positions = positions.deleteAll();
+                positions = list(issueSpace.centristPartyPosition());
+                System.out.println(".");
             }
-            final PartyPosition position;
-
-            if (positions.size() < 2) {
-                position = issueSpace.centristPartyPosition();
-            } else {
-                position = issueSpace.anyPartyPosition();
-            }
-            final var minDistance = positions.stream()
-                .mapToInt(p -> p.distanceTo(position).toInt())
-                .min()
-                .orElse(MaxPos);
-            if (positions.isEmpty() || minDistance >= MinPartyDistance) {
-                positions = positions.insert(position);
+            final var newPosition = issueSpace.anyPartyPosition();
+            final var newPositions = positions.insert(newPosition);
+            final var distances = positions.stream()
+                .map(p -> p.distanceTo(newPosition).toInt())
+                .sorted()
+                .collect(listCollector());
+            final var min = distances.get(0);
+            final var max = distances.get(distances.size() - 1);
+            final var maxAllowedDistance = newPositions.size() <= coreSize ? 40 : 85;
+            if (min >= minAllowedDistance && max < maxAllowedDistance) {
+                positions = newPositions;
             }
         }
-        return positions.transform(list(), p -> new Party(String.format("%s-%d", p, center.distanceTo(p).toInt()), p.toString(), p));
+        return positions.stream()
+            .sorted(new PartyPosition.DistanceComparator(center))
+            .map(p -> new Party(String.format("%s-%d", p, center.distanceTo(p).toInt()), p.toString(), p))
+            .collect(listCollector());
     }
 
     private BallotBox createBallotBox(JImmutableList<Voter> voters,
