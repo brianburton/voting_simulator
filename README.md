@@ -19,10 +19,10 @@ The ranking of candidates by each voter is controlled by a voting type configura
   consideration of the candidate's party. This is what you normally hear about with STV.
 - Party centered: Each voter selects the party candidate list from the parties closest to the voter in the issue space.
   This is similar to modern Australian Senate "above the line" voting.
-- Single party: Each voter selects the party list of the single party closest to the voter in the issue space. This is
-  the usual voter behavior for partisan voters.
-- Mixed: Voters randomly choose to vote using either party based or candidate based on a configurable probability. This
-  models the "above the line" or "below the line" Australian election ballot.
+- Single party: Each voter selects all candidates from a single party and ranks them by their distance to the voter in
+  the issue space. This is the usual voter behavior for partisan voters.
+- Mixed: Voters randomly choose to vote using either party centered or candidate centered on a configurable probability.
+  This models the "above the line" vs "below the line" Australian Senate election ballot options.
 
 Once the ballots have been assigned the election in each district is resolved using one the election runners. Each
 runner corresponds to a particular election system. Note that while the ballots always have ranked candidates the
