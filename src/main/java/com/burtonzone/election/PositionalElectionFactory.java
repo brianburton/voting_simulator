@@ -87,7 +87,7 @@ public class PositionalElectionFactory
             } else if (settings.getVoteType() == ElectionSettings.VoteType.Mixed
                        && rand.nextInt(1, 100) <= settings.getMixedPartyVotePercentage()) {
                 ballot = createPartyOrientedBallot(voter, partyLists, settings.getMaxPartyChoices());
-            } else if (settings.getVoteType() == ElectionSettings.VoteType.SinglePartyCandidates) {
+            } else if (settings.getVoteType() == ElectionSettings.VoteType.SinglePartyCandidate) {
                 ballot = createSinglePartyCandidateOrientedBallot(candidates, voter.position, settings);
             } else {
                 ballot = createCandidateOrientedBallot(candidates, voter.position, settings);

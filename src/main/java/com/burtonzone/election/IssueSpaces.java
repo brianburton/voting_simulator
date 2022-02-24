@@ -1,16 +1,22 @@
 package com.burtonzone.election;
 
 import com.burtonzone.common.Rand;
+import java.util.function.Function;
 
-public class IssueSpaces
+public enum IssueSpaces
 {
-    public static IssueSpace linear(Rand rand)
+    Linear(LinearIssueSpace::new),
+    Grid(GridIssueSpace::new);
+
+    private final Function<Rand, IssueSpace> factory;
+
+    IssueSpaces(Function<Rand, IssueSpace> factory)
     {
-        return new LinearIssueSpace(rand);
+        this.factory = factory;
     }
 
-    public static IssueSpace grid(Rand rand)
+    public IssueSpace create(Rand rand)
     {
-        return new GridIssueSpace(rand);
+        return factory.apply(rand);
     }
 }

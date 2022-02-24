@@ -1,51 +1,25 @@
 package com.burtonzone;
 
-import com.burtonzone.common.Rand;
 import com.burtonzone.election.ElectionResult;
-import com.burtonzone.election.ElectionRunner;
-import com.burtonzone.election.ElectionSettings;
-import com.burtonzone.election.IssueSpaces;
-import com.burtonzone.election.PositionalElectionFactory;
+import com.typesafe.config.ConfigFactory;
 
 public class App
 {
+    public enum OutputMode
+    {
+        AllDistricts,
+        TotalsOnly
+    }
+
     public static void main(String[] args)
     {
-        final var showDistrictResults = false;
-        final var rand = new Rand();
-        final var issueSpace = IssueSpaces.grid(rand);
-        final var factory = new PositionalElectionFactory(rand, issueSpace);
-        final var numParties = 5;
-        final var parties = factory.createParties(numParties);
-        final var electionSettings =
-            ElectionSettings.builder()
-                .parties(parties)
-                .maxCandidateChoices(numParties)
-                .maxPartyChoices(numParties)
-                .mixedPartyVotePercentage(10)
-//                .maxPartyChoices(Math.max(1, parties.size() / 2))
-//                .maxPartyChoices(1)
-//                .voteType(ElectionSettings.VoteType.Candidate)
-//                .voteType(ElectionSettings.VoteType.Party)
-                .voteType(ElectionSettings.VoteType.Mixed)
-//                .voteType(ElectionSettings.VoteType.SinglePartyCandidates)
-                .build();
-
-        ElectionRunner runner;
-//        runner = Runners.hare();
-//        runner = Runners.dhondt();
-//        runner = Runners.webster();
-//        runner = Runners.hybrid(runner);
-        runner = Runners.basicStv();
-//        runner = Runners.singleVote();
-//        runner = Runners.blockVote();
-//        runner = Runners.limitedVote();
-
-        final var districts =
-            DistrictMaps.congressFairVote(electionSettings);
-//            DistrictMaps.marylandDelegatesMax7(electionSettings);
-//        DistrictMaps.marylandDelegatesMax10(electionSettings);
-//        DistrictMaps.congressSingles(electionSettings);
+        final var config = ConfigFactory.load();
+        final var showDistrictResults = config.getEnum(OutputMode.class, "outputMode") == OutputMode.AllDistricts;
+        final var scenario = Scenario.fromConfig(config);
+        final var factory = scenario.getFactory();
+        final var parties = scenario.getSettings().getParties();
+        final var runner = scenario.getRunner();
+        final var districts = scenario.getDistricts();
 
         for (int test = 1; test <= 10; ++test) {
             final var results = districts.parallelCreate(factory).run(runner);

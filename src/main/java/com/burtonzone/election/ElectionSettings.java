@@ -16,7 +16,7 @@ public class ElectionSettings
     {
         Candidate,
         Party,
-        SinglePartyCandidates,
+        SinglePartyCandidate,
         Mixed
     }
 
