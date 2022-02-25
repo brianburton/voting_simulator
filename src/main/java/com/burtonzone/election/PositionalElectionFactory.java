@@ -109,6 +109,7 @@ public class PositionalElectionFactory
                                            .filter(p -> p.getPosition().squaredDistanceTo(position) <= VoterTolerance)
                                            .sorted(Party.distanceComparator(position))
                                            .collect(listCollector())))
+            .filter(Voter::isValid)
             .limit(maxVoters)
             .collect(listCollector());
     }
@@ -189,5 +190,10 @@ public class PositionalElectionFactory
     {
         Position position;
         JImmutableList<Party> parties;
+
+        private boolean isValid()
+        {
+            return parties.isNonEmpty();
+        }
     }
 }
