@@ -7,14 +7,14 @@ public class App
 {
     public enum OutputMode
     {
-        AllDistricts,
-        TotalsOnly
+        Districts,
+        Totals
     }
 
     public static void main(String[] args)
     {
         final var config = ConfigFactory.load();
-        final var showDistrictResults = config.getEnum(OutputMode.class, "outputMode") == OutputMode.AllDistricts;
+        final var showDistrictResults = config.getEnum(OutputMode.class, "outputMode") == OutputMode.Districts;
         final var scenario = Scenario.fromConfig(config);
         final var factory = scenario.getFactory();
         final var parties = scenario.getSettings().getParties();

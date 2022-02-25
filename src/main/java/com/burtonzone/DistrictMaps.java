@@ -38,7 +38,7 @@ public enum DistrictMaps
      * Same number of seats as Maryland House of Delegates but with made up
      * multi-member districts with max of 9 seats per district.
      */
-    marylandDelegatesMax9(electionSettings -> DistrictMap.builder()
+    MarylandDelegatesMax9(electionSettings -> DistrictMap.builder()
         .add(electionSettings, 9, 44)
         .add(electionSettings, 7, 9)
         .add(electionSettings, 5, 54)
@@ -50,7 +50,7 @@ public enum DistrictMaps
      * Same number of seats as Maryland House of Delegates but with made up
      * multi-member districts with max of 10 seats per district.
      */
-    marylandDelegatesMax10(electionSettings -> DistrictMap.builder()
+    MarylandDelegatesMax10(electionSettings -> DistrictMap.builder()
         .add(electionSettings, 10, 10)
         .add(electionSettings, 9, 1)
         .add(electionSettings, 8, 4)
