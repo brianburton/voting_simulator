@@ -167,6 +167,12 @@ public class Counter<T>
             .collect(JImmutables.listCollector());
     }
 
+    @Override
+    public String toString()
+    {
+        return counts.toString();
+    }
+
     @Getter
     @AllArgsConstructor
     public static class Entry<T>
