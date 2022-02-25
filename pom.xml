@@ -9,9 +9,8 @@
     <version>1.0-SNAPSHOT</version>
 
     <name>voting</name>
-    <description>A simple voting.</description>
-    <!-- FIXME change it to the project's website -->
-    <url>http://www.example.com</url>
+    <description>A simple voting simulation.</description>
+    <!--<url>http://www.example.com</url>-->
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -20,12 +19,14 @@
     </properties>
 
     <dependencies>
+        <!-- https://github.com/brianburton/java-immutable-collections -->
         <dependency>
             <groupId>org.javimmutable</groupId>
             <artifactId>javimmutable-collections</artifactId>
             <version>3.2.1</version>
         </dependency>
-        
+
+        <!-- https://projectlombok.org/features/all -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -45,6 +46,7 @@
             <version>5.0.1</version>
         </dependency>
 
+        <!-- https://github.com/lightbend/config -->
         <dependency>
             <groupId>com.typesafe</groupId>
             <artifactId>config</artifactId>
