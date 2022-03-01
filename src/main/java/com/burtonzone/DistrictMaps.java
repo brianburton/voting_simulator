@@ -35,25 +35,17 @@ public enum DistrictMaps
         .build()),
 
     /**
-     * Same number of seats as Maryland House of Delegates but with made up
-     * multi-member districts with max of 9 seats per district.
+     * Fantasy district map with 14 districts having 10 seats each.
      */
-    MarylandDelegatesMax9(electionSettings -> DistrictMap.builder()
-        .add(electionSettings, 9, 44)
-        .add(electionSettings, 7, 9)
-        .add(electionSettings, 5, 54)
-        .add(electionSettings, 3, 5)
-        .add(electionSettings, 2, 7)
+    Fantasy10x14(electionSettings -> DistrictMap.builder()
+        .add(electionSettings, 10, 14)
         .build()),
 
     /**
-     * Same number of seats as Maryland House of Delegates but with made up
-     * multi-member districts with max of 10 seats per district.
+     * Fantasy district map with 20 districts having 7 seats each.
      */
-    MarylandDelegatesMax10(electionSettings -> DistrictMap.builder()
-        .add(electionSettings, 10, 10)
-        .add(electionSettings, 9, 1)
-        .add(electionSettings, 8, 4)
+    Fantasy7x20(electionSettings -> DistrictMap.builder()
+        .add(electionSettings, 7, 20)
         .build());
 
     private final Function<ElectionSettings, DistrictMap> factory;

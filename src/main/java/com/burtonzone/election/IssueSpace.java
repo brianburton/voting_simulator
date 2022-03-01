@@ -10,7 +10,7 @@ public abstract class IssueSpace
 {
     protected static final int MaxVoterDistance = 45;
     protected static final int PartyPositionBias = 1;
-    protected static final int VoterPositionBias = 4;
+    protected static final int VoterPositionBias = 2;
     protected static final JImmutableList<Integer> PartyPoints = list(10, 15, 20, 25, 30, 35, 40, 45, 55, 60, 65, 70, 75, 80, 85, 90);
     protected static final JImmutableList<Integer> CenterPartyPoints = list(35, 40, 45, 55, 60, 65);
 
@@ -32,12 +32,42 @@ public abstract class IssueSpace
     public Position voterCenterPosition(JImmutableList<Party> parties)
     {
         var positions = parties.transform(Party::getPosition);
-        // remove one random party
-        positions = positions.delete(rand.nextIndex(positions.size()));
-        // triple up another to produce a party bias in the electorate
-        var preferredParty = positions.get(rand.nextIndex(positions.size()));
-        positions = positions.insert(preferredParty).insert(preferredParty);
-        // now take the weighted average position to get a voter center
+        if (positions.size() > 2) {
+            var center = centerOf(positions);
+            var sorted = positions.stream()
+                .sorted(new Position.DistanceComparator(center))
+                .skip(1)
+                .collect(listCollector());
+            var preferredParty = sorted.get(rand.nextIndex(sorted.size()));
+            positions = positions.insert(preferredParty);
+        }
+
+//        final var targetSize = 1 + parties.size() / 2;
+//        var positions = list(center());
+//        while (positions.size() < targetSize) {
+//            final var index = rand.nextIndex(parties.size());
+//            final var party = parties.get(index);
+//            positions = positions.insert(party.getPosition());
+//            parties = parties.delete(index);
+//        }
+
+//        final var targetSize = 1 + parties.size() / 2;
+//        var positions = parties.transform(Party::getPosition);
+//        while (positions.size() > targetSize) {
+//            final var index = rand.nextIndex(parties.size());
+//            positions = positions.delete(index);
+//            parties = parties.delete(index);
+//        }
+
+//        var positions = parties.transform(Party::getPosition);
+//        if (positions.size() > 3) {
+//            var center = centerOf(positions);
+//            positions = positions.stream()
+//                .sorted(new Position.DistanceComparator(center))
+//                .skip(1)
+//                .collect(listCollector());
+//        }
+
         return centerOf(positions);
     }
 
