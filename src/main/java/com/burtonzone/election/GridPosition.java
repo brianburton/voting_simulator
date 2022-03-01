@@ -27,9 +27,9 @@ public class GridPosition
     public int squaredDistanceTo(Position other)
     {
         final GridPosition otherPosition = (GridPosition)other;
-        var sumX = x - otherPosition.x;
-        var sumY = y - otherPosition.y;
-        return sumX * sumX + sumY * sumY;
+        var diffX = x - otherPosition.x;
+        var diffY = y - otherPosition.y;
+        return diffX * diffX + diffY * diffY;
     }
 
     @Override
@@ -59,6 +59,16 @@ public class GridPosition
             newX = maxValue - (x - minValue);
         }
         return new GridPosition(newX, newY);
+    }
+
+    @Override
+    public Position towards(Position other,
+                            int divisor)
+    {
+        final GridPosition otherPosition = (GridPosition)other;
+        var diffX = x - otherPosition.x;
+        var diffY = y - otherPosition.y;
+        return new GridPosition(x + diffX / divisor, y + diffY / divisor);
     }
 
     @Override

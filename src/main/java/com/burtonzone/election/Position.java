@@ -26,6 +26,9 @@ public interface Position
     Position wrapped(int minValue,
                      int maxValue);
 
+    Position towards(Position other,
+                     int divisor);
+
     static int toSquaredDistance(int realDistance)
     {
         return realDistance * realDistance;

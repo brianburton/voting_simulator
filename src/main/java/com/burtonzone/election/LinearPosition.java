@@ -53,6 +53,15 @@ public class LinearPosition
     }
 
     @Override
+    public Position towards(Position other,
+                            int divisor)
+    {
+        var otherPosition = (LinearPosition)other;
+        var diff = x - otherPosition.x;
+        return new LinearPosition(x + diff / divisor);
+    }
+
+    @Override
     public int compareTo(@Nonnull Position other)
     {
         var otherPosition = (LinearPosition)other;
