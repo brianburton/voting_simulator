@@ -20,16 +20,15 @@ public class App
         final var parties = scenario.getSettings().getParties();
         final var runner = scenario.getRunner();
         final var districts = scenario.getDistricts();
+        final var parallelExecution = config.getBoolean("parallelExecution");
+
+        for (String row : ResultsReport.getPartyDistanceGrid(parties)) {
+            System.out.println(row);
+        }
+        System.out.println();
 
         for (int test = 1; test <= 10; ++test) {
-            final var results = districts.parallelCreate(factory).run(runner);
-            if (test == 1) {
-                for (String row : results.getReport().getPartyDistanceGrid()) {
-                    System.out.println(row);
-                }
-                System.out.println();
-            }
-
+            final var results = districts.create(factory, parallelExecution).run(runner);
             System.out.printf("%2s %s%n", "", results.getReport().printHeader1(parties));
             System.out.printf("%2s %s%n", "#", results.getReport().printHeader2(parties));
             if (showDistrictResults) {

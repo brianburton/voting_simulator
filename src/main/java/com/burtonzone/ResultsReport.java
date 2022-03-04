@@ -207,7 +207,7 @@ public class ResultsReport
         return str.toString();
     }
 
-    public JImmutableList<String> getPartyDistanceGrid()
+    public static JImmutableList<String> getPartyDistanceGrid(JImmutableList<Party> parties)
     {
         final JImmutableList.Builder<String> answer = listBuilder();
         StringBuilder sb = new StringBuilder();

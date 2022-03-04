@@ -25,19 +25,19 @@ public class DistrictMap
         return new Builder();
     }
 
-    public Elections parallelCreate(ElectionFactory factory)
+    public Elections create(ElectionFactory factory,
+                            boolean parallelExecution)
     {
-        return new Elections(createImpl(factory, districts.stream().parallel()), true);
-    }
-
-    public Elections create(ElectionFactory factory)
-    {
-        return new Elections(createImpl(factory, districts.stream()), false);
+        return new Elections(createImpl(factory, parallelExecution, districts.stream()), parallelExecution);
     }
 
     private JImmutableList<Election> createImpl(ElectionFactory factory,
+                                                boolean parallelExecution,
                                                 Stream<DistrictSpec> specs)
     {
+        if (parallelExecution) {
+            specs = specs.parallel();
+        }
         return specs.map(spec -> spec.create(factory))
             .collect(listCollector());
     }
