@@ -46,6 +46,20 @@ public enum DistrictMaps
      */
     Fantasy7x20(electionSettings -> DistrictMap.builder()
         .add(electionSettings, 7, 20)
+        .build()),
+
+    /**
+     * Fantasy district map with 28 districts having 5 seats each.
+     */
+    Fantasy5x28(electionSettings -> DistrictMap.builder()
+        .add(electionSettings, 5, 28)
+        .build()),
+
+    /**
+     * Fantasy district map with 28 districts having 5 seats each.
+     */
+    Fantasy1x140(electionSettings -> DistrictMap.builder()
+        .add(electionSettings, 1, 140)
         .build());
 
     private final Function<ElectionSettings, DistrictMap> factory;
