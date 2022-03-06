@@ -11,6 +11,7 @@ public abstract class IssueSpace
     protected static final int MaxVoterDistance = 45;
     protected static final int PartyPositionBias = 1;
     protected static final int VoterPositionBias = 2;
+    protected static final int CandidatePositionBias = 3;
     protected static final JImmutableList<Integer> PartyPoints = list(10, 15, 20, 25, 30, 35, 40, 45, 55, 60, 65, 70, 75, 80, 85, 90);
     protected static final JImmutableList<Integer> CenterPartyPoints = list(35, 40, 45, 55, 60, 65);
 
@@ -78,10 +79,21 @@ public abstract class IssueSpace
             .wrapped(MinPos, MaxPos);
     }
 
-    public Position candidatePosition(Position position)
+    public Position candidatePosition(Position position,
+                                      int numberOfParties)
     {
         return position
-            .nearBy(rand, MaxVoterDistance, VoterPositionBias)
+            .nearBy(rand, minPartyDistance(numberOfParties), CandidatePositionBias)
             .wrapped(MinPos, MaxPos);
+    }
+
+    public int minPartyDistance(int numberOfParties)
+    {
+        return Math.min(30, 100 / numberOfParties);
+    }
+
+    public int maxPartyDistance(boolean isCore)
+    {
+        return isCore ? 40 : 85;
     }
 }

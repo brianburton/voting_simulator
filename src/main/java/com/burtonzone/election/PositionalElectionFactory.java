@@ -12,7 +12,6 @@ import org.javimmutable.collections.util.JImmutables;
 public class PositionalElectionFactory
     implements ElectionFactory
 {
-    private static final int MinPartyDistance = 10;
     private static final int VotersPerSeat = 500;
     private static final int VoterTolerance = Position.toSquaredDistance(25);
 
@@ -46,7 +45,7 @@ public class PositionalElectionFactory
     public JImmutableList<Party> createParties(int numParties)
     {
         final var coreSize = numParties <= 5 ? 2 : 3;
-        final var minAllowedDistance = Math.min(30, 100 / numParties);
+        final var minAllowedDistance = issueSpace.minPartyDistance(numParties);
         var loops = 0;
         var positions = list(issueSpace.centristPartyPosition());
         while (positions.size() < numParties) {
@@ -63,7 +62,7 @@ public class PositionalElectionFactory
                 .collect(listCollector());
             final var min = distances.get(0);
             final var max = distances.get(distances.size() - 1);
-            final var maxAllowedDistance = newPositions.size() <= coreSize ? 40 : 85;
+            final var maxAllowedDistance = issueSpace.maxPartyDistance(newPositions.size() <= coreSize);
             if (min >= minAllowedDistance && max < maxAllowedDistance) {
                 positions = newPositions;
             }
@@ -156,16 +155,17 @@ public class PositionalElectionFactory
                                                        int numCandidatesPerParty)
     {
         return parties.stream()
-            .flatMap(party -> createPartyCandidates(party, numCandidatesPerParty).stream())
+            .flatMap(party -> createPartyCandidates(party, numCandidatesPerParty, parties.size()).stream())
             .collect(listCollector());
     }
 
     private JImmutableList<Candidate> createPartyCandidates(Party party,
-                                                            int numCandidates)
+                                                            int numCandidates,
+                                                            int numParties)
     {
         var positions = JImmutables.<Position>set();
         while (positions.size() < numCandidates) {
-            final Position position = issueSpace.candidatePosition(party.getPosition());
+            final Position position = issueSpace.candidatePosition(party.getPosition(), numParties);
             positions = positions.insert(position);
         }
         return positions.transform(list(), p -> new Candidate(party, p.toString(), p));
