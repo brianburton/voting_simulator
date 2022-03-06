@@ -41,6 +41,20 @@ public class LinearPosition
     }
 
     @Override
+    public Position moveDistance(Rand rand,
+                                 int distance)
+    {
+        var offset = rand.nextBoolean() ? -distance : distance;
+        return new LinearPosition(x + offset);
+    }
+
+    @Override
+    public boolean isValid()
+    {
+        return x >= MinPos && x <= MaxPos;
+    }
+
+    @Override
     public LinearPosition wrapped(int minValue,
                                   int maxValue)
     {

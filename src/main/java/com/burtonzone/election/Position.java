@@ -29,6 +29,11 @@ public interface Position
     Position towards(Position other,
                      int divisor);
 
+    Position moveDistance(Rand rand,
+                          int distance);
+
+    boolean isValid();
+
     static int toSquaredDistance(int realDistance)
     {
         return realDistance * realDistance;

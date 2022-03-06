@@ -44,8 +44,8 @@ public class PositionalElectionFactory
     @Override
     public JImmutableList<Party> createParties(int numParties)
     {
-        final var coreSize = numParties <= 5 ? 2 : 3;
         final var minAllowedDistance = issueSpace.minPartyDistance(numParties);
+        final var maxAllowedDistance = minAllowedDistance + issueSpace.maxPartyDistance(false) / 2;
         var loops = 0;
         var positions = list(issueSpace.centristPartyPosition());
         while (positions.size() < numParties) {
@@ -54,17 +54,20 @@ public class PositionalElectionFactory
                 positions = list(issueSpace.centristPartyPosition());
                 System.out.println(".");
             }
-            final var newPosition = issueSpace.anyPartyPosition();
-            final var newPositions = positions.insert(newPosition);
-            final var distances = positions.stream()
-                .map(p -> p.distanceTo(newPosition).toInt())
-                .sorted()
-                .collect(listCollector());
-            final var min = distances.get(0);
-            final var max = distances.get(distances.size() - 1);
-            final var maxAllowedDistance = issueSpace.maxPartyDistance(newPositions.size() <= coreSize);
-            if (min >= minAllowedDistance && max < maxAllowedDistance) {
-                positions = newPositions;
+            final var offset = rand.nextInt(minAllowedDistance, maxAllowedDistance);
+            final var neighbor = rand.nextElement(positions);
+            final var newPosition = neighbor.moveDistance(rand, offset);
+            if (newPosition.isValid()) {
+                final var newPositions = positions.insert(newPosition);
+                final var distances = positions.stream()
+                    .map(p -> p.distanceTo(newPosition).toInt())
+                    .sorted()
+                    .collect(listCollector());
+                final var min = distances.get(0);
+                final var max = distances.get(distances.size() - 1);
+                if (min >= minAllowedDistance && max < maxAllowedDistance) {
+                    positions = newPositions;
+                }
             }
         }
         return positions.stream()

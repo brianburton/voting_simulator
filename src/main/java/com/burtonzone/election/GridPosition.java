@@ -1,6 +1,7 @@
 package com.burtonzone.election;
 
 import com.burtonzone.common.DataUtils;
+import com.burtonzone.common.Decimal;
 import com.burtonzone.common.Rand;
 import javax.annotation.Nonnull;
 import lombok.AllArgsConstructor;
@@ -40,6 +41,27 @@ public class GridPosition
         var x = this.x + rand.nextInt(-maxOffset, maxOffset, bias);
         var y = this.y + rand.nextInt(-maxOffset, maxOffset, bias);
         return new GridPosition(x, y);
+    }
+
+    @Override
+    public Position moveDistance(Rand rand,
+                                 int distance)
+    {
+        var xOffset = rand.nextInt(-distance, distance);
+        var yOffsetSquared = distance * distance - xOffset * xOffset;
+        var yOffset = new Decimal(yOffsetSquared).root().rounded().toInt();
+        if (rand.nextBoolean()) {
+            yOffset = -yOffset;
+        }
+        var x = this.x + xOffset;
+        var y = rand.nextBoolean() ? this.y + yOffset : this.y - yOffset;
+        return new GridPosition(x, y);
+    }
+
+    @Override
+    public boolean isValid()
+    {
+        return x >= MinPos && y >= MinPos && x <= MaxPos && y <= MaxPos;
     }
 
     @Override
