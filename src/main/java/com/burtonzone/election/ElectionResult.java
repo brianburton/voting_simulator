@@ -83,9 +83,9 @@ public class ElectionResult
         return wasted;
     }
 
-    public Counter<Party> getPartyFirstChoiceCounts()
+    public Counter<Party> getPartyEffectiveVoteCounts()
     {
-        return election.getBallots().getPartyFirstChoiceCounts();
+        return effectiveBallots.toPrefixBallots(election.getSeats()).getPartyAllChoiceCounts();
     }
 
     public Counter<Party> getPartyElectedCounts()
@@ -106,10 +106,10 @@ public class ElectionResult
     // https://en.wikipedia.org/wiki/Gallagher_index
     public Decimal computeErrors()
     {
-        final var totalSeats = getPartyElectedCounts().getTotal();
-        final var totalVotes = getElection().getTotalVotes();
         final var partySeats = getPartyElectedCounts();
-        final var partyVotes = getPartyFirstChoiceCounts();
+        final var totalSeats = partySeats.getTotal();
+        final var partyVotes = getPartyEffectiveVoteCounts();
+        final var totalVotes = partyVotes.getTotal();
         var sum = ZERO;
         for (Party party : getElection().getParties()) {
             final var seatPercentage = partySeats.get(party).dividedBy(totalSeats);

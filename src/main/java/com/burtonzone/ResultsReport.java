@@ -63,7 +63,7 @@ public class ResultsReport
             .averageEffectiveVoteScore(result.getEffectiveVoteScore().dividedBy(totalVotes))
             .effectiveVoteScore(result.getEffectiveVoteScore())
             .averageError(result.computeErrors())
-            .partyVotes(result.getPartyFirstChoiceCounts())
+            .partyVotes(result.getPartyEffectiveVoteCounts())
             .partySeats(result.getPartyElectedCounts())
             .winningParty(computeWinningParty(result.getPartyElectedCounts()))
             .allBallots(result.getEffectiveBallots())
@@ -93,7 +93,7 @@ public class ResultsReport
             votes = votes + electionTotalVotes.toInt();
             wasted = wasted + result.getWasted().toInt();
             effectiveVoteScore = effectiveVoteScore.plus(result.getEffectiveVoteScore());
-            partyVotes = partyVotes.add(result.getPartyFirstChoiceCounts());
+            partyVotes = partyVotes.add(result.getPartyEffectiveVoteCounts());
             partySeats = partySeats.add(result.getPartyElectedCounts());
             partyElectedCounts = partyElectedCounts.add(result.getPartyElectedCounts());
             allBallots.add(result.getEffectiveBallots());
@@ -340,15 +340,15 @@ public class ResultsReport
             final var ourVotes = partyVotes.get(party);
             final var totalVotes = partyVotes.getTotal();
             final var totalSeats = new Decimal(elected);
-            final var quota = totalVotes.dividedBy(ONE.plus(totalSeats));
-            return ourVotes
-                .dividedBy(quota)
+            return ourVotes.times(totalSeats)
+                .dividedBy(totalVotes)
+                .rounded()
                 .toInt();
         }
 
         public BigDecimal getVotePercent()
         {
-            return percent(getVotes(), ResultsReport.this.votes);
+            return percent(getVotes(), partyVotes.getTotal().toInt());
         }
 
         public BigDecimal getSeatPercent()

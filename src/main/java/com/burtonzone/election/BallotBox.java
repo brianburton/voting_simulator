@@ -125,6 +125,17 @@ public class BallotBox
         return answer;
     }
 
+    public Counter<Party> getPartyAllChoiceCounts()
+    {
+        var answer = new Counter<Party>();
+        for (var e : ballots) {
+            for (var candidate : e.getKey()) {
+                answer = answer.add(candidate.getParty(), e.getValue());
+            }
+        }
+        return answer;
+    }
+
     /**
      * Returns a number which is a fraction of the total number of votes in the ballot box.
      * For each ballot the first choice to have a true value from the predicate generates a score.
