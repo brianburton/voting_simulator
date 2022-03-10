@@ -85,7 +85,7 @@ public class ElectionResult
 
     public Counter<Party> getPartyEffectiveVoteCounts()
     {
-        return effectiveBallots.toPrefixBallots(election.getSeats()).getPartyAllChoiceCounts();
+        return effectiveBallots.getPartyAllChoiceCounts();
     }
 
     public Counter<Party> getPartyElectedCounts()

@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Comparator;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.Value;
 import org.javimmutable.collections.JImmutableList;
 import org.javimmutable.collections.JImmutableSet;
@@ -245,7 +246,7 @@ public class ResultsReport
         var filtered = JImmutables.<Coalition>list();
         for (Coalition coalition : allCoalitions) {
             var redundant = false;
-            var members = set(coalition.members);
+            var members = set(coalition.getMembers());
             for (var pm : previousMembers) {
                 var shared = pm.intersection(members);
                 if (shared.equals(pm)) {
@@ -274,9 +275,9 @@ public class ResultsReport
 
     public <T> JImmutableList<Coalition> getCoalitions(int maxDistance)
     {
-        var winner = new PartyResult(winningParty);
+        final var winner = new PartyResult(winningParty);
         if (winner.hasMajority()) {
-            return list(new Coalition(ZERO, list(winningParty), winner.getSeats(), winner.getVotes()));
+            return list(new Coalition(ZERO, list(winner), winner.getSeats()));
         }
         final var maxDistanceDecimal = new Decimal(maxDistance);
         var answer = JImmutables.<Coalition>list();
@@ -284,27 +285,25 @@ public class ResultsReport
             .stream()
             .map(PartyResult::new)
             .collect(listCollector());
-        for (int count = 1; count <= (parties.size() + 1) / 2; ++count) {
+        for (int count = 1; count <= parties.size() / 2 + 1; ++count) {
             for (var combo : DataUtils.combos(allParties, count)) {
-                var members = JImmutables.<Party>list();
-                int seats = 0;
-                int votes = 0;
-                for (PartyResult member : combo) {
-                    members = members.insertLast(member.party);
-                    seats = seats + member.getSeats();
-                    votes = votes + member.getVotes();
-                }
-                members = members.stream()
-                    .sorted(partySeats.keysHighestFirstOrder())
-                    .collect(listCollector());
-                final Decimal partyDistance = Party.maxInterPartyDistance(members);
-                final Coalition coalition = new Coalition(partyDistance, members, seats, votes);
-                if (coalition.getSeatPercent().intValue() <= 50) {
+                int seats = combo.reduce(0, (s, p) -> s + p.getSeats());
+                if (seats < getMajority()) {
                     continue;
                 }
+
+                final var members = combo.stream()
+                    .map(PartyResult::getParty)
+                    .sorted(partySeats.keysHighestFirstOrder())
+                    .collect(listCollector());
+
+                final Decimal partyDistance = Party.maxInterPartyDistance(members);
                 if (partyDistance.isGreaterThan(maxDistanceDecimal)) {
                     continue;
                 }
+
+                final var sorted = members.transform(PartyResult::new);
+                final var coalition = new Coalition(partyDistance, sorted, seats);
                 answer = answer.insertLast(coalition);
             }
         }
@@ -318,6 +317,7 @@ public class ResultsReport
 
     public class PartyResult
     {
+        @Getter
         private final Party party;
 
         private PartyResult(Party party)
@@ -366,18 +366,22 @@ public class ResultsReport
     public class Coalition
     {
         Decimal partyDistance;
-        JImmutableList<Party> members;
+        JImmutableList<PartyResult> results;
         int seats;
-        int votes;
+
+        public JImmutableList<Party> getMembers()
+        {
+            return results.transform(PartyResult::getParty);
+        }
 
         public BigDecimal getVotePercent()
         {
-            return percent(votes, ResultsReport.this.votes);
+            return results.reduce(BigDecimal.ZERO, (s, p) -> s.add(p.getVotePercent()));
         }
 
         public BigDecimal getSeatPercent()
         {
-            return percent(seats, ResultsReport.this.seats);
+            return results.reduce(BigDecimal.ZERO, (s, p) -> s.add(p.getSeatPercent()));
         }
     }
 
