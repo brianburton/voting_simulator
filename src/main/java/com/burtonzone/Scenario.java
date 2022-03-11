@@ -36,7 +36,7 @@ public class Scenario
             ElectionSettings.builder()
                 .parties(parties)
                 .maxCandidateChoices(maxCandidateChoices)
-                .maxPartyChoices(maxPartyChoices)
+                .maxPartyChoices(maxPartyChoices > 0 ? maxPartyChoices : (1 + numParties) / 2)
                 .mixedPartyVotePercentage(mixedPartyVotePercentage)
                 .voteType(voteType)
                 .build();

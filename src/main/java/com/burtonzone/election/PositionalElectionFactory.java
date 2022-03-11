@@ -84,13 +84,13 @@ public class PositionalElectionFactory
         final var ballotBox = BallotBox.builder();
         for (Voter voter : voters) {
             var ballot = JImmutables.<Candidate>list();
-            if (settings.getVoteType() == ElectionSettings.VoteType.Party) {
-                ballot = createPartyOrientedBallot(voter, partyLists, settings.getMaxPartyChoices());
+            if (settings.getVoteType() == ElectionSettings.VoteType.PartyList) {
+                ballot = createPartyListBallot(voter, partyLists, settings.getMaxPartyChoices());
             } else if (settings.getVoteType() == ElectionSettings.VoteType.Mixed
                        && rand.nextInt(1, 100) <= settings.getMixedPartyVotePercentage()) {
-                ballot = createPartyOrientedBallot(voter, partyLists, settings.getMaxPartyChoices());
-            } else if (settings.getVoteType() == ElectionSettings.VoteType.SinglePartyCandidate) {
-                ballot = createSinglePartyCandidateOrientedBallot(candidates, voter.position, settings);
+                ballot = createPartyListBallot(voter, partyLists, settings.getMaxPartyChoices());
+            } else if (settings.getVoteType() == ElectionSettings.VoteType.PartyCandidate) {
+                ballot = createPartyCandidateBallot(voter, candidates, settings.getMaxPartyChoices());
             } else {
                 ballot = createCandidateOrientedBallot(candidates, voter.position, settings);
             }
@@ -129,24 +129,24 @@ public class PositionalElectionFactory
             .collect(JImmutables.listCollector());
     }
 
-    private JImmutableList<Candidate> createSinglePartyCandidateOrientedBallot(JImmutableList<Candidate> candidates,
-                                                                               Position position,
-                                                                               ElectionSettings settings)
+    private JImmutableList<Candidate> createPartyCandidateBallot(Voter voter,
+                                                                 JImmutableList<Candidate> candidates,
+                                                                 int maxParties)
     {
-        final var maxCandidates = settings.getMaxCandidateChoices();
         final var sortedCandidates = candidates.stream()
-            .sorted(Candidate.distanceComparator(position))
+            .sorted(Candidate.distanceComparator(voter.position))
             .collect(listCollector());
-        final var firstParty = sortedCandidates.get(0).getParty();
-        return sortedCandidates.stream()
-            .filter(c -> c.getParty().equals(firstParty))
-            .limit(maxCandidates)
+        return voter.parties.stream()
+            .limit(maxParties)
+            .flatMap(party ->
+                         sortedCandidates.stream()
+                             .filter(c -> c.getParty().equals(party)))
             .collect(listCollector());
     }
 
-    private JImmutableList<Candidate> createPartyOrientedBallot(Voter voter,
-                                                                JImmutableListMap<Party, Candidate> partyLists,
-                                                                int maxParties)
+    private JImmutableList<Candidate> createPartyListBallot(Voter voter,
+                                                            JImmutableListMap<Party, Candidate> partyLists,
+                                                            int maxParties)
     {
         return voter.parties.stream()
             .limit(maxParties)

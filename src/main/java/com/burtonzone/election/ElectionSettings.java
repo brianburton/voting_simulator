@@ -15,8 +15,8 @@ public class ElectionSettings
     public enum VoteType
     {
         Candidate,
-        Party,
-        SinglePartyCandidate,
+        PartyList,
+        PartyCandidate,
         Mixed
     }
 
