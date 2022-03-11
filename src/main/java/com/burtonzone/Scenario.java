@@ -18,6 +18,8 @@ public class Scenario
     IssueSpace issues;
     ElectionSettings settings;
     ElectionFactory factory;
+    ElectionRunners votingSystem;
+    DistrictMaps districtMap;
     ElectionRunner runner;
     DistrictMap districts;
 
@@ -40,14 +42,16 @@ public class Scenario
                 .mixedPartyVotePercentage(mixedPartyVotePercentage)
                 .voteType(voteType)
                 .build();
-        final var electionRunner = config.getEnum(ElectionRunners.class, "electionRunner").create();
-        final var districtMap = config.getEnum(DistrictMaps.class, "districtMap").create(electionSettings);
+        final var electionRunner = config.getEnum(ElectionRunners.class, "electionRunner");
+        final var districtMap = config.getEnum(DistrictMaps.class, "districtMap");
         return builder()
             .issues(issueSpace)
             .settings(electionSettings)
             .factory(factory)
-            .runner(electionRunner)
-            .districts(districtMap)
+            .votingSystem(electionRunner)
+            .districtMap(districtMap)
+            .runner(electionRunner.create())
+            .districts(districtMap.create(electionSettings))
             .build();
     }
 }

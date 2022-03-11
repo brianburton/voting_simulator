@@ -1,6 +1,7 @@
 package com.burtonzone;
 
 import com.burtonzone.election.ElectionResult;
+import com.burtonzone.election.ElectionSettings;
 import com.typesafe.config.ConfigFactory;
 
 public class App
@@ -22,6 +23,15 @@ public class App
         final var runner = scenario.getRunner();
         final var districts = scenario.getDistricts();
         final var parallelExecution = config.getBoolean("parallelExecution");
+
+        System.out.printf("Voting System        : %s%n", scenario.getVotingSystem());
+        System.out.printf("Ranking Method       : %s%n", scenario.getSettings().getVoteType());
+        System.out.printf("District Map         : %s%n", scenario.getDistrictMap());
+        System.out.printf("Max Party Choices    : %d%n", scenario.getSettings().getMaxPartyChoices());
+        System.out.printf("Max Candidate Choices: %s%n", scenario.getSettings().getMaxCandidateChoices());
+        System.out.printf("Mixed Party Vote %%   : %s%n", scenario.getSettings().getVoteType() == ElectionSettings.VoteType.Mixed
+                                                          ? String.valueOf(scenario.getSettings().getMixedPartyVotePercentage()) : "n/a");
+        System.out.println();
 
         for (String row : ResultsReport.getPartyDistanceGrid(parties)) {
             System.out.println(row);
