@@ -1,6 +1,7 @@
 package com.burtonzone.election;
 
-import static com.burtonzone.election.Position.*;
+import static com.burtonzone.election.Position.MaxPos;
+import static com.burtonzone.election.Position.MinPos;
 import static org.javimmutable.collections.util.JImmutables.*;
 
 import com.burtonzone.common.Rand;
@@ -21,6 +22,8 @@ public abstract class IssueSpace
     {
         this.rand = rand;
     }
+
+    public abstract boolean isValidPartyPosition(Position pos);
 
     public abstract Position centristPartyPosition();
 

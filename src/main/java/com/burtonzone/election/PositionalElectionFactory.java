@@ -57,7 +57,7 @@ public class PositionalElectionFactory
             final var offset = rand.nextInt(minAllowedDistance, maxAllowedDistance);
             final var neighbor = rand.nextElement(positions);
             final var newPosition = neighbor.moveDistance(rand, offset);
-            if (newPosition.isValid()) {
+            if (newPosition.isValid() && issueSpace.isValidPartyPosition(newPosition)) {
                 final var newPositions = positions.insert(newPosition);
                 final var distances = positions.stream()
                     .map(p -> p.distanceTo(newPosition).toInt())

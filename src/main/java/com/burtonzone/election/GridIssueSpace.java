@@ -18,17 +18,26 @@ public class GridIssueSpace
     }
 
     @Override
+    public boolean isValidPartyPosition(Position pos)
+    {
+        final var gridPos = (GridPosition)pos;
+        final int x = gridPos.getX();
+        final int y = gridPos.getY();
+        return (x >= 10 && x <= 90) && (y >= 10 && y <= 90);
+    }
+
+    @Override
     public Position centristPartyPosition()
     {
-        return new GridPosition(rand.nextElement(CenterPartyPoints, PartyPositionBias),
-                                rand.nextElement(CenterPartyPoints, PartyPositionBias));
+        return new GridPosition(rand.nextInt(35, 65, PartyPositionBias),
+                                rand.nextInt(35, 65, PartyPositionBias));
     }
 
     @Override
     public Position anyPartyPosition()
     {
-        return new GridPosition(rand.nextElement(PartyPoints, PartyPositionBias),
-                                rand.nextElement(PartyPoints, PartyPositionBias));
+        return new GridPosition(rand.nextInt(15, 85, PartyPositionBias),
+                                rand.nextInt(15, 85, PartyPositionBias));
     }
 
     @Override

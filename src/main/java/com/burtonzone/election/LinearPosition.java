@@ -6,6 +6,7 @@ import com.burtonzone.common.Rand;
 import javax.annotation.Nonnull;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import org.javimmutable.collections.JImmutableList;
 
 @AllArgsConstructor
@@ -15,6 +16,7 @@ public class LinearPosition
 {
     public static LinearPosition Center = new LinearPosition((MinPos + MaxPos) / 2);
 
+    @Getter
     private final int x;
 
     @Override

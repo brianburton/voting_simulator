@@ -6,6 +6,7 @@ import com.burtonzone.common.Rand;
 import javax.annotation.Nonnull;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import org.javimmutable.collections.JImmutableList;
 
 @AllArgsConstructor
@@ -15,7 +16,9 @@ public class GridPosition
 {
     public static final GridPosition Center = new GridPosition((MinPos + MaxPos) / 2, (MinPos + MaxPos) / 2);
 
+    @Getter
     private final int x;
+    @Getter
     private final int y;
 
     @Override

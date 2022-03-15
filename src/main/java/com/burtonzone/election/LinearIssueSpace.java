@@ -18,6 +18,14 @@ public class LinearIssueSpace
     }
 
     @Override
+    public boolean isValidPartyPosition(Position pos)
+    {
+        final var linearPos = (LinearPosition)pos;
+        final var x = linearPos.getX();
+        return x >= 10 && x <= 90;
+    }
+
+    @Override
     public Position centristPartyPosition()
     {
         return new LinearPosition(rand.nextElement(CenterPartyPoints, PartyPositionBias));
