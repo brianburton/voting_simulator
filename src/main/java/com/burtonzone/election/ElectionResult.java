@@ -28,13 +28,6 @@ public class ElectionResult
         this.wasted = wasted;
     }
 
-    public ElectionResult(Election election,
-                          JImmutableList<RoundResult> results,
-                          Decimal wasted)
-    {
-        this(election, results, election.getBallots(), wasted);
-    }
-
     public static ElectionResult ofPartyListResults(Election election,
                                                     JImmutableList<CandidateVotes> electedCandidates)
     {
@@ -95,6 +88,12 @@ public class ElectionResult
             answer = answer.add(candidate.getParty(), Decimal.ONE);
         }
         return answer;
+    }
+
+    public Counter<Party> getFavoredPartyVotes()
+    {
+        final var candidateSet = JImmutables.set(getElected());
+        return effectiveBallots.getFavoredPartyVoteCounts(candidateSet::contains);
     }
 
     public Decimal getEffectiveVoteScore()

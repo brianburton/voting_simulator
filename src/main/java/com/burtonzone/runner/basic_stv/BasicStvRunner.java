@@ -23,6 +23,6 @@ public class BasicStvRunner
         final var wasted = election.getBallots()
             .withoutAnyChoiceMatching(electedSet::contains)
             .getTotalCount();
-        return new ElectionResult(election, results.build(), wasted);
+        return new ElectionResult(election, results.build(), election.getBallots(), wasted);
     }
 }

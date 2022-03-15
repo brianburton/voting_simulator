@@ -1,6 +1,7 @@
 package com.burtonzone;
 
-import static com.burtonzone.common.Decimal.*;
+import static com.burtonzone.common.Decimal.ONE;
+import static com.burtonzone.common.Decimal.ZERO;
 import static java.lang.String.format;
 import static org.javimmutable.collections.util.JImmutables.*;
 
@@ -64,7 +65,7 @@ public class ResultsReport
             .averageEffectiveVoteScore(result.getEffectiveVoteScore().dividedBy(totalVotes))
             .effectiveVoteScore(result.getEffectiveVoteScore())
             .averageError(result.computeErrors())
-            .partyVotes(result.getPartyEffectiveVoteCounts())
+            .partyVotes(result.getFavoredPartyVotes())
             .partySeats(result.getPartyElectedCounts())
             .winningParty(computeWinningParty(result.getPartyElectedCounts()))
             .allBallots(result.getEffectiveBallots())
@@ -94,7 +95,7 @@ public class ResultsReport
             votes = votes + electionTotalVotes.toInt();
             wasted = wasted + result.getWasted().toInt();
             effectiveVoteScore = effectiveVoteScore.plus(result.getEffectiveVoteScore());
-            partyVotes = partyVotes.add(result.getPartyEffectiveVoteCounts());
+            partyVotes = partyVotes.add(result.getFavoredPartyVotes());
             partySeats = partySeats.add(result.getPartyElectedCounts());
             partyElectedCounts = partyElectedCounts.add(result.getPartyElectedCounts());
             allBallots.add(result.getEffectiveBallots());

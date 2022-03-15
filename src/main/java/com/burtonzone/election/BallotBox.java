@@ -1,6 +1,7 @@
 package com.burtonzone.election;
 
-import static com.burtonzone.common.Decimal.*;
+import static com.burtonzone.common.Decimal.ONE;
+import static com.burtonzone.common.Decimal.ZERO;
 import static org.javimmutable.collections.util.JImmutables.*;
 
 import com.burtonzone.common.Counter;
@@ -82,7 +83,7 @@ public class BallotBox
         for (var ballot : ballots) {
             var choices = ballot.getKey();
             if (choices.isNonEmpty()) {
-                var firstChoiceParty = ballot.getKey().get(0).getParty();
+                var firstChoiceParty = choices.get(0).getParty();
                 var filteredChoices = choices.select(c -> c.getParty().equals(firstChoiceParty));
                 answer.add(filteredChoices, ballot.getValue());
             } else {
@@ -90,6 +91,30 @@ public class BallotBox
             }
         }
         return answer.build();
+    }
+
+    /**
+     * Add up the votes for the first elected party in each ballot or of the first party on a
+     * ballot that does not elect any candidates.  The first elected candidate count is used
+     * so that STV ballots are not punished for allowing candidates to choose less electable
+     * candidates as their first choice.  For party list votes all candidates will be in the
+     * same party so that party will receive credit for every vote.
+     *
+     * @param elected used to detect if a candidate was elected
+     * @return votes for every party
+     */
+    public Counter<Party> getFavoredPartyVoteCounts(Predicate<Candidate> elected)
+    {
+        var answer = new Counter<Party>();
+        for (var ballot : ballots) {
+            var choices = ballot.getKey();
+            if (choices.isNonEmpty()) {
+                var count = ballot.getValue();
+                var firstElected = choices.first(elected).orElse(choices.get(0));
+                answer = answer.add(firstElected.getParty(), count);
+            }
+        }
+        return answer;
     }
 
     @Nonnull
@@ -351,7 +376,7 @@ public class BallotBox
                            int count)
         {
             final var votes = new Decimal(count);
-            ballots = ballots.update(candidates, c -> c.map(votes::plus).orElse(votes));
+            ballots = ballots.update(candidates, ballotCount -> ballotCount.map(votes::plus).orElse(votes));
             this.count += count;
             return this;
         }
@@ -359,7 +384,7 @@ public class BallotBox
         public Builder add(JImmutableList<Candidate> candidates,
                            Decimal votes)
         {
-            ballots = ballots.update(candidates, c -> c.map(votes::plus).orElse(votes));
+            ballots = ballots.update(candidates, ballotCount -> ballotCount.map(votes::plus).orElse(votes));
             this.count += votes.toInt();
             return this;
         }
