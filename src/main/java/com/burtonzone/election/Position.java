@@ -4,6 +4,7 @@ import com.burtonzone.common.Decimal;
 import com.burtonzone.common.Rand;
 import java.util.Comparator;
 import lombok.AllArgsConstructor;
+import org.javimmutable.collections.JImmutableList;
 
 public interface Position
     extends Comparable<Position>
@@ -31,6 +32,10 @@ public interface Position
 
     Position moveDistance(Rand rand,
                           int distance);
+
+    Position somewhereIn(Rand rand,
+                         int bias,
+                         JImmutableList<Position> bounds);
 
     boolean isValid();
 

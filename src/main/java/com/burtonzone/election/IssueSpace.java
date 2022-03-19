@@ -35,44 +35,8 @@ public abstract class IssueSpace
 
     public Position voterCenterPosition(JImmutableList<Party> parties)
     {
-        var positions = parties.transform(Party::getPosition);
-        if (positions.size() > 2) {
-            var center = centerOf(positions);
-            var sorted = positions.stream()
-                .sorted(new Position.DistanceComparator(center))
-                .skip(1)
-                .collect(listCollector());
-            var preferredParty = sorted.get(rand.nextIndex(sorted.size()));
-            positions = positions.insert(preferredParty);
-        }
-
-//        final var targetSize = 1 + parties.size() / 2;
-//        var positions = list(center());
-//        while (positions.size() < targetSize) {
-//            final var index = rand.nextIndex(parties.size());
-//            final var party = parties.get(index);
-//            positions = positions.insert(party.getPosition());
-//            parties = parties.delete(index);
-//        }
-
-//        final var targetSize = 1 + parties.size() / 2;
-//        var positions = parties.transform(Party::getPosition);
-//        while (positions.size() > targetSize) {
-//            final var index = rand.nextIndex(parties.size());
-//            positions = positions.delete(index);
-//            parties = parties.delete(index);
-//        }
-
-//        var positions = parties.transform(Party::getPosition);
-//        if (positions.size() > 3) {
-//            var center = centerOf(positions);
-//            positions = positions.stream()
-//                .sorted(new Position.DistanceComparator(center))
-//                .skip(1)
-//                .collect(listCollector());
-//        }
-
-        return centerOf(positions);
+        final var positions = parties.transform(Party::getPosition);
+        return positions.get(0).somewhereIn(rand, 2, positions);
     }
 
     public Position voterPosition(Position voterCenterPosition)

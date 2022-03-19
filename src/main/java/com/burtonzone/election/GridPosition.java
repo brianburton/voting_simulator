@@ -97,6 +97,29 @@ public class GridPosition
     }
 
     @Override
+    public Position somewhereIn(Rand rand,
+                                int bias,
+                                JImmutableList<Position> bounds)
+    {
+        var minX = x;
+        var maxX = x;
+        var minY = y;
+        var maxY = y;
+        for (var bound : bounds) {
+            final var pos = (GridPosition)bound;
+            var posX = pos.x;
+            var posY = pos.y;
+            minX = Math.min(minX, posX);
+            maxX = Math.max(maxX, posX);
+            minY = Math.min(minY, posY);
+            maxY = Math.max(maxY, posY);
+        }
+        final var x = rand.nextInt(minX, maxX, bias);
+        final var y = rand.nextInt(minY, maxY, bias);
+        return new GridPosition(x, y);
+    }
+
+    @Override
     public int compareTo(@Nonnull Position other)
     {
         final GridPosition otherPosition = (GridPosition)other;

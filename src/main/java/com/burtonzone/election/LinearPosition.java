@@ -78,6 +78,23 @@ public class LinearPosition
     }
 
     @Override
+    public Position somewhereIn(Rand rand,
+                                int bias,
+                                JImmutableList<Position> bounds)
+    {
+        var minX = x;
+        var maxX = x;
+        for (var bound : bounds) {
+            final var pos = (LinearPosition)bound;
+            var posX = pos.x;
+            minX = Math.min(minX, posX);
+            maxX = Math.max(maxX, posX);
+        }
+        final var x = rand.nextInt(minX, maxX, bias);
+        return new LinearPosition(x);
+    }
+
+    @Override
     public int compareTo(@Nonnull Position other)
     {
         var otherPosition = (LinearPosition)other;
