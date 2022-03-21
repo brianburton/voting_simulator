@@ -15,14 +15,14 @@ public class App
     public static void main(String[] args)
     {
         final var config = ConfigFactory.load();
-        final var showDistrictResults = config.getEnum(OutputMode.class, "outputMode") == OutputMode.Districts;
-        final var numberOfRounds = config.getInt("numberOfRounds");
         final var scenario = Scenario.fromConfig(config);
         final var factory = scenario.getFactory();
         final var parties = scenario.getSettings().getParties();
         final var runner = scenario.getRunner();
         final var districts = scenario.getDistricts();
         final var parallelExecution = config.getBoolean("parallelExecution");
+        final var showDistrictResults = config.getEnum(OutputMode.class, "outputMode") == OutputMode.Districts;
+        final var numberOfRounds = showDistrictResults ? 1 : config.getInt("numberOfRounds");
 
         System.out.printf("Voting System        : %s%n", scenario.getVotingSystem());
         System.out.printf("Ranking Method       : %s%n", scenario.getSettings().getVoteType());
