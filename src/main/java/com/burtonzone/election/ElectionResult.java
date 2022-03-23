@@ -90,10 +90,9 @@ public class ElectionResult
         return answer;
     }
 
-    public Counter<Party> getFavoredPartyVotes()
+    public Counter<Party> getPartyVoteCounts()
     {
-        final var candidateSet = JImmutables.set(getElected());
-        return effectiveBallots.getFavoredPartyVoteCounts(candidateSet::contains);
+        return effectiveBallots.getPartyVoteCounts(election.getSeats());
     }
 
     public Decimal getEffectiveVoteScore()

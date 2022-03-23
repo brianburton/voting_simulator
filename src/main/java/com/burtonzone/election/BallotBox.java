@@ -94,27 +94,32 @@ public class BallotBox
     }
 
     /**
-     * Add up the votes for the first elected party in each ballot or of the first party on a
-     * ballot that does not elect any candidates.  The first elected candidate count is used
-     * so that STV ballots are not punished for allowing candidates to choose less electable
-     * candidates as their first choice.  For party list votes all candidates will be in the
-     * same party so that party will receive credit for every vote.
+     * Add up the votes for the each party in the ballots taking at most numSeats choices per ballot.
      *
-     * @param elected used to detect if a candidate was elected
+     * @param numSeats the maximum number of choices to count
      * @return votes for every party
      */
-    public Counter<Party> getFavoredPartyVoteCounts(Predicate<Candidate> elected)
+    public Counter<Party> getPartyVoteCounts(int numSeats)
     {
-        var answer = new Counter<Party>();
-        for (var ballot : ballots) {
-            var choices = ballot.getKey();
-            if (choices.isNonEmpty()) {
-                var count = ballot.getValue();
-                var firstElected = choices.first(elected).orElse(choices.get(0));
-                answer = answer.add(firstElected.getParty(), count);
-            }
+        var totalPartyVotes = new Counter<Party>();
+        for (var e : ballots) {
+            final var allChoices = e.getKey();
+            final var numberOfVotes = e.getValue();
+            final var firstChoices = allChoices.slice(0, numSeats);
+            final var ballotPartyVotes = countPartyVotes(firstChoices, numberOfVotes);
+            totalPartyVotes = totalPartyVotes.add(ballotPartyVotes);
         }
-        return answer;
+        return totalPartyVotes;
+    }
+
+    private static Counter<Party> countPartyVotes(JImmutableList<Candidate> choices,
+                                                  Decimal voteCount)
+    {
+        var partyVotes = new Counter<Party>();
+        for (Candidate candidate : choices) {
+            partyVotes = partyVotes.add(candidate.getParty(), ONE);
+        }
+        return partyVotes.toRatio().times(voteCount);
     }
 
     @Nonnull

@@ -1,6 +1,7 @@
 package com.burtonzone.common;
 
 import static com.burtonzone.common.Decimal.ZERO;
+import static org.javimmutable.collections.util.JImmutables.*;
 
 import java.util.Comparator;
 import javax.annotation.Nonnull;
@@ -20,7 +21,7 @@ public class Counter<T>
 
     public Counter()
     {
-        this(JImmutables.map());
+        this(map());
     }
 
     public Counter(JImmutableMap<T, Decimal> counts)
@@ -144,6 +145,31 @@ public class Counter<T>
     public JImmutableMap<T, Decimal> toMap()
     {
         return counts;
+    }
+
+    public Counter<T> toRatio()
+    {
+        JImmutableMap<T, Decimal> answer = map();
+        var total = getTotal();
+        if (total.isZero()) {
+            for (var e : counts) {
+                answer = answer.assign(e.getKey(), ZERO);
+            }
+        } else {
+            for (var e : counts) {
+                answer = answer.assign(e.getKey(), e.getValue().dividedBy(total));
+            }
+        }
+        return new Counter<>(answer);
+    }
+
+    public Counter<T> times(Decimal multiple)
+    {
+        var answer = counts;
+        for (var e : counts) {
+            answer = answer.assign(e.getKey(), e.getValue().times(multiple));
+        }
+        return new Counter<>(answer);
     }
 
     @Nonnull

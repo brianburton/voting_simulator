@@ -65,7 +65,7 @@ public class ResultsReport
             .averageEffectiveVoteScore(result.getEffectiveVoteScore().dividedBy(totalVotes))
             .effectiveVoteScore(result.getEffectiveVoteScore())
             .averageError(result.computeErrors())
-            .partyVotes(result.getFavoredPartyVotes())
+            .partyVotes(result.getPartyVoteCounts())
             .partySeats(result.getPartyElectedCounts())
             .winningParty(computeWinningParty(result.getPartyElectedCounts()))
             .allBallots(result.getEffectiveBallots())
@@ -95,7 +95,7 @@ public class ResultsReport
             votes = votes + electionTotalVotes.toInt();
             wasted = wasted + result.getWasted().toInt();
             effectiveVoteScore = effectiveVoteScore.plus(result.getEffectiveVoteScore());
-            partyVotes = partyVotes.add(result.getFavoredPartyVotes());
+            partyVotes = partyVotes.add(result.getPartyVoteCounts());
             partySeats = partySeats.add(result.getPartyElectedCounts());
             partyElectedCounts = partyElectedCounts.add(result.getPartyElectedCounts());
             allBallots.add(result.getEffectiveBallots());
