@@ -1,5 +1,7 @@
 package com.burtonzone.election;
 
+import static org.javimmutable.collections.util.JImmutables.*;
+
 import com.burtonzone.common.Decimal;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.math.RoundingMode;
@@ -8,6 +10,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import lombok.Getter;
 import org.javimmutable.collections.JImmutableList;
+import org.javimmutable.collections.JImmutableListMap;
 import org.javimmutable.collections.util.JImmutables;
 
 public class Election
@@ -19,6 +22,8 @@ public class Election
     @Getter
     private final JImmutableList<Candidate> candidates;
     @Getter
+    private final JImmutableListMap<Party, Candidate> partyLists;
+    @Getter
     private final BallotBox ballots;
     @Getter
     private final Decimal totalVotes;
@@ -29,18 +34,26 @@ public class Election
 
     public Election(JImmutableList<Party> parties,
                     JImmutableList<Candidate> candidates,
+                    JImmutableListMap<Party, Candidate> partyLists,
                     BallotBox ballots,
                     int seats)
     {
         this.parties = parties;
         this.seats = seats;
         this.candidates = candidates;
+        this.partyLists = partyLists;
         this.ballots = ballots;
         totalVotes = ballots.getTotalCount();
-        quota = totalVotes.dividedBy(new Decimal(seats + 1))
+        quota = computeQuota(totalVotes, seats);
+        tieBreaker = ballots.createCandidateComparator();
+    }
+
+    public static Decimal computeQuota(Decimal totalVotes,
+                                       int numberOfSeats)
+    {
+        return totalVotes.dividedBy(new Decimal(numberOfSeats + 1))
             .plus(Decimal.ONE)
             .rounded(RoundingMode.DOWN);
-        tieBreaker = ballots.createCandidateComparator();
     }
 
     public static Builder builder()
@@ -57,7 +70,10 @@ public class Election
 
         public Election build()
         {
-            return new Election(JImmutables.list(parties), JImmutables.list(candidates), ballots.build(), seats);
+            var partyLists = candidates.stream()
+                .map(c -> entry(c.getParty(), c))
+                .collect(listMapCollector());
+            return new Election(JImmutables.list(parties), JImmutables.list(candidates), partyLists, ballots.build(), seats);
         }
 
         @CanIgnoreReturnValue

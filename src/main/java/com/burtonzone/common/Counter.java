@@ -199,6 +199,13 @@ public class Counter<T>
         return counts.toString();
     }
 
+    public Counter<T> set(T key,
+                          Decimal count)
+    {
+        var newCounts = counts.assign(key, count);
+        return new Counter<>(newCounts);
+    }
+
     @Getter
     @AllArgsConstructor
     public static class Entry<T>

@@ -38,7 +38,7 @@ public class PositionalElectionFactory
         final var candidates = createCandidates(parties, numSeats);
         final var partyLists = createPartyLists(parties, candidates);
         final var ballotBox = createBallotBox(voters, candidates, partyLists, settings);
-        return new Election(parties, candidates, ballotBox, numSeats);
+        return new Election(parties, candidates, partyLists, ballotBox, numSeats);
     }
 
     @Override
