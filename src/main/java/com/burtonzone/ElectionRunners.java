@@ -35,11 +35,13 @@ public enum ElectionRunners
     LimitedVote(PluralityRunner::limitedVote),
     DHondt(() -> new OpenListFormulaRunner(Config.builder()
                                                .formula(Config.PartySeatFormula.DHondt)
+                                               .partyVoteMode(Config.PartyVoteMode.Voter)
                                                .listMode(Config.PartyListMode.Party)
                                                .quotasMode(Config.QuotasMode.TotalAndParty)
                                                .build())),
     Webster(() -> new OpenListFormulaRunner(Config.builder()
                                                 .formula(Config.PartySeatFormula.Webster)
+                                                .partyVoteMode(Config.PartyVoteMode.Voter)
                                                 .listMode(Config.PartyListMode.Party)
                                                 .quotasMode(Config.QuotasMode.TotalAndParty)
                                                 .build()));

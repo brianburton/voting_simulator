@@ -85,7 +85,7 @@ public class ElectionResult
     {
         var answer = new Counter<Party>();
         for (Candidate candidate : getFinalRound().getElected()) {
-            answer = answer.add(candidate.getParty(), Decimal.ONE);
+            answer = answer.inc(candidate.getParty());
         }
         return answer;
     }

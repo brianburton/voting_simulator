@@ -117,7 +117,7 @@ public class BallotBox
     {
         var partyVotes = new Counter<Party>();
         for (Candidate candidate : choices) {
-            partyVotes = partyVotes.add(candidate.getParty(), ONE);
+            partyVotes = partyVotes.inc(candidate.getParty());
         }
         return partyVotes.toRatio().times(voteCount);
     }

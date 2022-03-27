@@ -2,6 +2,7 @@ package com.burtonzone.election;
 
 import static org.javimmutable.collections.util.JImmutables.*;
 
+import com.burtonzone.common.Counter;
 import com.burtonzone.common.Rand;
 import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
@@ -38,7 +39,8 @@ public class PositionalElectionFactory
         final var candidates = createCandidates(parties, numSeats);
         final var partyLists = createPartyLists(parties, candidates);
         final var ballotBox = createBallotBox(voters, candidates, partyLists, settings);
-        return new Election(parties, candidates, partyLists, ballotBox, numSeats);
+        final var partyVotes = voters.reduce(new Counter<Party>(), (pv, v) -> pv.inc(v.parties.get(0)));
+        return new Election(parties, candidates, partyLists, partyVotes, ballotBox, numSeats);
     }
 
     @Override

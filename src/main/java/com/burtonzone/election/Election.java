@@ -1,7 +1,9 @@
 package com.burtonzone.election;
 
+import static com.burtonzone.common.Decimal.ONE;
 import static org.javimmutable.collections.util.JImmutables.*;
 
+import com.burtonzone.common.Counter;
 import com.burtonzone.common.Decimal;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.math.RoundingMode;
@@ -13,28 +15,23 @@ import org.javimmutable.collections.JImmutableList;
 import org.javimmutable.collections.JImmutableListMap;
 import org.javimmutable.collections.util.JImmutables;
 
+@Getter
 public class Election
 {
-    @Getter
     private final JImmutableList<Party> parties;
-    @Getter
     private final int seats;
-    @Getter
     private final JImmutableList<Candidate> candidates;
-    @Getter
     private final JImmutableListMap<Party, Candidate> partyLists;
-    @Getter
+    private final Counter<Party> partyVotes;
     private final BallotBox ballots;
-    @Getter
     private final Decimal totalVotes;
-    @Getter
     private final Decimal quota;
-    @Getter
     private final Comparator<Candidate> tieBreaker;
 
     public Election(JImmutableList<Party> parties,
                     JImmutableList<Candidate> candidates,
                     JImmutableListMap<Party, Candidate> partyLists,
+                    Counter<Party> partyVotes,
                     BallotBox ballots,
                     int seats)
     {
@@ -42,6 +39,7 @@ public class Election
         this.seats = seats;
         this.candidates = candidates;
         this.partyLists = partyLists;
+        this.partyVotes = partyVotes;
         this.ballots = ballots;
         totalVotes = ballots.getTotalCount();
         quota = computeQuota(totalVotes, seats);
@@ -52,7 +50,7 @@ public class Election
                                        int numberOfSeats)
     {
         return totalVotes.dividedBy(new Decimal(numberOfSeats + 1))
-            .plus(Decimal.ONE)
+            .plus(ONE)
             .rounded(RoundingMode.DOWN);
     }
 
@@ -65,6 +63,7 @@ public class Election
     {
         private final Set<Party> parties = new LinkedHashSet<>();
         private final BallotBox.Builder ballots = BallotBox.builder();
+        private Counter<Party> partyVotes = new Counter<>();
         private final Set<Candidate> candidates = new LinkedHashSet<>();
         private int seats = 1;
 
@@ -73,7 +72,7 @@ public class Election
             var partyLists = candidates.stream()
                 .map(c -> entry(c.getParty(), c))
                 .collect(listMapCollector());
-            return new Election(JImmutables.list(parties), JImmutables.list(candidates), partyLists, ballots.build(), seats);
+            return new Election(JImmutables.list(parties), JImmutables.list(candidates), partyLists, partyVotes, ballots.build(), seats);
         }
 
         @CanIgnoreReturnValue
@@ -138,6 +137,13 @@ public class Election
             for (Candidate candidate : candidates) {
                 this.candidates.add(candidate);
             }
+            return this;
+        }
+
+        @CanIgnoreReturnValue
+        public Builder partyVote(Party party)
+        {
+            partyVotes = partyVotes.inc(party);
             return this;
         }
     }

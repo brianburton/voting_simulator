@@ -1,5 +1,6 @@
 package com.burtonzone.common;
 
+import static com.burtonzone.common.Decimal.ONE;
 import static com.burtonzone.common.Decimal.ZERO;
 import static org.javimmutable.collections.util.JImmutables.*;
 
@@ -50,6 +51,11 @@ public class Counter<T>
             answer = answer.addZero(key);
         }
         return answer;
+    }
+
+    public Counter<T> inc(T key)
+    {
+        return add(key, ONE);
     }
 
     public Counter<T> add(T key,

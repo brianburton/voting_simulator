@@ -1,5 +1,6 @@
 package com.burtonzone.runner;
 
+import static com.burtonzone.common.Decimal.ZERO;
 import static org.javimmutable.collections.util.JImmutables.*;
 
 import com.burtonzone.common.Counter;
@@ -38,10 +39,11 @@ public class OpenListFormulaRunner
         if (config.getQuotasMode().isTotalQuotaEnabled()) {
             worksheet.assignSeatsToCandidatesWithElectionQuota();
         }
+        worksheet.allocateSeatsToParties();
         if (config.getQuotasMode().isPartyQuotaEnabled()) {
             worksheet.assignSeatsToCandidatesWithPartyQuota();
         }
-        worksheet.assignSeatsFromPartyLists();
+        worksheet.assignSeatsToCandidatesFromPartyLists();
         return worksheet.getElectionResult();
     }
 
@@ -51,7 +53,7 @@ public class OpenListFormulaRunner
         private final Counter<Party> partyVotes;
         private final Counter<Candidate> candidateVotes;
         private final JImmutableListMap<Party, Candidate> partyLists;
-        private final Counter<Party> partySeats;
+        private Counter<Party> partySeats;
         private JImmutableSetMap<Party, Candidate> elected;
 
         private Worksheet(Election election)
@@ -67,24 +69,35 @@ public class OpenListFormulaRunner
                 candidateVotes = candidateVotes.add(candidate, count);
             }
             this.election = election;
-            this.partyVotes = partyVotes;
+            this.partyVotes = selectPartyVotes(election, partyVotes);
             this.candidateVotes = candidateVotes;
             partyLists = selectPartyLists();
-            partySeats = computePartySeatsFromVotes();
+            partySeats = new Counter<>();
             elected = JImmutables.setMap();
         }
 
-        private Counter<Party> computePartySeatsFromVotes()
+        private Counter<Party> selectPartyVotes(Election election,
+                                                Counter<Party> candidatePartyCounts)
+        {
+            return switch (config.partyVoteMode) {
+                case Candidate -> candidatePartyCounts;
+                case Voter -> election.getPartyVotes();
+            };
+        }
+
+        private void allocateSeatsToParties()
         {
             var partySeats = new Counter<Party>();
-            var remainingSeats = election.getSeats() - partySeats.getTotal().toInt();
-            while (remainingSeats > 0) {
+            for (Party party : elected.keys()) {
+                partySeats = partySeats.add(party, filledSeatsForParty(party));
+            }
+            final var totalSeats = new Decimal(election.getSeats());
+            while (partySeats.getTotal().isLessThan(totalSeats)) {
                 final var topParty = findPartyWithHighestAdjustedVotes(partySeats);
-                partySeats = partySeats.add(topParty, 1);
-                remainingSeats -= 1;
+                partySeats = partySeats.inc(topParty);
             }
             assert partySeats.getTotal().toInt() == election.getSeats();
-            return partySeats;
+            this.partySeats = partySeats;
         }
 
         private void assignSeatsToCandidatesWithElectionQuota()
@@ -122,7 +135,7 @@ public class OpenListFormulaRunner
             }
         }
 
-        private void assignSeatsFromPartyLists()
+        private void assignSeatsToCandidatesFromPartyLists()
         {
             for (var entry : partySeats) {
                 final var party = entry.getKey();
@@ -193,7 +206,7 @@ public class OpenListFormulaRunner
         private Party findPartyWithHighestAdjustedVotes(Counter<Party> partySeats)
         {
             Party topParty = null;
-            Decimal topVotes = Decimal.ZERO;
+            Decimal topVotes = ZERO;
             for (Counter.Entry<Party> entry : partyVotes) {
                 final Party party = entry.getKey();
                 final Decimal rawVotes = entry.getCount();
@@ -220,6 +233,15 @@ public class OpenListFormulaRunner
     @Builder
     public static class Config
     {
+        public enum PartyVoteMode
+        {
+            Candidate,
+            Voter
+        }
+
+        @Builder.Default
+        PartyVoteMode partyVoteMode = PartyVoteMode.Candidate;
+
         public enum PartyListMode
         {
             Votes,
