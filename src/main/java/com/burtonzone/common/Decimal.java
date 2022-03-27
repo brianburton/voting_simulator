@@ -34,6 +34,12 @@ public class Decimal
         this.value = value.setScale(PRECISION, RoundingMode.HALF_UP);
     }
 
+    public static Decimal max(Decimal a,
+                              Decimal b)
+    {
+        return a.isGreaterThan(b) ? a : b;
+    }
+
     public Decimal rounded()
     {
         return rounded(RoundingMode.HALF_UP);

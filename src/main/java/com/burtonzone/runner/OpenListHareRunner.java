@@ -4,7 +4,6 @@ import static org.javimmutable.collections.util.JImmutables.*;
 
 import com.burtonzone.common.Counter;
 import com.burtonzone.common.Decimal;
-import com.burtonzone.election.Candidate;
 import com.burtonzone.election.CandidateVotes;
 import com.burtonzone.election.Election;
 import com.burtonzone.election.ElectionResult;
@@ -52,19 +51,9 @@ public class OpenListHareRunner
 
         private Worksheet(Election election)
         {
-            var partyVotes = new Counter<Party>();
-            var candidateVotes = new Counter<Candidate>()
-                .addZeros(election.getCandidates());
-            for (var e : election.getBallots().getFirstChoiceCounts()) {
-                final var candidate = e.getKey();
-                final var party = candidate.getParty();
-                final var count = e.getCount();
-                partyVotes = partyVotes.add(party, count);
-                candidateVotes = candidateVotes.add(candidate, count);
-            }
             this.election = election;
-            this.partyVotes = partyVotes;
-            unelectedCandidates = candidateVotes
+            partyVotes = election.getBallots().getPartyFirstChoiceCounts();
+            unelectedCandidates = election.getBallots().getCandidateFirstChoiceCounts()
                 .getSortedList(election.getTieBreaker())
                 .transform(CandidateVotes::new);
             electedCandidates = JImmutables.list();

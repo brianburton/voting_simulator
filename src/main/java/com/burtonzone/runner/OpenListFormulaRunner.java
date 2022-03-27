@@ -50,39 +50,20 @@ public class OpenListFormulaRunner
     private class Worksheet
     {
         private final Election election;
-        private final Counter<Party> partyVotes;
         private final Counter<Candidate> candidateVotes;
+        private final Counter<Party> candidatePartyVotes;
         private final JImmutableListMap<Party, Candidate> partyLists;
         private Counter<Party> partySeats;
         private JImmutableSetMap<Party, Candidate> elected;
 
         private Worksheet(Election election)
         {
-            var partyVotes = new Counter<Party>();
-            var candidateVotes = new Counter<Candidate>()
-                .addZeros(election.getCandidates());
-            for (var e : election.getBallots().getFirstChoiceCounts()) {
-                final var candidate = e.getKey();
-                final var party = candidate.getParty();
-                final var count = e.getCount();
-                partyVotes = partyVotes.add(party, count);
-                candidateVotes = candidateVotes.add(candidate, count);
-            }
             this.election = election;
-            this.partyVotes = selectPartyVotes(election, partyVotes);
-            this.candidateVotes = candidateVotes;
+            this.candidateVotes = election.getBallots().getCandidateFirstChoiceCounts();
+            candidatePartyVotes = election.getBallots().getPartyFirstChoiceCounts();
             partyLists = selectPartyLists();
             partySeats = new Counter<>();
             elected = JImmutables.setMap();
-        }
-
-        private Counter<Party> selectPartyVotes(Election election,
-                                                Counter<Party> candidatePartyCounts)
-        {
-            return switch (config.partyVoteMode) {
-                case Candidate -> candidatePartyCounts;
-                case Voter -> election.getPartyVotes();
-            };
         }
 
         private void allocateSeatsToParties()
@@ -123,8 +104,9 @@ public class OpenListFormulaRunner
                 final var candidate = entry.getCandidate();
                 final var party = candidate.getParty();
                 if (!party.equals(currentParty)) {
+                    var votes = Decimal.max(candidatePartyVotes.get(party), election.getPartyVotes().get(party));
                     currentParty = party;
-                    quota = Election.computeQuota(partyVotes.get(party), election.getSeats());
+                    quota = Election.computeQuota(votes, election.getSeats());
                 }
                 if (filledSeatsForParty(party) < numberOfSeatsForParty(party)) {
                     final var votes = entry.getVotes();
@@ -205,6 +187,7 @@ public class OpenListFormulaRunner
 
         private Party findPartyWithHighestAdjustedVotes(Counter<Party> partySeats)
         {
+            final var partyVotes = selectPartyVotesForSeatAllocation();
             Party topParty = null;
             Decimal topVotes = ZERO;
             for (Counter.Entry<Party> entry : partyVotes) {
@@ -225,6 +208,14 @@ public class OpenListFormulaRunner
             return switch (config.formula) {
                 case Webster -> votes.dividedBy(Decimal.ONE.plus(seats.times(Decimal.TWO)));
                 case DHondt -> votes.dividedBy(Decimal.ONE.plus(seats));
+            };
+        }
+
+        private Counter<Party> selectPartyVotesForSeatAllocation()
+        {
+            return switch (config.partyVoteMode) {
+                case Candidate -> candidatePartyVotes;
+                case Voter -> election.getPartyVotes();
             };
         }
     }

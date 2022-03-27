@@ -17,7 +17,6 @@ import org.javimmutable.collections.JImmutableMap;
 import org.javimmutable.collections.JImmutableSet;
 import org.javimmutable.collections.SplitableIterator;
 import org.javimmutable.collections.iterators.TransformIterator;
-import org.javimmutable.collections.iterators.TransformStreamable;
 import org.javimmutable.collections.util.JImmutables;
 
 public class BallotBox
@@ -94,7 +93,7 @@ public class BallotBox
     }
 
     /**
-     * Add up the votes for the each party in the ballots taking at most numSeats choices per ballot.
+     * Add up the votes for each party in the ballots taking at most numSeats choices per ballot.
      *
      * @param numSeats the maximum number of choices to count
      * @return votes for every party
@@ -136,10 +135,17 @@ public class BallotBox
         return ballots.getSpliteratorCharacteristics();
     }
 
-    public IterableStreamable<Counter.Entry<Candidate>> getFirstChoiceCounts()
+    public Counter<Candidate> getCandidateFirstChoiceCounts()
     {
-        return TransformStreamable.of(ballots.delete(NoCandidates),
-                                      e -> new Counter.Entry<>(e.getKey().get(0), e.getValue()));
+        var answer = new Counter<Candidate>();
+        for (var e : ballots) {
+            final var candidates = e.getKey();
+            if (candidates.isNonEmpty()) {
+                final var candidate = candidates.get(0);
+                answer = answer.add(candidate, e.getValue());
+            }
+        }
+        return answer;
     }
 
     public Counter<Party> getPartyFirstChoiceCounts()
