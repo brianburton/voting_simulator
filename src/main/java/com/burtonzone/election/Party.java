@@ -10,6 +10,8 @@ import org.javimmutable.collections.JImmutableList;
 @AllArgsConstructor
 public class Party
 {
+    public static final Comparator<Party> NameComparator = Comparator.comparing(Party::getName);
+
     String name;
     String abbrev;
     Position position;

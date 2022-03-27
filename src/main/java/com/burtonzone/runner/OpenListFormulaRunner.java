@@ -10,6 +10,7 @@ import com.burtonzone.election.Election;
 import com.burtonzone.election.ElectionResult;
 import com.burtonzone.election.ElectionRunner;
 import com.burtonzone.election.Party;
+import java.util.Comparator;
 import lombok.Builder;
 import lombok.Value;
 import org.javimmutable.collections.JImmutableListMap;
@@ -19,6 +20,10 @@ import org.javimmutable.collections.util.JImmutables;
 public class OpenListFormulaRunner
     implements ElectionRunner
 {
+    private static final Comparator<CandidateVotes> CandidatesByPartyThenVotes =
+        Comparator.<CandidateVotes, Party>comparing(cv -> cv.getCandidate().getParty(), Party.NameComparator)
+            .thenComparing(Comparator.comparing(CandidateVotes::getVotes).reversed());
+
     private final Config config;
 
     public OpenListFormulaRunner(Config config)
@@ -30,7 +35,6 @@ public class OpenListFormulaRunner
     public ElectionResult runElection(Election election)
     {
         var worksheet = new Worksheet(election);
-        worksheet.computePartySeatsFromVotes();
         if (config.getQuotasMode().isTotalQuotaEnabled()) {
             worksheet.assignSeatsToCandidatesWithElectionQuota();
         }
@@ -96,20 +100,21 @@ public class OpenListFormulaRunner
 
         private void assignSeatsToCandidatesWithPartyQuota()
         {
-            var partyQuotas = new Counter<Party>();
-            for (var entry : partyVotes) {
-                final var party = entry.getKey();
-                final var totalVotes = entry.getCount();
-                final var numberOfSeats = numberOfSeatsForParty(party);
-                final var quota = Election.computeQuota(totalVotes, numberOfSeats);
-                partyQuotas = partyQuotas.set(party, quota);
-            }
-            for (var entry : candidateVotes.getSortedList()) {
-                final var candidate = entry.getKey();
+            final var sortedCandidates = candidateVotes.stream()
+                .map(e -> new CandidateVotes(e.getKey(), e.getCount()))
+                .sorted(CandidatesByPartyThenVotes)
+                .collect(listCollector());
+            Party currentParty = null;
+            Decimal quota = null;
+            for (var entry : sortedCandidates) {
+                final var candidate = entry.getCandidate();
                 final var party = candidate.getParty();
+                if (!party.equals(currentParty)) {
+                    currentParty = party;
+                    quota = Election.computeQuota(partyVotes.get(party), election.getSeats());
+                }
                 if (filledSeatsForParty(party) < numberOfSeatsForParty(party)) {
-                    final var votes = entry.getCount();
-                    final var quota = partyQuotas.get(party);
+                    final var votes = entry.getVotes();
                     if (votes.isGreaterOrEqualTo(quota)) {
                         elected = elected.insert(party, candidate);
                     }
