@@ -1,8 +1,8 @@
 package com.burtonzone;
 
 import com.burtonzone.election.ElectionRunner;
-import com.burtonzone.runner.OpenListFormulaRunner;
-import com.burtonzone.runner.OpenListFormulaRunner.Config;
+import com.burtonzone.runner.OpenListRunner;
+import com.burtonzone.runner.OpenListRunner.Config;
 import com.burtonzone.runner.PluralityRunner;
 import com.burtonzone.runner.basic_stv.BasicStvRunner;
 import java.util.function.Supplier;
@@ -33,18 +33,25 @@ public enum ElectionRunners
      * Each voter can cast a vote for no more than a majority of the available seats.
      */
     LimitedVote(PluralityRunner::limitedVote),
-    DHondt(() -> new OpenListFormulaRunner(Config.builder()
-                                               .formula(Config.PartySeatFormula.DHondt)
-                                               .partyVoteMode(Config.PartyVoteMode.Voter)
-                                               .listMode(Config.PartyListMode.Party)
-                                               .quotasMode(Config.QuotasMode.TotalAndParty)
-                                               .build())),
-    Webster(() -> new OpenListFormulaRunner(Config.builder()
-                                                .formula(Config.PartySeatFormula.Webster)
-                                                .partyVoteMode(Config.PartyVoteMode.Voter)
-                                                .listMode(Config.PartyListMode.Party)
-                                                .quotasMode(Config.QuotasMode.TotalAndParty)
-                                                .build()));
+    Hare(() -> new OpenListRunner(Config.builder()
+                                      .seatAllocator(Config.PartySeatAllocator.Hare)
+                                      .partyVoteMode(Config.PartyVoteMode.Voter)
+                                      .listMode(Config.PartyListMode.Party)
+                                      // pre-assignment using quotas is not compatible with Hare
+                                      .quotasMode(Config.QuotasMode.PartyOnly)
+                                      .build())),
+    DHondt(() -> new OpenListRunner(Config.builder()
+                                        .seatAllocator(Config.PartySeatAllocator.DHondt)
+                                        .partyVoteMode(Config.PartyVoteMode.Voter)
+                                        .listMode(Config.PartyListMode.Party)
+                                        .quotasMode(Config.QuotasMode.TotalAndParty)
+                                        .build())),
+    Webster(() -> new OpenListRunner(Config.builder()
+                                         .seatAllocator(Config.PartySeatAllocator.Webster)
+                                         .partyVoteMode(Config.PartyVoteMode.Voter)
+                                         .listMode(Config.PartyListMode.Party)
+                                         .quotasMode(Config.QuotasMode.TotalAndParty)
+                                         .build()));
 
     private final Supplier<ElectionRunner> factory;
 

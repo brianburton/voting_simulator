@@ -18,7 +18,7 @@ import org.javimmutable.collections.JImmutableListMap;
 import org.javimmutable.collections.JImmutableSetMap;
 import org.javimmutable.collections.util.JImmutables;
 
-public class OpenListFormulaRunner
+public class OpenListRunner
     implements ElectionRunner
 {
     private static final Comparator<CandidateVotes> CandidatesByPartyThenVotes =
@@ -27,7 +27,7 @@ public class OpenListFormulaRunner
 
     private final Config config;
 
-    public OpenListFormulaRunner(Config config)
+    public OpenListRunner(Config config)
     {
         this.config = config;
     }
@@ -72,13 +72,48 @@ public class OpenListFormulaRunner
             for (Party party : elected.keys()) {
                 partySeats = partySeats.add(party, filledSeatsForParty(party));
             }
+            if (config.seatAllocator == Config.PartySeatAllocator.Hare) {
+                partySeats = computePartySeatsUsingHareQuotas(partySeats);
+            } else {
+                partySeats = computePartySeatsUsingFormula(partySeats);
+            }
+            assert partySeats.getTotal().toInt() == election.getSeats();
+            this.partySeats = partySeats;
+        }
+
+        private Counter<Party> computePartySeatsUsingFormula(Counter<Party> partySeats)
+        {
             final var totalSeats = new Decimal(election.getSeats());
             while (partySeats.getTotal().isLessThan(totalSeats)) {
                 final var topParty = findPartyWithHighestAdjustedVotes(partySeats);
                 partySeats = partySeats.inc(topParty);
             }
-            assert partySeats.getTotal().toInt() == election.getSeats();
-            this.partySeats = partySeats;
+            return partySeats;
+        }
+
+        private Counter<Party> computePartySeatsUsingHareQuotas(Counter<Party> partySeats)
+        {
+            if (!partySeats.isEmpty()) {
+                throw new IllegalArgumentException("Hare quotas cannot be used with pre-assigned seats.");
+            }
+            var partyVotes = selectPartyVotesForSeatAllocation();
+            final var partyQuota = Election.computeQuota(partyVotes.getTotal(), election.getSeats());
+            final var totalSeats = new Decimal(election.getSeats());
+            for (var e : partyVotes) {
+                var seats = e.getCount().div(partyQuota);
+                if (seats.isGreaterThan(ZERO)) {
+                    partySeats = partySeats.set(e.getKey(), seats);
+                    partyVotes = partyVotes.subtract(e.getKey(), seats.times(partyQuota));
+                }
+            }
+            var remaining = totalSeats.minus(partySeats.getTotal()).toInt();
+            while (remaining > 0) {
+                final var topParty = findPartyWithHighestVotes(partyVotes);
+                partySeats = partySeats.inc(topParty);
+                partyVotes = partyVotes.set(topParty, ZERO);
+                remaining -= 1;
+            }
+            return partySeats;
         }
 
         private void assignSeatsToCandidatesWithElectionQuota()
@@ -202,12 +237,28 @@ public class OpenListFormulaRunner
             return topParty;
         }
 
+        private Party findPartyWithHighestVotes(Counter<Party> partyVotes)
+        {
+            Party topParty = null;
+            Decimal topVotes = ZERO;
+            for (Counter.Entry<Party> entry : partyVotes) {
+                final Party party = entry.getKey();
+                final Decimal rawVotes = entry.getCount();
+                if (rawVotes.isGreaterThan(topVotes)) {
+                    topVotes = rawVotes;
+                    topParty = party;
+                }
+            }
+            return topParty;
+        }
+
         private Decimal computeAdjustedVotes(Decimal votes,
                                              Decimal seats)
         {
-            return switch (config.formula) {
+            return switch (config.seatAllocator) {
                 case Webster -> votes.dividedBy(Decimal.ONE.plus(seats.times(Decimal.TWO)));
                 case DHondt -> votes.dividedBy(Decimal.ONE.plus(seats));
+                default -> throw new IllegalArgumentException("no formula for " + config.seatAllocator);
             };
         }
 
@@ -242,15 +293,16 @@ public class OpenListFormulaRunner
         @Builder.Default
         PartyListMode listMode = PartyListMode.Party;
 
-        public enum PartySeatFormula
+        public enum PartySeatAllocator
         {
             // https://en.wikipedia.org/wiki/Webster/Sainte-Lagu%C3%AB_method
             Webster,
-            DHondt
+            DHondt,
+            Hare
         }
 
         @Builder.Default
-        PartySeatFormula formula = PartySeatFormula.Webster;
+        PartySeatAllocator seatAllocator = PartySeatAllocator.Webster;
 
         public enum QuotasMode
         {
