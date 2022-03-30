@@ -132,6 +132,18 @@ public class ResultsReport
         return allBallots.getAverageNumberOfChoices();
     }
 
+    public Decimal computeEffectiveNumberOfParties()
+    {
+        final var seats = new Decimal(this.seats);
+        var total = ZERO;
+        for (Party party : parties) {
+            var partyResult = new PartyResult(party);
+            var seatFraction = new Decimal(partyResult.getSeats()).dividedBy(seats);
+            total = total.plus(seatFraction.squared());
+        }
+        return ONE.dividedBy(total);
+    }
+
     // https://en.wikipedia.org/wiki/Gallagher_index
     private Decimal computeErrors()
     {
@@ -151,7 +163,6 @@ public class ResultsReport
     {
         StringWriter str = new StringWriter();
         try (PrintWriter out = new PrintWriter(str)) {
-            out.printf("%-3s %-3s ", "", "");
             for (Party party : parties) {
                 var pad = party.equals(winningParty) ? "*" : "-";
                 out.printf(" %s ", center(party.getName(), 14, pad));
@@ -164,11 +175,10 @@ public class ResultsReport
     {
         StringWriter str = new StringWriter();
         try (PrintWriter out = new PrintWriter(str)) {
-            out.printf("%3s %3s ", "rsc", "rec");
             for (Party party : parties) {
                 out.printf("%7s  %6s ", "eps", "aps");
             }
-            out.printf(" %5s %6s %6s %6s", "ranks", "waste", "err", "eff");
+            out.printf("  %7s %5s %6s %6s %6s", "parties", "ranks", "waste", "err", "eff");
         }
         return str.toString();
     }
@@ -177,13 +187,13 @@ public class ResultsReport
     {
         StringWriter str = new StringWriter();
         try (PrintWriter out = new PrintWriter(str)) {
-            out.printf("%3d %3d", seats, elected);
             for (Party party : parties) {
                 final var pr = new PartyResult(party);
                 out.printf(" %6s%%  %5s%%", pr.getVotePercent(), pr.getSeatPercent());
             }
-            out.printf("  %5s %5s%% %5s%% %5s%%",
-                       tenths(getAverageNumberOfChoices()),
+            out.printf("  %7s %5s %5s%% %5s%% %5s%%",
+                       decimal(computeEffectiveNumberOfParties(), 2),
+                       decimal(getAverageNumberOfChoices(), 1),
                        percent(wasted, votes),
                        percent(computeErrors(), ONE),
                        percent(effectiveVoteScore, new Decimal(votes)));
@@ -195,16 +205,16 @@ public class ResultsReport
     {
         StringWriter str = new StringWriter();
         try (PrintWriter out = new PrintWriter(str)) {
-            out.printf("%3s %3s", "", "");
             for (Party party : parties) {
                 final var pr = new PartyResult(party);
                 out.printf(" %7d  %6d", pr.getExpectedSeats(), pr.getSeats());
             }
-            out.printf("  %5s %5s%% %5s%% %5s%%",
+            out.printf("  %7s %5s %5s%% %5s%% %5s%%",
                        "",
-                       tenths(averageWasted.times(Decimal.HUNDRED)),
+                       "",
+                       decimal(averageWasted.times(Decimal.HUNDRED), 1),
                        percent(averageError, ONE),
-                       tenths(averageEffectiveVoteScore.times(Decimal.HUNDRED)));
+                       decimal(averageEffectiveVoteScore.times(Decimal.HUNDRED), 1));
         }
         return str.toString();
     }
@@ -386,9 +396,10 @@ public class ResultsReport
         }
     }
 
-    private static BigDecimal tenths(Decimal value)
+    private static BigDecimal decimal(Decimal value,
+                                      int places)
     {
-        return value.toBigDecimal().setScale(1, RoundingMode.HALF_UP);
+        return value.toBigDecimal().setScale(places, RoundingMode.HALF_UP);
     }
 
     private static BigDecimal percent(Decimal numer,

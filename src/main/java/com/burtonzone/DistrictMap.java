@@ -31,6 +31,11 @@ public class DistrictMap
         return new Elections(createImpl(factory, parallelExecution, districts.stream()), parallelExecution);
     }
 
+    public int getSeats()
+    {
+        return districts.stream().mapToInt(d -> d.getSettings().getNumberOfSeats()).sum();
+    }
+
     private JImmutableList<Election> createImpl(ElectionFactory factory,
                                                 boolean parallelExecution,
                                                 Stream<DistrictSpec> specs)
