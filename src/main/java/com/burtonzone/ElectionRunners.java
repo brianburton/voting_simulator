@@ -64,9 +64,4 @@ public enum ElectionRunners
     {
         return factory.get();
     }
-
-    public static BasicStvRunner basicStv()
-    {
-        return new BasicStvRunner();
-    }
 }

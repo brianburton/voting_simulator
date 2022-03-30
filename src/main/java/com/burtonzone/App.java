@@ -2,7 +2,9 @@ package com.burtonzone;
 
 import com.burtonzone.election.ElectionResult;
 import com.burtonzone.election.ElectionSettings;
+import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import java.io.File;
 
 public class App
 {
@@ -14,7 +16,7 @@ public class App
 
     public static void main(String[] args)
     {
-        final var config = ConfigFactory.load();
+        final var config = loadConfigs(args);
         final var scenario = Scenario.fromConfig(config);
         final var factory = scenario.getFactory();
         final var parties = scenario.getSettings().getParties();
@@ -62,5 +64,23 @@ public class App
             }
             System.out.println();
         }
+    }
+
+    private static Config loadConfigs(String[] argv)
+    {
+        var root = new File(".");
+        var configDir = new File("configs");
+        if (configDir.isDirectory()) {
+            root = configDir;
+        }
+        var config = ConfigFactory.load();
+        for (String arg : argv) {
+            var file = new File(root, arg);
+            if (file.isFile() && file.getName().endsWith(".conf")) {
+                var fileConfig = ConfigFactory.parseFile(file);
+                config = fileConfig.withFallback(config);
+            }
+        }
+        return config;
     }
 }
