@@ -11,7 +11,7 @@ public abstract class IssueSpace
 {
     protected static final int MaxVoterDistance = 45;
     protected static final int PartyPositionBias = 1;
-    protected static final int VoterPositionBias = 2;
+    protected static final int VoterPositionBias = 3;
     protected static final int VoterCenterBias = 4;
     protected static final int CandidatePositionBias = 3;
     protected static final JImmutableList<Integer> PartyPoints = list(10, 15, 20, 25, 30, 35, 40, 45, 55, 60, 65, 70, 75, 80, 85, 90);
