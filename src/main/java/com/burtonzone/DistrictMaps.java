@@ -1,5 +1,6 @@
 package com.burtonzone;
 
+import com.burtonzone.election.DistrictMap;
 import com.burtonzone.election.ElectionSettings;
 import java.util.function.Function;
 

@@ -1,6 +1,7 @@
 package com.burtonzone;
 
 import com.burtonzone.common.Rand;
+import com.burtonzone.election.DistrictMap;
 import com.burtonzone.election.ElectionFactory;
 import com.burtonzone.election.ElectionRunner;
 import com.burtonzone.election.ElectionSettings;

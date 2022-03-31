@@ -42,7 +42,7 @@ public class App
         System.out.println();
 
         for (int roundNumber = 1; roundNumber <= numberOfRounds; ++roundNumber) {
-            final var results = districts.create(factory, parallelExecution).run(runner);
+            final var results = runner.runElections(districts.create(factory, parallelExecution));
             System.out.printf("%2s %s%n", "", results.getReport().printHeader1(parties));
             System.out.printf("%2s %s%n", "#", results.getReport().printHeader2(parties));
             if (showDistrictResults) {

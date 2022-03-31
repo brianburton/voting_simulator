@@ -1,12 +1,7 @@
-package com.burtonzone;
+package com.burtonzone.election;
 
 import static org.javimmutable.collections.util.JImmutables.*;
 
-import com.burtonzone.election.Election;
-import com.burtonzone.election.ElectionFactory;
-import com.burtonzone.election.ElectionResult;
-import com.burtonzone.election.ElectionRunner;
-import com.burtonzone.election.ElectionSettings;
 import java.util.stream.Stream;
 import lombok.Value;
 import org.javimmutable.collections.JImmutableList;
@@ -25,10 +20,10 @@ public class DistrictMap
         return new Builder();
     }
 
-    public Elections create(ElectionFactory factory,
-                            boolean parallelExecution)
+    public ElectionRunner.Elections create(ElectionFactory factory,
+                                           boolean parallelExecution)
     {
-        return new Elections(createImpl(factory, parallelExecution, districts.stream()), parallelExecution);
+        return new ElectionRunner.Elections(createImpl(factory, parallelExecution, districts.stream()), parallelExecution);
     }
 
     public int getSeats()
@@ -56,40 +51,6 @@ public class DistrictMap
         {
             return factory.createElection(settings);
         }
-    }
-
-    @Value
-    public static class Elections
-    {
-        JImmutableList<Election> elections;
-        boolean parallel;
-
-        private Elections(JImmutableList<Election> elections,
-                          boolean parallel)
-        {
-            this.elections = elections;
-            this.parallel = parallel;
-        }
-
-        public Results run(ElectionRunner runner)
-        {
-            var stream = elections.stream();
-            if (parallel) {
-                stream = stream.parallel();
-            }
-            var results = stream
-                .map(runner::runElection)
-                .collect(listCollector());
-            return new Results(this, results, ResultsReport.of(results));
-        }
-    }
-
-    @Value
-    public static class Results
-    {
-        Elections elections;
-        JImmutableList<ElectionResult> results;
-        ResultsReport report;
     }
 
     public static class Builder
