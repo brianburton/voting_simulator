@@ -11,7 +11,6 @@ import com.burtonzone.election.Election;
 import com.burtonzone.election.ElectionResult;
 import com.burtonzone.election.ElectionRunner;
 import com.burtonzone.election.Party;
-import org.javimmutable.collections.JImmutableList;
 
 public class MmpRunner
     implements ElectionRunner
@@ -66,14 +65,5 @@ public class MmpRunner
     public int getSeatsForMap(DistrictMap districtMap)
     {
         return 2 * districtMap.getSeats();
-    }
-
-    private JImmutableList<Candidate> computePreElected(Elections elections)
-    {
-        return runElections(elections)
-            .getResults()
-            .stream()
-            .flatMap(r -> r.getElected().stream())
-            .collect(listCollector());
     }
 }
