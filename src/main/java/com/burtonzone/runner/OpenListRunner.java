@@ -14,6 +14,7 @@ import com.burtonzone.election.Party;
 import java.util.Comparator;
 import lombok.Builder;
 import lombok.Value;
+import org.javimmutable.collections.JImmutableList;
 import org.javimmutable.collections.JImmutableListMap;
 import org.javimmutable.collections.JImmutableSetMap;
 import org.javimmutable.collections.util.JImmutables;
@@ -43,6 +44,16 @@ public class OpenListRunner
         if (config.getQuotasMode().isPartyQuotaEnabled()) {
             worksheet.assignSeatsToCandidatesWithPartyQuota();
         }
+        worksheet.assignSeatsToCandidatesFromPartyLists();
+        return worksheet.getElectionResult();
+    }
+
+    public ElectionResult runMppPartyElection(Election election,
+                                              JImmutableList<Candidate> districtElected)
+    {
+        var worksheet = new Worksheet(election);
+        worksheet.assignPreElectedCandidates(districtElected);
+        worksheet.allocateSeatsToParties();
         worksheet.assignSeatsToCandidatesFromPartyLists();
         return worksheet.getElectionResult();
     }
@@ -114,6 +125,14 @@ public class OpenListRunner
                 remaining -= 1;
             }
             return partySeats;
+        }
+
+        private void assignPreElectedCandidates(JImmutableList<Candidate> preElected)
+        {
+            for (Candidate candidate : preElected) {
+                final var party = candidate.getParty();
+                elected = elected.insert(party, candidate);
+            }
         }
 
         private void assignSeatsToCandidatesWithElectionQuota()
@@ -277,7 +296,13 @@ public class OpenListRunner
     {
         public enum PartyVoteMode
         {
+            /**
+             * Computes party votes based on number of votes for candidates of each party.
+             */
             Candidate,
+            /**
+             * Uses party votes from voter preferences.
+             */
             Voter
         }
 
@@ -286,7 +311,14 @@ public class OpenListRunner
 
         public enum PartyListMode
         {
+            /**
+             * Uses candidate votes to sort candidates into party lists.  Assigns order based solely on
+             * voter preferences vs party preference.
+             */
             Votes,
+            /**
+             * Uses party assigned party lists.  Assigns order based solely on party preference.
+             */
             Party
         }
 

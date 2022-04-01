@@ -37,7 +37,7 @@ public class PositionalElectionFactory
         final var voterCenter = issueSpace.voterCenterPosition(parties);
         final var voters = createVoters(parties, voterCenter, numVoters);
         final var candidates = createCandidates(parties, numSeats);
-        final var partyLists = createPartyLists(parties, candidates);
+        final var partyLists = Candidate.createPartyLists(parties, candidates);
         final var ballotBox = createBallotBox(voters, candidates, partyLists, settings);
         final var partyVotes = voters.reduce(new Counter<Party>(), (pv, v) -> pv.inc(v.parties.get(0)));
         return new Election(parties, candidates, partyLists, partyVotes, ballotBox, numSeats);
@@ -156,8 +156,8 @@ public class PositionalElectionFactory
             .collect(listCollector());
     }
 
-    private JImmutableList<Candidate> createCandidates(JImmutableList<Party> parties,
-                                                       int numCandidatesPerParty)
+    public JImmutableList<Candidate> createCandidates(JImmutableList<Party> parties,
+                                                      int numCandidatesPerParty)
     {
         return parties.stream()
             .flatMap(party -> createPartyCandidates(party, numCandidatesPerParty, parties.size()).stream())
@@ -174,20 +174,6 @@ public class PositionalElectionFactory
             positions = positions.insert(position);
         }
         return positions.transform(list(), p -> new Candidate(party, p.toString(), p));
-    }
-
-    private JImmutableListMap<Party, Candidate> createPartyLists(JImmutableList<Party> parties,
-                                                                 JImmutableList<Candidate> candidates)
-    {
-        JImmutableListMap<Party, Candidate> answer = listMap();
-        for (Party party : parties) {
-            var sorted = candidates.stream()
-                .filter(c -> c.getParty().equals(party))
-                .sorted(Candidate.distanceComparator(party.getPosition()))
-                .collect(listCollector());
-            answer = answer.assign(party, sorted);
-        }
-        return answer;
     }
 
     @AllArgsConstructor

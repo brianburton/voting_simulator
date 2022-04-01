@@ -104,6 +104,9 @@ public class ResultsReport
             averageEffectiveVoteScore.add(result.getEffectiveVoteScore().dividedBy(electionTotalVotes), weight);
             averageError.add(result.computeErrors(), weight);
         }
+        if (seats != elected) {
+            throw new IllegalArgumentException(format("not all seats were filled: expected=%d actual=%d", seats, elected));
+        }
         return builder()
             .parties(parties)
             .seats(seats)

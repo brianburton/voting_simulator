@@ -1,6 +1,7 @@
 package com.burtonzone;
 
 import com.burtonzone.election.ElectionRunner;
+import com.burtonzone.runner.MmpRunner;
 import com.burtonzone.runner.OpenListRunner;
 import com.burtonzone.runner.OpenListRunner.Config;
 import com.burtonzone.runner.PluralityRunner;
@@ -51,7 +52,8 @@ public enum ElectionRunners
                                          .partyVoteMode(Config.PartyVoteMode.Voter)
                                          .listMode(Config.PartyListMode.Party)
                                          .quotasMode(Config.QuotasMode.TotalAndParty)
-                                         .build()));
+                                         .build())),
+    MMP(MmpRunner::new);
 
     private final Supplier<ElectionRunner> factory;
 
