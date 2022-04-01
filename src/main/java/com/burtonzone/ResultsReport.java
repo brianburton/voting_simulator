@@ -50,7 +50,7 @@ public class ResultsReport
     @Builder.Default
     Counter<Party> partySeats = new Counter<>();
     @Builder.Default
-    BallotBox allBallots = BallotBox.builder().build();
+    BallotBox allBallots = BallotBox.Empty;
 
     public static ResultsReport of(ElectionResult result)
     {

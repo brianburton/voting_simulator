@@ -33,26 +33,33 @@ public class MmpRunner
     @Override
     public Results runElections(Elections elections)
     {
-        final var parties = elections.getElections().get(0).getParties();
-        final var candidates = elections.getElections().stream()
+        for (Election election : elections.getElections()) {
+            if (election.getSeats() != 1) {
+                throw new IllegalArgumentException("MMP requires single member districts");
+            }
+        }
+        final var districts = elections.getElections();
+        final var parties = districts.get(0).getParties();
+        final var candidates = districts.stream()
             .flatMap(e -> e.getExpandedCandidateList().stream())
             .collect(listCollector());
         final var partyLists = Candidate.createPartyLists(parties, candidates);
-        final var partyVotes = elections.getElections().stream()
+        final var partyVotes = districts.stream()
             .map(Election::getPartyVotes)
             .collect(listCollector())
             .reduce(new Counter<Party>(), Counter::add);
-        final var seats = 2 * elections.getElections().stream()
+        final var seats = 2 * districts.stream()
             .mapToInt(Election::getSeats)
             .sum();
-        var districtResults = districtRunner.runElections(elections);
-        var ballots = elections.getElections().reduce(BallotBox.builder().build(), (sum, e) -> sum.add(e.getBallots()));
-        var partyElection = new Election(parties, candidates, list(), partyLists, partyVotes, ballots, seats);
-        var districtWinners = districtResults.getResults().stream()
+        final var districtResults = districtRunner.runElections(elections);
+        final var ballots = districts.reduce(BallotBox.Empty, (sum, e) -> sum.add(e.getBallots()));
+        final var partyElection = new Election(parties, candidates, list(), partyLists, partyVotes, ballots, seats);
+        final var districtWinners = districtResults.getResults().stream()
             .flatMap(er -> er.getElected().stream())
             .collect(listCollector());
-        var partyResult = partyRunner.runMppPartyElection(partyElection, districtWinners);
-        return new Results(elections, list(partyResult), ResultsReport.of(partyResult));
+        final var partyResult = partyRunner.runMppPartyElection(partyElection, districtWinners);
+        final var combinedResults = districtResults.getResults().insert(partyResult);
+        return new Results(elections, combinedResults, ResultsReport.of(partyResult));
     }
 
     @Override

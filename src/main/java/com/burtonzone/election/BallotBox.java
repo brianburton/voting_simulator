@@ -26,6 +26,7 @@ public class BallotBox
     private static final JImmutableMap<JImmutableList<Candidate>, Decimal> NoBallots =
         JImmutables.<JImmutableList<Candidate>, Decimal>map()
             .assign(NoCandidates, ZERO);
+    public static final BallotBox Empty = new BallotBox(NoBallots);
 
     private final JImmutableMap<JImmutableList<Candidate>, Decimal> ballots;
 
