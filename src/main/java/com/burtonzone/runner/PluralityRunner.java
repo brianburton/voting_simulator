@@ -68,6 +68,10 @@ public class PluralityRunner
             .withoutPrefixChoiceMatching(maxChoices, electedSet::contains)
             .getTotalCount();
         final var round = new ElectionResult.RoundResult(votes, elected);
-        return new ElectionResult(election, list(round), effectiveBallots, wasted);
+        return new ElectionResult(election,
+                                  list(round),
+                                  effectiveBallots,
+                                  effectiveBallots.getPartyVoteCounts(election.getSeats()),
+                                  wasted);
     }
 }

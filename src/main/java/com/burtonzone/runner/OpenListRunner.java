@@ -216,15 +216,22 @@ public class OpenListRunner
                                                                   allocatedSeats, filledSeats, party));
                 }
             }
-            var electedCandidates = elected.stream()
+            var electedCandidateVotes = elected.stream()
                 .flatMap(e -> e.getValue().stream())
                 .map(c -> new CandidateVotes(c, candidateVotes.get(c)))
                 .collect(listCollector());
-            if (electedCandidates.size() != election.getSeats()) {
+            if (electedCandidateVotes.size() != election.getSeats()) {
                 throw new IllegalStateException(String.format("elected/seat mismatch: seats=%d elected=%d",
-                                                              electedCandidates.size(), election.getSeats()));
+                                                              electedCandidateVotes.size(), election.getSeats()));
             }
-            return ElectionResult.ofPartyListResults(election, electedCandidates);
+            final var electedCandidates = electedCandidateVotes.transform(CandidateVotes::getCandidate);
+            final var electedParties = electedCandidates.transform(set(), Candidate::getParty);
+            final var wasted = election.getBallots()
+                .withoutFirstChoiceMatching(c -> electedParties.contains(c.getParty()))
+                .getTotalCount();
+            final var round = new ElectionResult.RoundResult(electedCandidateVotes, electedCandidates);
+            final var effectiveBallots = election.getBallots().toFirstChoicePartyBallots();
+            return new ElectionResult(election, list(round), effectiveBallots, selectPartyVotesForSeatAllocation(), wasted);
         }
 
         private JImmutableListMap<Party, Candidate> selectPartyLists()

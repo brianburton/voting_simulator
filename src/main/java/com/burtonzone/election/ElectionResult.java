@@ -1,7 +1,6 @@
 package com.burtonzone.election;
 
 import static com.burtonzone.common.Decimal.ZERO;
-import static org.javimmutable.collections.util.JImmutables.*;
 
 import com.burtonzone.common.Counter;
 import com.burtonzone.common.Decimal;
@@ -14,31 +13,21 @@ public class ElectionResult
     private final Election election;
     private final JImmutableList<RoundResult> results;
     private final BallotBox effectiveBallots;
+    private final Counter<Party> partyVotes;
     private final Decimal wasted;
 
     public ElectionResult(Election election,
                           JImmutableList<RoundResult> results,
                           BallotBox effectiveBallots,
+                          Counter<Party> partyVotes,
                           Decimal wasted)
     {
         assert results.isNonEmpty();
         this.election = election;
         this.results = results;
         this.effectiveBallots = effectiveBallots;
+        this.partyVotes = partyVotes;
         this.wasted = wasted;
-    }
-
-    public static ElectionResult ofPartyListResults(Election election,
-                                                    JImmutableList<CandidateVotes> electedCandidates)
-    {
-        final var elected = electedCandidates.transform(CandidateVotes::getCandidate);
-        final var electedParties = elected.transform(set(), Candidate::getParty);
-        final var wasted = election.getBallots()
-            .withoutFirstChoiceMatching(c -> electedParties.contains(c.getParty()))
-            .getTotalCount();
-        final var round = new ElectionResult.RoundResult(electedCandidates, elected);
-        final var effectiveBallots = election.getBallots().toFirstChoicePartyBallots();
-        return new ElectionResult(election, list(round), effectiveBallots, wasted);
     }
 
     public Election getElection()
@@ -92,7 +81,7 @@ public class ElectionResult
 
     public Counter<Party> getPartyVoteCounts()
     {
-        return effectiveBallots.getPartyVoteCounts(election.getSeats());
+        return partyVotes;
     }
 
     public Decimal getEffectiveVoteScore()
