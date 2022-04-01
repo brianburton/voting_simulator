@@ -55,4 +55,9 @@ public class Scenario
             .districts(districtMap.create(electionSettings))
             .build();
     }
+
+    public int getSeats()
+    {
+        return votingSystem.create().getSeatsForMap(districts);
+    }
 }

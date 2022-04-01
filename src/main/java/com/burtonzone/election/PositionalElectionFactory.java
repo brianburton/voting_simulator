@@ -37,10 +37,11 @@ public class PositionalElectionFactory
         final var voterCenter = issueSpace.voterCenterPosition(parties);
         final var voters = createVoters(parties, voterCenter, numVoters);
         final var candidates = createCandidates(parties, numSeats);
+        final var auxiliaryCandidates = createCandidates(parties, numSeats);
         final var partyLists = Candidate.createPartyLists(parties, candidates);
         final var ballotBox = createBallotBox(voters, candidates, partyLists, settings);
         final var partyVotes = voters.reduce(new Counter<Party>(), (pv, v) -> pv.inc(v.parties.get(0)));
-        return new Election(parties, candidates, partyLists, partyVotes, ballotBox, numSeats);
+        return new Election(parties, candidates, auxiliaryCandidates, partyLists, partyVotes, ballotBox, numSeats);
     }
 
     @Override

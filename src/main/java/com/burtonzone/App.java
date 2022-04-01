@@ -29,7 +29,7 @@ public class App
         System.out.printf("Voting System        : %s%n", scenario.getVotingSystem());
         System.out.printf("Ranking Method       : %s%n", scenario.getSettings().getVoteType());
         System.out.printf("District Map         : %s%n", scenario.getDistrictMap());
-        System.out.printf("Total Seats          : %s%n", scenario.getDistricts().getSeats());
+        System.out.printf("Total Seats          : %s%n", scenario.getSeats());
         System.out.printf("Max Party Choices    : %d%n", scenario.getSettings().getMaxPartyChoices());
         System.out.printf("Max Candidate Choices: %s%n", scenario.getSettings().getMaxCandidateChoices());
         System.out.printf("Mixed Party Vote %%   : %s%n", scenario.getSettings().getVoteType() == ElectionSettings.VoteType.Mixed

@@ -6,6 +6,7 @@ import com.burtonzone.ResultsReport;
 import com.burtonzone.common.Counter;
 import com.burtonzone.election.BallotBox;
 import com.burtonzone.election.Candidate;
+import com.burtonzone.election.DistrictMap;
 import com.burtonzone.election.Election;
 import com.burtonzone.election.ElectionResult;
 import com.burtonzone.election.ElectionRunner;
@@ -34,24 +35,30 @@ public class MmpRunner
     {
         final var parties = elections.getElections().get(0).getParties();
         final var candidates = elections.getElections().stream()
-            .flatMap(e -> e.getCandidates().stream())
+            .flatMap(e -> e.getExpandedCandidateList().stream())
             .collect(listCollector());
         final var partyLists = Candidate.createPartyLists(parties, candidates);
         final var partyVotes = elections.getElections().stream()
-            .map(e -> e.getPartyVotes())
+            .map(Election::getPartyVotes)
             .collect(listCollector())
             .reduce(new Counter<Party>(), Counter::add);
-        final var seats = elections.getElections().stream()
+        final var seats = 2 * elections.getElections().stream()
             .mapToInt(Election::getSeats)
             .sum();
         var districtResults = districtRunner.runElections(elections);
         var ballots = elections.getElections().reduce(BallotBox.builder().build(), (sum, e) -> sum.add(e.getBallots()));
-        var partyElection = new Election(parties, candidates, partyLists, partyVotes, ballots, seats);
+        var partyElection = new Election(parties, candidates, list(), partyLists, partyVotes, ballots, seats);
         var districtWinners = districtResults.getResults().stream()
             .flatMap(er -> er.getElected().stream())
             .collect(listCollector());
         var partyResult = partyRunner.runMppPartyElection(partyElection, districtWinners);
         return new Results(elections, list(partyResult), ResultsReport.of(partyResult));
+    }
+
+    @Override
+    public int getSeatsForMap(DistrictMap districtMap)
+    {
+        return 2 * districtMap.getSeats();
     }
 
     private JImmutableList<Candidate> computePreElected(Elections elections)

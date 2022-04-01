@@ -22,6 +22,11 @@ public interface ElectionRunner
         return new Results(elections, results, ResultsReport.of(results));
     }
 
+    default int getSeatsForMap(DistrictMap districtMap)
+    {
+        return districtMap.getSeats();
+    }
+
     @Value
     class Elections
     {
