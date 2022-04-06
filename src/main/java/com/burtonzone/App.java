@@ -82,6 +82,9 @@ public class App
                 config = fileConfig.withFallback(config);
             }
         }
+        config = ConfigFactory
+            .parseProperties(System.getProperties())
+            .withFallback(config);
         return config;
     }
 }
