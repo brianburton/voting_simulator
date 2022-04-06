@@ -156,6 +156,13 @@ public class Decimal
                                .setScale(PRECISION, RoundingMode.HALF_UP));
     }
 
+    public Decimal roundUp()
+    {
+        return new Decimal(value
+                               .setScale(0, RoundingMode.UP)
+                               .setScale(PRECISION, RoundingMode.HALF_UP));
+    }
+
     public BigDecimal toBigDecimal()
     {
         return value;
