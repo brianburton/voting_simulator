@@ -37,4 +37,7 @@ public class ElectionSettings
 
     @Builder.Default
     JImmutableList<Party> parties = list();
+
+    @Builder.Default
+    String region = "";
 }

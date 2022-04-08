@@ -32,6 +32,16 @@ public interface ElectionRunner
     {
         JImmutableList<Election> elections;
         boolean parallel;
+
+        public JImmutableList<Elections> splitRegions()
+        {
+            return elections.stream()
+                .map(e -> entry(e.getRegion(), e))
+                .collect(listMapCollector())
+                .stream()
+                .map(e -> new Elections(e.getValue(), parallel))
+                .collect(listCollector());
+        }
     }
 
     @Value

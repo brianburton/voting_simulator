@@ -13,6 +13,7 @@ import com.burtonzone.election.ElectionResult;
 import com.burtonzone.election.ElectionRunner;
 import com.burtonzone.election.Party;
 import java.math.BigDecimal;
+import lombok.Value;
 import org.javimmutable.collections.JImmutableList;
 
 public class MmpRunner
@@ -36,11 +37,29 @@ public class MmpRunner
     @Override
     public Results runElections(Elections elections)
     {
+        final var regionalElections = elections.splitRegions();
+        RegionalResults combinedResults = null;
+        for (Elections regionalElection : regionalElections) {
+            final var regionalResults = runRegionalElections(regionalElection);
+            if (combinedResults == null) {
+                combinedResults = regionalResults;
+            } else {
+                combinedResults = combinedResults.add(regionalResults);
+            }
+        }
+        assert combinedResults != null;
+        return combinedResults.toElectionResults(elections.isParallel());
+    }
+
+    private RegionalResults runRegionalElections(Elections elections)
+    {
         for (Election election : elections.getElections()) {
             if (election.getSeats() != 1) {
                 throw new IllegalArgumentException("MMP requires single member districts");
             }
         }
+
+        final var pluralityResults = districtRunner.runElections(elections);
         final var districts = elections.getElections();
         final var parties = districts.get(0).getParties();
         final var candidates = districts.stream()
@@ -54,16 +73,15 @@ public class MmpRunner
         final var seats = 2 * districts.stream()
             .mapToInt(Election::getSeats)
             .sum();
-        final var districtResults = districtRunner.runElections(elections);
-        final var districtWinners = districtResults.getResults().stream()
+
+        final var districtWinners = pluralityResults.getResults().stream()
             .flatMap(er -> er.getElected().stream())
             .collect(listCollector());
         final var ballots = districts.reduce(BallotBox.Empty, (sum, e) -> sum.add(e.getBallots()));
         final var filteredPartyVotes = applyPartyVoteFilters(partyVotes, districtWinners);
-        final var partyElection = new Election(parties, candidates, list(), partyLists, filteredPartyVotes, ballots, seats);
+        final var partyElection = new Election("", parties, candidates, list(), partyLists, filteredPartyVotes, ballots, seats);
         final var partyResult = partyRunner.runMppPartyElection(partyElection, districtWinners);
-        final var combinedResults = districtResults.getResults().insert(partyResult);
-        return new Results(elections, combinedResults, ResultsReport.of(partyResult));
+        return new RegionalResults(elections.getElections(), pluralityResults.getResults(), list(partyResult));
     }
 
     private Counter<Party> applyPartyVoteFilters(Counter<Party> realResults,
@@ -88,6 +106,29 @@ public class MmpRunner
     @Override
     public int getSeatsForMap(DistrictMap districtMap)
     {
-        return 2 * districtMap.getSeats();
+        return 1 + districtMap.getSeats() + districtMap.getSeats() / 5;
+//        return districtMap.getSeats();
+    }
+
+    @Value
+    private static class RegionalResults
+    {
+        JImmutableList<Election> elections;
+        JImmutableList<ElectionResult> pluralityResults;
+        JImmutableList<ElectionResult> partyResults;
+
+        private RegionalResults add(RegionalResults other)
+        {
+            return new RegionalResults(elections.insertAll(other.elections),
+                                       pluralityResults.insertAll(other.pluralityResults),
+                                       partyResults.insertAll(other.partyResults));
+        }
+
+        private Results toElectionResults(boolean parallel)
+        {
+            return new Results(new Elections(elections, parallel),
+                               pluralityResults.insertAll(partyResults),
+                               ResultsReport.of(partyResults));
+        }
     }
 }

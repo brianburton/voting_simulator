@@ -18,6 +18,7 @@ import org.javimmutable.collections.util.JImmutables;
 @Getter
 public class Election
 {
+    private final String region;
     private final JImmutableList<Party> parties;
     private final int seats;
     private final JImmutableList<Candidate> candidates;
@@ -29,7 +30,8 @@ public class Election
     private final Decimal quota;
     private final Comparator<Candidate> tieBreaker;
 
-    public Election(JImmutableList<Party> parties,
+    public Election(String region,
+                    JImmutableList<Party> parties,
                     JImmutableList<Candidate> candidates,
                     JImmutableList<Candidate> auxiliaryCandidates,
                     JImmutableListMap<Party, Candidate> partyLists,
@@ -37,6 +39,7 @@ public class Election
                     BallotBox ballots,
                     int seats)
     {
+        this.region = region;
         this.parties = parties;
         this.seats = seats;
         this.candidates = candidates;
@@ -69,6 +72,7 @@ public class Election
 
     public static class Builder
     {
+        private String region = "";
         private final Set<Party> parties = new LinkedHashSet<>();
         private final BallotBox.Builder ballots = BallotBox.builder();
         private Counter<Party> partyVotes = new Counter<>();
@@ -81,7 +85,21 @@ public class Election
             var partyLists = candidates.stream()
                 .map(c -> entry(c.getParty(), c))
                 .collect(listMapCollector());
-            return new Election(JImmutables.list(parties), JImmutables.list(auxiliaryCandidates), JImmutables.list(candidates), partyLists, partyVotes, ballots.build(), seats);
+            return new Election(region,
+                                JImmutables.list(parties),
+                                JImmutables.list(auxiliaryCandidates),
+                                JImmutables.list(candidates),
+                                partyLists,
+                                partyVotes,
+                                ballots.build(),
+                                seats);
+        }
+
+        @CanIgnoreReturnValue
+        public Builder region(String region)
+        {
+            this.region = region;
+            return this;
         }
 
         @CanIgnoreReturnValue
