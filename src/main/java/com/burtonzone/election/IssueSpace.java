@@ -36,7 +36,8 @@ public abstract class IssueSpace
 
     public Position voterCenterPosition(JImmutableList<Party> parties)
     {
-        final var positions = parties.transform(Party::getPosition);
+        final var centerParties = parties.slice(0, Math.max(2, (1 + parties.size()) / 2));
+        final var positions = centerParties.transform(Party::getPosition);
         return positions.get(0).somewhereIn(rand, VoterCenterBias, positions);
     }
 
