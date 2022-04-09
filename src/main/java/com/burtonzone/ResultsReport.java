@@ -162,7 +162,12 @@ public class ResultsReport
         return sum.dividedBy(Decimal.TWO).root();
     }
 
-    public String printHeader1(Iterable<Party> parties)
+    public JImmutableList<String> getHeaders(Iterable<Party> parties)
+    {
+        return list(getHeader1(parties), getHeader2(parties));
+    }
+
+    private String getHeader1(Iterable<Party> parties)
     {
         StringWriter str = new StringWriter();
         try (PrintWriter out = new PrintWriter(str)) {
@@ -174,19 +179,24 @@ public class ResultsReport
         return str.toString();
     }
 
-    public String printHeader2(Iterable<Party> parties)
+    private String getHeader2(Iterable<Party> parties)
     {
         StringWriter str = new StringWriter();
         try (PrintWriter out = new PrintWriter(str)) {
             for (Party party : parties) {
                 out.printf("%7s  %6s ", "eps", "aps");
             }
-            out.printf("  %7s %5s %6s %6s %6s", "parties", "ranks", "waste", "err", "eff");
+            out.printf(" %7s %5s %6s %6s %6s", "parties", "ranks", "waste", "err", "eff");
         }
         return str.toString();
     }
 
-    public String getRow1()
+    public JImmutableList<String> getRows()
+    {
+        return list(getRow1(), getRow2());
+    }
+
+    private String getRow1()
     {
         StringWriter str = new StringWriter();
         try (PrintWriter out = new PrintWriter(str)) {
@@ -204,7 +214,7 @@ public class ResultsReport
         return str.toString();
     }
 
-    public String getRow2()
+    private String getRow2()
     {
         StringWriter str = new StringWriter();
         try (PrintWriter out = new PrintWriter(str)) {

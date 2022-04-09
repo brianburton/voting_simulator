@@ -44,19 +44,28 @@ public class App
         for (int roundNumber = 1; roundNumber <= numberOfRounds; ++roundNumber) {
             try {
                 final var results = runner.runElections(districts.create(factory, parallelExecution));
-                System.out.printf("%2s %s%n", "", results.getReport().printHeader1(parties));
-                System.out.printf("%2s %s%n", "#", results.getReport().printHeader2(parties));
+                final var headers = results.getReport().getHeaders(parties);
+                for (int i = 0; i < headers.size(); ++i) {
+                    System.out.printf("%2s   %s%n", (i == headers.size() - 1) ? "#" : "", headers.get(i));
+                }
                 if (showDistrictResults) {
                     for (ElectionResult result : results.getResults()) {
                         final ResultsReport districtReport = ResultsReport.of(result);
-                        System.out.printf("%2d %s%n", roundNumber, districtReport.getRow1());
-                        System.out.printf("%2s %s%n", "", districtReport.getRow2());
+                        final var rows = districtReport.getRows();
+                        for (int i = 0; i < rows.size(); ++i) {
+                            final var prefix = (i == 0) ? String.valueOf(roundNumber) : "";
+                            System.out.printf("%2s  %s%n", prefix, rows.get(i));
+                        }
                     }
                 }
-                System.out.printf("%2s %s%n",
-                                  showDistrictResults ? "TL" : "" + roundNumber,
-                                  results.getReport().getRow1());
-                System.out.printf("%2s %s%n", "", results.getReport().getRow2());
+                final var rows = results.getReport().getRows();
+                for (int i = 0; i < rows.size(); ++i) {
+                    String prefix = "";
+                    if (i == 0) {
+                        prefix = showDistrictResults ? "TL" : "" + roundNumber;
+                    }
+                    System.out.printf("%2s  %s%n", prefix, rows.get(i));
+                }
                 if (showDistrictResults) {
                     System.out.println();
                 }
@@ -66,7 +75,7 @@ public class App
                 }
                 System.out.println();
             } catch (ResultsReport.UnfilledSeatsException ex) {
-                System.out.printf("%2d UNSOLVED: %s%n", roundNumber, ex.getMessage());
+                System.out.printf("%2d  UNSOLVED: %s%n", roundNumber, ex.getMessage());
                 System.out.println();
             }
         }
