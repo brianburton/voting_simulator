@@ -66,22 +66,29 @@ public class MmpRunner
             .flatMap(e -> e.getExpandedCandidateList().stream())
             .collect(listCollector());
         final var partyLists = Candidate.createPartyLists(parties, candidates);
-        final var partyVotes = districts.stream()
-            .map(Election::getPartyVotes)
-            .collect(listCollector())
+        final var partyVotes = districts.transform(Election::getPartyVotes)
             .reduce(new Counter<Party>(), Counter::add);
-        final var seats = 2 * districts.stream()
-            .mapToInt(Election::getSeats)
-            .sum();
+        final var seats = computeSeatsWithPadding(districts.stream()
+                                                      .mapToInt(Election::getSeats)
+                                                      .sum());
 
         final var districtWinners = pluralityResults.getResults().stream()
             .flatMap(er -> er.getElected().stream())
             .collect(listCollector());
+
         final var ballots = districts.reduce(BallotBox.Empty, (sum, e) -> sum.add(e.getBallots()));
         final var filteredPartyVotes = applyPartyVoteFilters(partyVotes, districtWinners);
         final var partyElection = new Election("", parties, candidates, list(), partyLists, filteredPartyVotes, ballots, seats);
         final var partyResult = partyRunner.runMppPartyElection(partyElection, districtWinners);
-        return new RegionalResults(elections.getElections(), pluralityResults.getResults(), list(partyResult));
+
+        final var effectiveElection = new Election("", parties, candidates, list(), partyLists, partyVotes, ballots, seats);
+        final var effectiveRoundResult = new ElectionResult.RoundResult(partyResult.getVotes(), partyResult.getElected());
+        final var effectiveResults = new ElectionResult(effectiveElection,
+                                                        list(effectiveRoundResult),
+                                                        ballots,
+                                                        partyVotes,
+                                                        partyResult.getWasted());
+        return new RegionalResults(elections.getElections(), pluralityResults.getResults(), list(effectiveResults));
     }
 
     private Counter<Party> applyPartyVoteFilters(Counter<Party> realResults,
@@ -106,8 +113,13 @@ public class MmpRunner
     @Override
     public int getSeatsForMap(DistrictMap districtMap)
     {
-        return 1 + districtMap.getSeats() + districtMap.getSeats() / 5;
-//        return districtMap.getSeats();
+        return computeSeatsWithPadding(districtMap.getSeats());
+    }
+
+    private static int computeSeatsWithPadding(int seats)
+    {
+        return 1 + seats + seats / 2;
+//        return seats;
     }
 
     @Value

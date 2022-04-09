@@ -35,6 +35,11 @@ public class ElectionResult
         return election;
     }
 
+    public JImmutableList<RoundResult> getResults()
+    {
+        return results;
+    }
+
     public RoundResult getFinalRound()
     {
         return results.get(results.size() - 1);
