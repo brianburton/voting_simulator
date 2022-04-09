@@ -42,28 +42,33 @@ public class App
         System.out.println();
 
         for (int roundNumber = 1; roundNumber <= numberOfRounds; ++roundNumber) {
-            final var results = runner.runElections(districts.create(factory, parallelExecution));
-            System.out.printf("%2s %s%n", "", results.getReport().printHeader1(parties));
-            System.out.printf("%2s %s%n", "#", results.getReport().printHeader2(parties));
-            if (showDistrictResults) {
-                for (ElectionResult result : results.getResults()) {
-                    final ResultsReport districtReport = ResultsReport.of(result);
-                    System.out.printf("%2d %s%n", roundNumber, districtReport.getRow1());
-                    System.out.printf("%2s %s%n", "", districtReport.getRow2());
+            try {
+                final var results = runner.runElections(districts.create(factory, parallelExecution));
+                System.out.printf("%2s %s%n", "", results.getReport().printHeader1(parties));
+                System.out.printf("%2s %s%n", "#", results.getReport().printHeader2(parties));
+                if (showDistrictResults) {
+                    for (ElectionResult result : results.getResults()) {
+                        final ResultsReport districtReport = ResultsReport.of(result);
+                        System.out.printf("%2d %s%n", roundNumber, districtReport.getRow1());
+                        System.out.printf("%2s %s%n", "", districtReport.getRow2());
+                    }
                 }
-            }
-            System.out.printf("%2s %s%n",
-                              showDistrictResults ? "TL" : "" + roundNumber,
-                              results.getReport().getRow1());
-            System.out.printf("%2s %s%n", "", results.getReport().getRow2());
-            if (showDistrictResults) {
+                System.out.printf("%2s %s%n",
+                                  showDistrictResults ? "TL" : "" + roundNumber,
+                                  results.getReport().getRow1());
+                System.out.printf("%2s %s%n", "", results.getReport().getRow2());
+                if (showDistrictResults) {
+                    System.out.println();
+                }
+
+                for (String line : results.getReport().getCoalitionGrid(45)) {
+                    System.out.println("     " + line);
+                }
+                System.out.println();
+            } catch (ResultsReport.UnfilledSeatsException ex) {
+                System.out.printf("%2d UNSOLVED: %s%n", roundNumber, ex.getMessage());
                 System.out.println();
             }
-
-            for (String line : results.getReport().getCoalitionGrid(45)) {
-                System.out.println("     " + line);
-            }
-            System.out.println();
         }
     }
 

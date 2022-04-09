@@ -105,7 +105,7 @@ public class ResultsReport
             averageError.add(result.computeErrors(), weight);
         }
         if (seats != elected) {
-            throw new IllegalArgumentException(format("not all seats were filled: expected=%d actual=%d", seats, elected));
+            throw new UnfilledSeatsException(seats, elected);
         }
         return builder()
             .parties(parties)
@@ -448,5 +448,22 @@ public class ResultsReport
             .getSortedList()
             .get(0)
             .getKey();
+    }
+
+    public static class UnfilledSeatsException
+        extends RuntimeException
+    {
+        @Getter
+        private final int seats;
+        @Getter
+        private final int filled;
+
+        public UnfilledSeatsException(int seats,
+                                      int filled)
+        {
+            super(format("not all seats were filled: expected=%d actual=%d", seats, filled));
+            this.seats = seats;
+            this.filled = filled;
+        }
     }
 }
