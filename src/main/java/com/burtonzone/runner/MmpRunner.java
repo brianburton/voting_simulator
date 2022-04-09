@@ -13,6 +13,7 @@ import com.burtonzone.election.ElectionResult;
 import com.burtonzone.election.ElectionRunner;
 import com.burtonzone.election.Party;
 import java.math.BigDecimal;
+import java.util.function.IntUnaryOperator;
 import lombok.Value;
 import org.javimmutable.collections.JImmutableList;
 
@@ -27,6 +28,12 @@ public class MmpRunner
                                                                       .listMode(OpenListRunner.Config.PartyListMode.Party)
                                                                       .quotasMode(OpenListRunner.Config.QuotasMode.None)
                                                                       .build());
+    private final IntUnaryOperator seatsCalculator;
+
+    public MmpRunner(IntUnaryOperator seatsCalculator)
+    {
+        this.seatsCalculator = seatsCalculator;
+    }
 
     @Override
     public ElectionResult runElection(Election election)
@@ -68,9 +75,9 @@ public class MmpRunner
         final var partyLists = Candidate.createPartyLists(parties, candidates);
         final var partyVotes = districts.transform(Election::getPartyVotes)
             .reduce(new Counter<Party>(), Counter::add);
-        final var seats = computeSeatsWithPadding(districts.stream()
-                                                      .mapToInt(Election::getSeats)
-                                                      .sum());
+        final var seats = seatsCalculator.applyAsInt(districts.stream()
+                                                         .mapToInt(Election::getSeats)
+                                                         .sum());
 
         final var districtWinners = pluralityResults.getResults().stream()
             .flatMap(er -> er.getElected().stream())
@@ -113,13 +120,7 @@ public class MmpRunner
     @Override
     public int getSeatsForMap(DistrictMap districtMap)
     {
-        return computeSeatsWithPadding(districtMap.getSeats());
-    }
-
-    private static int computeSeatsWithPadding(int seats)
-    {
-        return 1 + seats + seats / 2;
-//        return seats;
+        return seatsCalculator.applyAsInt(districtMap.getSeats());
     }
 
     @Value

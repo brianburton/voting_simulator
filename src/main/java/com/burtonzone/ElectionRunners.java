@@ -53,7 +53,9 @@ public enum ElectionRunners
                                          .listMode(Config.PartyListMode.Party)
                                          .quotasMode(Config.QuotasMode.TotalAndParty)
                                          .build())),
-    MMP(MmpRunner::new);
+    MMP_Third(() -> new MmpRunner(seats -> (4 * seats) / 3)),
+    MMP_Half(() -> new MmpRunner(seats -> (3 * seats) / 2)),
+    MMP(() -> new MmpRunner(seats -> 2 * seats));
 
     private final Supplier<ElectionRunner> factory;
 
