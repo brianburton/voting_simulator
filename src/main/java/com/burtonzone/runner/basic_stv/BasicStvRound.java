@@ -1,6 +1,7 @@
 package com.burtonzone.runner.basic_stv;
 
 import static com.burtonzone.common.Decimal.ZERO;
+import static com.burtonzone.election.CandidateVotes.SelectionType.Vote;
 import static org.javimmutable.collections.util.JImmutables.*;
 
 import com.burtonzone.election.BallotBox;
@@ -95,6 +96,6 @@ public class BasicStvRound
     {
         return ballotBox.getCandidateFirstChoiceCounts()
             .getSortedList(election.getTieBreaker())
-            .transform(CandidateVotes::new);
+            .transform(cv -> new CandidateVotes(cv, Vote));
     }
 }

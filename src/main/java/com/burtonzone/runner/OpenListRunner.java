@@ -1,6 +1,8 @@
 package com.burtonzone.runner;
 
 import static com.burtonzone.common.Decimal.ZERO;
+import static com.burtonzone.election.CandidateVotes.SelectionType.List;
+import static com.burtonzone.election.CandidateVotes.SelectionType.Vote;
 import static org.javimmutable.collections.util.JImmutables.*;
 
 import com.burtonzone.common.Counter;
@@ -66,6 +68,8 @@ public class OpenListRunner
         private final JImmutableListMap<Party, Candidate> partyLists;
         private Counter<Party> partySeats;
         private JImmutableSetMap<Party, Candidate> elected;
+        private JImmutableSetMap<Party, Candidate> voted;
+        private JImmutableSetMap<Party, Candidate> selected;
 
         private Worksheet(Election election)
         {
@@ -75,6 +79,8 @@ public class OpenListRunner
             partyLists = selectPartyLists();
             partySeats = new Counter<>();
             elected = JImmutables.setMap();
+            voted = JImmutables.setMap();
+            selected = JImmutables.setMap();
         }
 
         private void allocateSeatsToParties()
@@ -130,8 +136,7 @@ public class OpenListRunner
         private void assignPreElectedCandidates(JImmutableList<Candidate> preElected)
         {
             for (Candidate candidate : preElected) {
-                final var party = candidate.getParty();
-                elected = elected.insert(party, candidate);
+                addVoted(candidate);
             }
         }
 
@@ -139,9 +144,7 @@ public class OpenListRunner
         {
             for (var entry : candidateVotes) {
                 if (entry.getCount().isGreaterOrEqualTo(election.getQuota())) {
-                    final var candidate = entry.getKey();
-                    final var party = candidate.getParty();
-                    elected = elected.insert(party, candidate);
+                    addVoted(entry.getKey());
                 }
             }
         }
@@ -149,7 +152,7 @@ public class OpenListRunner
         private void assignSeatsToCandidatesWithPartyQuota()
         {
             final var sortedCandidates = candidateVotes.stream()
-                .map(e -> new CandidateVotes(e.getKey(), e.getCount()))
+                .map(e -> new CandidateVotes(e.getKey(), e.getCount(), List))
                 .sorted(CandidatesByPartyThenVotes)
                 .collect(listCollector());
             Party currentParty = null;
@@ -165,7 +168,7 @@ public class OpenListRunner
                 if (filledSeatsForParty(party) < numberOfSeatsForParty(party)) {
                     final var votes = entry.getVotes();
                     if (votes.isGreaterOrEqualTo(quota)) {
-                        elected = elected.insert(party, candidate);
+                        addVoted(candidate);
                     }
                 }
             }
@@ -178,7 +181,7 @@ public class OpenListRunner
                 final var numberOfSeats = entry.getCount().toInt();
                 for (var candidate : partyLists.getList(party)) {
                     if (filledSeatsForParty(party) < numberOfSeats) {
-                        elected = elected.insert(party, candidate);
+                        addSelected(candidate);
                     }
                 }
                 assert filledSeatsForParty(party) == numberOfSeats;
@@ -216,10 +219,15 @@ public class OpenListRunner
                                                                   allocatedSeats, filledSeats, party));
                 }
             }
-            var electedCandidateVotes = elected.stream()
+            var votedCandidateVotes = voted.stream()
                 .flatMap(e -> e.getValue().stream())
-                .map(c -> new CandidateVotes(c, candidateVotes.get(c)))
+                .map(c -> new CandidateVotes(c, candidateVotes.get(c), Vote))
                 .collect(listCollector());
+            var selectedCandidateVotes = selected.stream()
+                .flatMap(e -> e.getValue().stream())
+                .map(c -> new CandidateVotes(c, candidateVotes.get(c), List))
+                .collect(listCollector());
+            var electedCandidateVotes = votedCandidateVotes.insertAll(selectedCandidateVotes);
             if (electedCandidateVotes.size() != election.getSeats()) {
                 throw new IllegalStateException(String.format("elected/seat mismatch: seats=%d elected=%d",
                                                               electedCandidateVotes.size(), election.getSeats()));
@@ -294,6 +302,24 @@ public class OpenListRunner
                 case Candidate -> candidatePartyVotes;
                 case Voter -> election.getPartyVotes();
             };
+        }
+
+        private void addVoted(Candidate candidate)
+        {
+            final var party = candidate.getParty();
+            if (!elected.getSet(party).contains(candidate)) {
+                elected = elected.insert(party, candidate);
+                voted = voted.insert(party, candidate);
+            }
+        }
+
+        private void addSelected(Candidate candidate)
+        {
+            final var party = candidate.getParty();
+            if (!elected.getSet(party).contains(candidate)) {
+                elected = elected.insert(party, candidate);
+                selected = selected.insert(party, candidate);
+            }
         }
     }
 

@@ -4,6 +4,7 @@ import static org.javimmutable.collections.util.JImmutables.*;
 
 import com.burtonzone.common.Counter;
 import com.burtonzone.common.Rand;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import org.javimmutable.collections.JImmutableList;
@@ -19,6 +20,7 @@ public class PositionalElectionFactory
     private final Rand rand;
     private final IssueSpace issueSpace;
     private final Position center;
+    private final AtomicInteger ids = new AtomicInteger(1);
 
     public PositionalElectionFactory(Rand rand,
                                      IssueSpace issueSpace)
@@ -174,7 +176,7 @@ public class PositionalElectionFactory
             final Position position = issueSpace.candidatePosition(party.getPosition(), numParties);
             positions = positions.insert(position);
         }
-        return positions.transform(list(), p -> new Candidate(party, p.toString(), p));
+        return positions.transform(list(), p -> new Candidate(party, p.toString() + "-" + ids.getAndIncrement(), p));
     }
 
     @AllArgsConstructor

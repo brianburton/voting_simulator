@@ -50,6 +50,8 @@ public class ResultsReport
     @Builder.Default
     Counter<Party> partySeats = new Counter<>();
     @Builder.Default
+    Counter<Party> partyListSeats = new Counter<>();
+    @Builder.Default
     BallotBox allBallots = BallotBox.Empty;
 
     public static ResultsReport of(ElectionResult result)
@@ -67,6 +69,7 @@ public class ResultsReport
             .averageError(result.computeErrors())
             .partyVotes(result.getPartyVoteCounts())
             .partySeats(result.getPartyElectedCounts())
+            .partyListSeats(result.getPartyListSeats())
             .winningParty(computeWinningParty(result.getPartyElectedCounts()))
             .allBallots(result.getEffectiveBallots())
             .build();
@@ -84,6 +87,7 @@ public class ResultsReport
         int votes = 0;
         var partyVotes = new Counter<Party>();
         var partySeats = new Counter<Party>();
+        var partyListSeats = new Counter<Party>();
         var allBallots = BallotBox.builder();
         var partyElectedCounts = new Counter<Party>();
         var effectiveVoteScore = ZERO;
@@ -98,6 +102,7 @@ public class ResultsReport
             partyVotes = partyVotes.add(result.getPartyVoteCounts());
             partySeats = partySeats.add(result.getPartyElectedCounts());
             partyElectedCounts = partyElectedCounts.add(result.getPartyElectedCounts());
+            partyListSeats = partyListSeats.add(result.getPartyListSeats());
             allBallots.add(result.getEffectiveBallots());
             final var weight = new Decimal(result.getElection().getSeats());
             averageWasted.add(result.getWasted().dividedBy(electionTotalVotes), weight);
@@ -120,6 +125,7 @@ public class ResultsReport
             .averageWasted(averageWasted.average())
             .partyVotes(partyVotes)
             .partySeats(partySeats)
+            .partyListSeats(partyListSeats)
             .winningParty(computeWinningParty(partyElectedCounts))
             .allBallots(allBallots.build())
             .build();
@@ -193,7 +199,11 @@ public class ResultsReport
 
     public JImmutableList<String> getRows()
     {
-        return list(getRow1(), getRow2());
+        var rows = list(getRow1(), getRow2());
+        if (!partyListSeats.isEmpty()) {
+            rows = rows.insert(getPartyListSeatsRow());
+        }
+        return rows;
     }
 
     private String getRow1()
@@ -228,6 +238,18 @@ public class ResultsReport
                        decimal(averageWasted.times(Decimal.HUNDRED), 1),
                        percent(averageError, ONE),
                        decimal(averageEffectiveVoteScore.times(Decimal.HUNDRED), 1));
+        }
+        return str.toString();
+    }
+
+    private String getPartyListSeatsRow()
+    {
+        StringWriter str = new StringWriter();
+        try (PrintWriter out = new PrintWriter(str)) {
+            for (Party party : parties) {
+                final var pr = new PartyResult(party);
+                out.printf(" %7s  %6d", "", pr.getPartyListSeats());
+            }
         }
         return str.toString();
     }
@@ -383,6 +405,11 @@ public class ResultsReport
         public boolean hasMajority()
         {
             return getSeats() >= getMajority();
+        }
+
+        public int getPartyListSeats()
+        {
+            return partyListSeats.get(party).toInt();
         }
     }
 

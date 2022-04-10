@@ -7,6 +7,7 @@ import com.burtonzone.common.Counter;
 import com.burtonzone.common.Decimal;
 import com.burtonzone.election.BallotBox;
 import com.burtonzone.election.Candidate;
+import com.burtonzone.election.CandidateVotes;
 import com.burtonzone.election.DistrictMap;
 import com.burtonzone.election.Election;
 import com.burtonzone.election.ElectionResult;
@@ -75,9 +76,10 @@ public class MmpRunner
         final var partyLists = Candidate.createPartyLists(parties, candidates);
         final var partyVotes = districts.transform(Election::getPartyVotes)
             .reduce(new Counter<Party>(), Counter::add);
-        final var seats = seatsCalculator.applyAsInt(districts.stream()
-                                                         .mapToInt(Election::getSeats)
-                                                         .sum());
+        final int districtSeats = districts.stream()
+            .mapToInt(Election::getSeats)
+            .sum();
+        final var seats = seatsCalculator.applyAsInt(districtSeats);
 
         final var districtWinners = pluralityResults.getResults().stream()
             .flatMap(er -> er.getElected().stream())
@@ -88,6 +90,17 @@ public class MmpRunner
         final var partyElection = new Election("", parties, candidates, list(), partyLists, filteredPartyVotes, ballots, seats);
         final var partyResult = partyRunner.runMppPartyElection(partyElection, districtWinners);
 
+        int votedCount = CandidateVotes.countType(partyResult.getVotes(), CandidateVotes.SelectionType.Vote);
+        int listCount = CandidateVotes.countType(partyResult.getVotes(), CandidateVotes.SelectionType.List);
+        if (votedCount != districtWinners.size()) {
+            throw new IllegalArgumentException("voted count mismatch");
+        }
+        if (seats != votedCount + listCount) {
+            throw new IllegalArgumentException("count mismatch");
+        }
+        if (listCount != seats - districtSeats) {
+            throw new IllegalArgumentException("list count mismatch");
+        }
         final var effectiveElection = new Election("", parties, candidates, list(), partyLists, partyVotes, ballots, seats);
         final var effectiveRoundResult = new ElectionResult.RoundResult(partyResult.getVotes(), partyResult.getElected());
         final var effectiveResults = new ElectionResult(effectiveElection,
@@ -95,6 +108,12 @@ public class MmpRunner
                                                         ballots,
                                                         partyVotes,
                                                         partyResult.getWasted());
+        if (CandidateVotes.countType(effectiveResults.getVotes(), CandidateVotes.SelectionType.Vote) != votedCount) {
+            throw new IllegalArgumentException("voted count mismatch");
+        }
+        if (CandidateVotes.countType(effectiveResults.getVotes(), CandidateVotes.SelectionType.List) != listCount) {
+            throw new IllegalArgumentException("count mismatch");
+        }
         return new RegionalResults(elections.getElections(), pluralityResults.getResults(), list(effectiveResults));
     }
 

@@ -112,6 +112,17 @@ public class ElectionResult
         return sum.dividedBy(Decimal.TWO).root();
     }
 
+    public Counter<Party> getPartyListSeats()
+    {
+        var sum = new Counter<Party>();
+        for (CandidateVotes candidateVotes : getFinalRound().getVotes()) {
+            if (candidateVotes.isList()) {
+                sum = sum.inc(candidateVotes.getCandidate().getParty());
+            }
+        }
+        return sum;
+    }
+
     @Value
     public static class RoundResult
     {

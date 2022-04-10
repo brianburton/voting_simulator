@@ -53,8 +53,8 @@ public enum ElectionRunners
                                          .listMode(Config.PartyListMode.Party)
                                          .quotasMode(Config.QuotasMode.TotalAndParty)
                                          .build())),
-    MMP_Third(() -> new MmpRunner(seats -> (4 * seats) / 3)),
-    MMP_Half(() -> new MmpRunner(seats -> (3 * seats) / 2)),
+    MMP_Third(() -> new MmpRunner(seats -> 1 + (4 * seats) / 3)),
+    MMP_Half(() -> new MmpRunner(seats -> 1 + (3 * seats) / 2)),
     MMP(() -> new MmpRunner(seats -> 2 * seats));
 
     private final Supplier<ElectionRunner> factory;
@@ -67,5 +67,10 @@ public enum ElectionRunners
     public ElectionRunner create()
     {
         return factory.get();
+    }
+
+    public boolean isMmp()
+    {
+        return create() instanceof MmpRunner;
     }
 }
