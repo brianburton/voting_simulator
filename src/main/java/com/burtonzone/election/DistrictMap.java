@@ -2,6 +2,7 @@ package com.burtonzone.election;
 
 import static org.javimmutable.collections.util.JImmutables.*;
 
+import com.burtonzone.common.Counter;
 import java.util.stream.Stream;
 import lombok.Value;
 import org.javimmutable.collections.JImmutableList;
@@ -29,6 +30,16 @@ public class DistrictMap
     public int getSeats()
     {
         return districts.stream().mapToInt(d -> d.getSettings().getNumberOfSeats()).sum();
+    }
+
+    public Counter<String> getRegionSeats()
+    {
+        var counts = new Counter<String>();
+        for (DistrictSpec district : districts) {
+            final var election = district.settings;
+            counts = counts.add(election.getRegion(), election.getNumberOfSeats());
+        }
+        return counts;
     }
 
     private JImmutableList<Election> createImpl(ElectionFactory factory,

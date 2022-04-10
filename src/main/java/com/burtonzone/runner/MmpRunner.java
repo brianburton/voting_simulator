@@ -139,7 +139,10 @@ public class MmpRunner
     @Override
     public int getSeatsForMap(DistrictMap districtMap)
     {
-        return seatsCalculator.applyAsInt(districtMap.getSeats());
+        return districtMap.getRegionSeats().stream()
+            .mapToInt(entry -> entry.getCount().toInt())
+            .map(seatsCalculator)
+            .sum();
     }
 
     @Value
