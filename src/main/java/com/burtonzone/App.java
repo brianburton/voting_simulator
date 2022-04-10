@@ -69,10 +69,12 @@ public class App
                 if (showDistrictResults) {
                     System.out.println();
                 }
+                System.out.println();
 
                 for (String line : results.getReport().getCoalitionGrid(45)) {
-                    System.out.println("     " + line);
+                    System.out.println("      " + line);
                 }
+                System.out.println();
                 System.out.println();
             } catch (ResultsReport.UnfilledSeatsException ex) {
                 System.out.printf("%2d  UNSOLVED: %s%n", roundNumber, ex.getMessage());
