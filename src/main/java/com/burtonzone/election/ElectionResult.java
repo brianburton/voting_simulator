@@ -77,11 +77,7 @@ public class ElectionResult
 
     public Counter<Party> getPartyElectedCounts()
     {
-        var answer = new Counter<Party>();
-        for (Candidate candidate : getFinalRound().getElected()) {
-            answer = answer.inc(candidate.getParty());
-        }
-        return answer;
+        return Counter.count(getFinalRound().getElected(), Candidate::getParty);
     }
 
     public Counter<Party> getPartyVoteCounts()

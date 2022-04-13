@@ -42,7 +42,7 @@ public class PositionalElectionFactory
         final var auxiliaryCandidates = createCandidates(parties, numSeats);
         final var partyLists = Candidate.createPartyLists(parties, candidates);
         final var ballotBox = createBallotBox(voters, candidates, partyLists, settings);
-        final var partyVotes = voters.reduce(new Counter<Party>(), (pv, v) -> pv.inc(v.parties.get(0)));
+        final var partyVotes = Counter.count(voters, v -> v.parties.get(0));
         return new Election(settings.getRegion(), parties, candidates, auxiliaryCandidates, partyLists, partyVotes, ballotBox, numSeats);
     }
 

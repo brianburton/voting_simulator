@@ -34,12 +34,7 @@ public class DistrictMap
 
     public Counter<String> getRegionSeats()
     {
-        var counts = new Counter<String>();
-        for (DistrictSpec district : districts) {
-            final var election = district.settings;
-            counts = counts.add(election.getRegion(), election.getNumberOfSeats());
-        }
-        return counts;
+        return Counter.sumInts(districts, d -> d.settings.getRegion(), d -> d.settings.getNumberOfSeats());
     }
 
     private JImmutableList<Election> createImpl(ElectionFactory factory,

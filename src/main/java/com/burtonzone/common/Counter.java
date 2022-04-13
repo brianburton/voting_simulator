@@ -5,6 +5,7 @@ import static com.burtonzone.common.Decimal.ZERO;
 import static org.javimmutable.collections.util.JImmutables.*;
 
 import java.util.Comparator;
+import java.util.function.Function;
 import javax.annotation.Nonnull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,6 +29,36 @@ public class Counter<T>
     public Counter(JImmutableMap<T, Decimal> counts)
     {
         this.counts = counts;
+    }
+
+    public static <T> Counter<T> count(Iterable<T> values)
+    {
+        var counter = new Counter<T>();
+        for (T value : values) {
+            counter = counter.inc(value);
+        }
+        return counter;
+    }
+
+    public static <T, U> Counter<U> count(Iterable<T> values,
+                                          Function<T, U> extractor)
+    {
+        var counter = new Counter<U>();
+        for (T value : values) {
+            counter = counter.inc(extractor.apply(value));
+        }
+        return counter;
+    }
+
+    public static <T, U> Counter<U> sumInts(Iterable<T> values,
+                                            Function<T, U> keyExtractor,
+                                            Function<T, Integer> countExtractor)
+    {
+        var counter = new Counter<U>();
+        for (T value : values) {
+            counter = counter.add(keyExtractor.apply(value), countExtractor.apply(value));
+        }
+        return counter;
     }
 
     public boolean isEmpty()

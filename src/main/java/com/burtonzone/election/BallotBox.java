@@ -115,11 +115,7 @@ public class BallotBox
     private static Counter<Party> countPartyVotes(JImmutableList<Candidate> choices,
                                                   Decimal voteCount)
     {
-        var partyVotes = new Counter<Party>();
-        for (Candidate candidate : choices) {
-            partyVotes = partyVotes.inc(candidate.getParty());
-        }
-        return partyVotes.toRatio().times(voteCount);
+        return Counter.count(choices, Candidate::getParty).toRatio().times(voteCount);
     }
 
     @Nonnull
