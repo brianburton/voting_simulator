@@ -6,6 +6,7 @@ import static org.javimmutable.collections.util.JImmutables.*;
 
 import java.util.Comparator;
 import java.util.function.Function;
+import java.util.stream.Collector;
 import javax.annotation.Nonnull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -59,6 +60,25 @@ public class Counter<T>
             counter = counter.add(keyExtractor.apply(value), countExtractor.apply(value));
         }
         return counter;
+    }
+
+    public static <T> Collector<T, ?, Counter<T>> counter()
+    {
+        return Collector.<T, Counter<T>, Counter<T>>of(() -> new Counter<T>(),
+                                                       (sum, k) -> sum.inc(k),
+                                                       (a, b) -> a.add(b),
+                                                       a -> a);
+    }
+
+    /**
+     * Combine all of the {@link Counter} in the stream into a single one by adding the counts for each key.
+     */
+    public static <T> Collector<Counter<T>, ?, Counter<T>> summer()
+    {
+        return Collector.<Counter<T>, Counter<T>, Counter<T>>of(() -> new Counter<T>(),
+                                                                (sum, c) -> sum.add(c),
+                                                                (a, b) -> a.add(b),
+                                                                a -> a);
     }
 
     public boolean isEmpty()
