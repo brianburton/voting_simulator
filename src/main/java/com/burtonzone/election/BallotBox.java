@@ -22,18 +22,17 @@ import org.javimmutable.collections.util.JImmutables;
 public class BallotBox
     implements IterableStreamable<Counter.Entry<JImmutableList<Candidate>>>
 {
-    private static final JImmutableList<Candidate> NoCandidates = list();
-    private static final JImmutableMap<JImmutableList<Candidate>, Decimal> NoBallots =
-        JImmutables.<JImmutableList<Candidate>, Decimal>map()
-            .assign(NoCandidates, ZERO);
-    public static final BallotBox Empty = new BallotBox(NoBallots);
+    private static final JImmutableMap<JImmutableList<Candidate>, Decimal> NoBallots = JImmutables.map();
+    public static final BallotBox Empty = new BallotBox(NoBallots, ZERO);
 
     private final JImmutableMap<JImmutableList<Candidate>, Decimal> ballots;
+    private final Decimal exhausted;
 
-    private BallotBox(JImmutableMap<JImmutableList<Candidate>, Decimal> ballots)
+    private BallotBox(JImmutableMap<JImmutableList<Candidate>, Decimal> ballots,
+                      Decimal exhausted)
     {
-        assert ballots.get(NoCandidates) != null;
         this.ballots = ballots;
+        this.exhausted = exhausted;
     }
 
     public static Builder builder()
@@ -41,13 +40,14 @@ public class BallotBox
         return new Builder();
     }
 
+    public Builder editor()
+    {
+        return new Builder(ballots, exhausted);
+    }
+
     public BallotBox add(BallotBox other)
     {
-        var counter = new Counter<>(ballots);
-        for (Counter.Entry<JImmutableList<Candidate>> entry : other) {
-            counter = counter.add(entry.getKey(), entry.getCount());
-        }
-        return new BallotBox(counter.toMap());
+        return editor().add(other).build();
     }
 
     public Decimal getAverageNumberOfChoices()
@@ -55,10 +55,8 @@ public class BallotBox
         int count = 0;
         var sum = 0;
         for (var e : ballots) {
-            if (e.getKey().isNonEmpty()) {
-                count += 1;
-                sum += e.getKey().size();
-            }
+            count += 1;
+            sum += e.getKey().size();
         }
         return (count == 0) ? ZERO : new Decimal(sum).dividedBy(new Decimal(count));
     }
@@ -74,6 +72,7 @@ public class BallotBox
         for (var ballot : ballots) {
             answer.add(ballot.getKey().slice(0, maxRanks), ballot.getValue());
         }
+        answer.addExhausted(exhausted);
         return answer.build();
     }
 
@@ -82,14 +81,11 @@ public class BallotBox
         var answer = builder();
         for (var ballot : ballots) {
             var choices = ballot.getKey();
-            if (choices.isNonEmpty()) {
-                var firstChoiceParty = choices.get(0).getParty();
-                var filteredChoices = choices.select(c -> c.getParty().equals(firstChoiceParty));
-                answer.add(filteredChoices, ballot.getValue());
-            } else {
-                answer.add(ballot.getKey(), ballot.getValue());
-            }
+            var firstChoiceParty = choices.get(0).getParty();
+            var filteredChoices = choices.select(c -> c.getParty().equals(firstChoiceParty));
+            answer.add(filteredChoices, ballot.getValue());
         }
+        answer.addExhausted(exhausted);
         return answer.build();
     }
 
@@ -134,39 +130,26 @@ public class BallotBox
 
     public Counter<Candidate> getCandidateFirstChoiceCounts()
     {
-        var answer = new Counter<Candidate>();
-        for (var e : ballots) {
-            final var candidates = e.getKey();
-            if (candidates.isNonEmpty()) {
-                final var candidate = candidates.get(0);
-                answer = answer.add(candidate, e.getValue());
-            }
-        }
-        return answer;
+        return Counter.sum(ballots,
+                           e -> e.getKey().get(0),
+                           e -> e.getValue());
     }
 
     public Counter<Party> getPartyFirstChoiceCounts()
     {
-        var answer = new Counter<Party>();
-        for (var e : ballots) {
-            final var candidates = e.getKey();
-            if (candidates.isNonEmpty()) {
-                final var candidate = candidates.get(0);
-                answer = answer.add(candidate.getParty(), e.getValue());
-            }
-        }
-        return answer;
+        return Counter.sum(ballots,
+                           e -> e.getKey().get(0).getParty(),
+                           e -> e.getValue());
     }
 
     public Counter<Party> getPartyAllChoiceCounts()
     {
-        var answer = new Counter<Party>();
-        for (var e : ballots) {
-            for (var candidate : e.getKey()) {
-                answer = answer.add(candidate.getParty(), e.getValue());
-            }
-        }
-        return answer;
+        return ballots.stream()
+            .flatMap(e -> e
+                .getKey()
+                .stream()
+                .map(ce -> entry(ce.getParty(), e.getValue())))
+            .collect(Counter.entryCollector());
     }
 
     /**
@@ -214,8 +197,7 @@ public class BallotBox
 
     public boolean isEmpty()
     {
-        // We always have a NoCandidates entry so if that's the only one we're out of candidates.
-        return ballots.size() == 1;
+        return ballots.isEmpty();
     }
 
     public JImmutableSet<Candidate> getCandidates()
@@ -236,6 +218,7 @@ public class BallotBox
                                           @Nullable Decimal transferWeight)
     {
         var newBallots = ballots;
+        var newExhausted = exhausted;
         for (var e : ballots) {
             var oldCandidates = e.getKey();
             var newCandidates = oldCandidates.reject(c -> c.equals(candidate));
@@ -244,18 +227,21 @@ public class BallotBox
                 if (transferWeight != null && oldCandidates.get(0).equals(candidate)) {
                     transferCount = transferCount.times(transferWeight);
                 }
-                final var oldCount = newBallots.get(newCandidates);
-                newBallots = newBallots
-                    .delete(oldCandidates)
-                    .assign(newCandidates, oldCount == null ? transferCount : oldCount.plus(transferCount));
+                newBallots = newBallots.delete(oldCandidates);
+                if (newCandidates.isEmpty()) {
+                    newExhausted = newExhausted.plus(transferCount);
+                } else {
+                    final var newCount = transferCount;
+                    newBallots = newBallots.update(newCandidates, h -> h.map(newCount::plus).orElse(newCount));
+                }
             }
         }
-        return newBallots == ballots ? this : new BallotBox(newBallots);
+        return newBallots == ballots ? this : new BallotBox(newBallots, newExhausted);
     }
 
     public Decimal getExhaustedCount()
     {
-        return ballots.get(NoCandidates);
+        return exhausted;
     }
 
     /**
@@ -265,7 +251,7 @@ public class BallotBox
      */
     public BallotBox exhaustAllRemaining()
     {
-        return new BallotBox(NoBallots.assign(NoCandidates, getTotalCount()));
+        return new BallotBox(NoBallots, exhausted.plus(getTotalCount()));
     }
 
     /**
@@ -277,14 +263,14 @@ public class BallotBox
      */
     public BallotBox withoutFirstChoiceMatching(Predicate<Candidate> matcher)
     {
-        var ballots = this.ballots;
-        for (var e : this.ballots) {
+        var newBallots = ballots;
+        for (var e : ballots) {
             var ballot = e.getKey();
-            if (ballot.size() > 0 && matcher.test(ballot.get(0))) {
-                ballots = ballots.delete(ballot);
+            if (matcher.test(ballot.get(0))) {
+                newBallots = newBallots.delete(ballot);
             }
         }
-        return new BallotBox(ballots);
+        return new BallotBox(newBallots, exhausted);
     }
 
     public BallotBox withoutAnyChoiceMatching(Predicate<Candidate> matcher)
@@ -303,17 +289,14 @@ public class BallotBox
     public BallotBox withoutPrefixChoiceMatching(int prefixLength,
                                                  Predicate<Candidate> matcher)
     {
-        var ballots = this.ballots;
-        for (var e : this.ballots) {
+        var newBallots = ballots;
+        for (var e : ballots) {
             var ballot = e.getKey();
-            if (ballot.size() > 0) {
-                if (ballot.stream().limit(prefixLength).anyMatch(matcher)) {
-                    ballots = ballots.delete(ballot);
-
-                }
+            if (ballot.stream().limit(prefixLength).anyMatch(matcher)) {
+                newBallots = newBallots.delete(ballot);
             }
         }
-        return new BallotBox(ballots);
+        return new BallotBox(newBallots, exhausted);
     }
 
     private class CandidateComparator
@@ -372,8 +355,26 @@ public class BallotBox
 
     public static class Builder
     {
-        private JImmutableMap<JImmutableList<Candidate>, Decimal> ballots = NoBallots;
-        private int count;
+        private JImmutableMap<JImmutableList<Candidate>, Decimal> ballots;
+        private Decimal exhausted;
+
+        private Builder()
+        {
+            this(NoBallots, ZERO);
+        }
+
+        private Builder(JImmutableMap<JImmutableList<Candidate>, Decimal> ballots,
+                        Decimal exhausted)
+        {
+            this.ballots = ballots;
+            this.exhausted = exhausted;
+        }
+
+        public Builder addExhausted(Decimal exhausted)
+        {
+            this.exhausted = this.exhausted.plus(exhausted);
+            return this;
+        }
 
         public Builder add(JImmutableList<Candidate> candidates)
         {
@@ -381,19 +382,19 @@ public class BallotBox
         }
 
         public Builder add(JImmutableList<Candidate> candidates,
-                           int count)
+                           int votes)
         {
-            final var votes = new Decimal(count);
-            ballots = ballots.update(candidates, ballotCount -> ballotCount.map(votes::plus).orElse(votes));
-            this.count += count;
-            return this;
+            return add(candidates, new Decimal(votes));
         }
 
         public Builder add(JImmutableList<Candidate> candidates,
                            Decimal votes)
         {
-            ballots = ballots.update(candidates, ballotCount -> ballotCount.map(votes::plus).orElse(votes));
-            this.count += votes.toInt();
+            if (candidates.isEmpty()) {
+                exhausted = exhausted.plus(votes);
+            } else {
+                ballots = ballots.update(candidates, ballotCount -> ballotCount.map(votes::plus).orElse(votes));
+            }
             return this;
         }
 
@@ -402,17 +403,14 @@ public class BallotBox
             for (Counter.Entry<JImmutableList<Candidate>> ballot : ballots) {
                 add(ballot.getKey(), ballot.getCount());
             }
+            exhausted = exhausted.plus(ballots.exhausted);
             return this;
         }
 
-        public int count()
-        {
-            return count;
-        }
 
         public BallotBox build()
         {
-            return new BallotBox(ballots);
+            return new BallotBox(ballots, exhausted);
         }
     }
 }

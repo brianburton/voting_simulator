@@ -62,23 +62,42 @@ public class Counter<T>
         return counter;
     }
 
+    public static <T, U> Counter<U> sum(Iterable<T> values,
+                                        Function<T, U> keyExtractor,
+                                        Function<T, Decimal> countExtractor)
+    {
+        var counter = new Counter<U>();
+        for (T value : values) {
+            counter = counter.add(keyExtractor.apply(value), countExtractor.apply(value));
+        }
+        return counter;
+    }
+
     public static <T> Collector<T, ?, Counter<T>> counter()
     {
-        return Collector.<T, Counter<T>, Counter<T>>of(() -> new Counter<T>(),
-                                                       (sum, k) -> sum.inc(k),
-                                                       (a, b) -> a.add(b),
-                                                       a -> a);
+        return Collector.of(Counter::new,
+                            Counter::inc,
+                            Counter::add,
+                            Function.identity());
+    }
+
+    public static <T> Collector<JImmutableMap.Entry<T, Decimal>, ?, Counter<T>> entryCollector()
+    {
+        return Collector.of(Counter::new,
+                            Counter::add,
+                            Counter::add,
+                            Function.identity());
     }
 
     /**
      * Combine all of the {@link Counter} in the stream into a single one by adding the counts for each key.
      */
-    public static <T> Collector<Counter<T>, ?, Counter<T>> summer()
+    public static <T> Collector<Counter<T>, ?, Counter<T>> fromCounters()
     {
-        return Collector.<Counter<T>, Counter<T>, Counter<T>>of(() -> new Counter<T>(),
-                                                                (sum, c) -> sum.add(c),
-                                                                (a, b) -> a.add(b),
-                                                                a -> a);
+        return Collector.of(() -> new Counter<T>(),
+                            (sum, c) -> sum.add(c),
+                            (a, b) -> a.add(b),
+                            a -> a);
     }
 
     public boolean isEmpty()
@@ -123,6 +142,16 @@ public class Counter<T>
                           int count)
     {
         return add(key, new Decimal(count));
+    }
+
+    public Counter<T> add(Entry<T> entry)
+    {
+        return add(entry.getKey(), entry.getCount());
+    }
+
+    public Counter<T> add(JImmutableMap.Entry<T, Decimal> entry)
+    {
+        return add(entry.getKey(), entry.getValue());
     }
 
     public Counter<T> add(Counter<T> other)
