@@ -12,6 +12,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import lombok.Value;
 import org.javimmutable.collections.IterableStreamable;
+import org.javimmutable.collections.JImmutableList;
 import org.javimmutable.collections.JImmutableMap;
 import org.javimmutable.collections.JImmutableSet;
 import org.javimmutable.collections.SplitableIterator;
@@ -220,11 +221,18 @@ public class BallotBox
         return new CandidateComparator();
     }
 
+    public Decimal countWasted(JImmutableList<Candidate> electedCandidates)
+    {
+        final var electedCandidatesSet = set(electedCandidates);
+        final var electedPartiesSet = electedCandidatesSet.transform(Candidate::getParty);
+        return countWasted(electedCandidatesSet, electedPartiesSet);
+    }
+
     public Decimal countWasted(JImmutableSet<Candidate> electedCandidates,
                                JImmutableSet<Party> electedParties)
     {
         return ballots.stream()
-            .filter(e -> !e.getKey().isWasted(electedCandidates, electedParties))
+            .filter(e -> e.getKey().isWasted(electedCandidates, electedParties))
             .map(JImmutableMap.Entry::getValue)
             .collect(Decimal.collectSum());
     }

@@ -5,6 +5,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.stream.Collector;
 import lombok.EqualsAndHashCode;
+import org.javimmutable.collections.GenericCollector;
 
 @EqualsAndHashCode
 public class Decimal
@@ -37,10 +38,11 @@ public class Decimal
 
     public static Collector<Decimal, ?, Decimal> collectSum()
     {
-        return Collector.of(() -> ZERO,
-                            Decimal::plus,
-                            Decimal::plus,
-                            a -> a);
+        return GenericCollector.unordered(ZERO,
+                                          ZERO,
+                                          Decimal::isZero,
+                                          Decimal::plus,
+                                          Decimal::plus);
     }
 
     public static Decimal max(Decimal a,
