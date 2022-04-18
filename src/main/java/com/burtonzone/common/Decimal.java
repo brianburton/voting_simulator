@@ -3,6 +3,7 @@ package com.burtonzone.common;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.stream.Collector;
 import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode
@@ -24,7 +25,7 @@ public class Decimal
         this(new BigDecimal(value));
     }
 
-    Decimal(String value)
+    public Decimal(String value)
     {
         this(new BigDecimal(value));
     }
@@ -32,6 +33,14 @@ public class Decimal
     public Decimal(BigDecimal value)
     {
         this.value = value.setScale(PRECISION, RoundingMode.HALF_UP);
+    }
+
+    public static Collector<Decimal, ?, Decimal> collectSum()
+    {
+        return Collector.of(() -> ZERO,
+                            Decimal::plus,
+                            Decimal::plus,
+                            a -> a);
     }
 
     public static Decimal max(Decimal a,

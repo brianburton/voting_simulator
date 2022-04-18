@@ -54,7 +54,7 @@ public class PluralityRunner
         final var effectiveBallots = election.getBallots().toPrefixBallots(maxChoices);
         var counter = new Counter<Candidate>();
         for (var ballot : effectiveBallots) {
-            for (Candidate candidate : ballot.getKey()) {
+            for (Candidate candidate : ballot.getKey().getCandidates()) {
                 var count = ballot.getCount();
                 counter = counter.add(candidate, count);
             }
@@ -72,7 +72,7 @@ public class PluralityRunner
         return new ElectionResult(election,
                                   list(round),
                                   effectiveBallots,
-                                  effectiveBallots.getPartyVoteCounts(election.getSeats()),
+                                  effectiveBallots.getCandidatePartyVotes(election.getSeats()),
                                   wasted);
     }
 }

@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.util.function.IntUnaryOperator;
 import lombok.Value;
 import org.javimmutable.collections.JImmutableList;
+import org.javimmutable.collections.JImmutableSet;
 
 public class MmpRunner
     implements ElectionRunner
@@ -85,9 +86,13 @@ public class MmpRunner
             .flatMap(er -> er.getElected().stream())
             .collect(listCollector());
 
-        final var ballots = districts.reduce(BallotBox.Empty, (sum, e) -> sum.add(e.getBallots()));
-        final var filteredPartyVotes = applyPartyVoteFilters(partyVotes, districtWinners);
-        final var partyElection = new Election("", parties, candidates, list(), partyLists, filteredPartyVotes, ballots, seats);
+        final var filteredParties = computePartiesToFilter(partyVotes, districtWinners);
+        final var ballots = districts
+            .reduce(BallotBox.Empty, (sum, e) -> sum.add(e.getBallots()))
+            .toSingleChoiceBallots();
+        final var partyBallots = ballots
+            .withoutBallotsMatching(b -> b.partyIn(filteredParties));
+        final var partyElection = new Election("", parties, candidates, list(), partyLists, partyBallots, seats);
         final var partyResult = partyRunner.runMppPartyElection(partyElection, districtWinners);
 
         int votedCount = CandidateVotes.countType(partyResult.getVotes(), CandidateVotes.SelectionType.Vote);
@@ -101,7 +106,7 @@ public class MmpRunner
         if (listCount != seats - districtSeats) {
             throw new IllegalArgumentException("list count mismatch");
         }
-        final var effectiveElection = new Election("", parties, candidates, list(), partyLists, partyVotes, ballots, seats);
+        final var effectiveElection = new Election("", parties, candidates, list(), partyLists, ballots, seats);
         final var effectiveRoundResult = new ElectionResult.RoundResult(partyResult.getVotes(), partyResult.getElected());
         final var effectiveResults = new ElectionResult(effectiveElection,
                                                         list(effectiveRoundResult),
@@ -117,20 +122,21 @@ public class MmpRunner
         return new RegionalResults(elections.getElections(), pluralityResults.getResults(), list(effectiveResults));
     }
 
-    private Counter<Party> applyPartyVoteFilters(Counter<Party> realResults,
-                                                 JImmutableList<Candidate> districtWinners)
+    private JImmutableSet<Party> computePartiesToFilter(Counter<Party> realVotes,
+                                                        JImmutableList<Candidate> districtWinners)
     {
-        final var totalVotes = realResults.getTotal();
+        final var totalVotes = realVotes.getTotal();
         final var minVotesToRemain = totalVotes.times(MinPartyVoteRatio).roundUp();
         final var electedParties = districtWinners.stream()
             .map(Candidate::getParty)
             .collect(setCollector());
-        var filteredResults = new Counter<Party>();
-        for (Counter.Entry<Party> entry : realResults) {
+        JImmutableSet<Party> filteredResults = set();
+        for (Counter.Entry<Party> entry : realVotes) {
             final var party = entry.getKey();
             final var votes = entry.getCount();
-            if (electedParties.contains(party) || votes.isGreaterOrEqualTo(minVotesToRemain)) {
-                filteredResults = filteredResults.add(party, votes);
+            final boolean shouldRetain = electedParties.contains(party) || votes.isGreaterOrEqualTo(minVotesToRemain);
+            if (!shouldRetain) {
+                filteredResults = filteredResults.insert(party);
             }
         }
         return filteredResults;

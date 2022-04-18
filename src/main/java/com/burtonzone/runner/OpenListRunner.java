@@ -7,6 +7,7 @@ import static org.javimmutable.collections.util.JImmutables.*;
 
 import com.burtonzone.common.Counter;
 import com.burtonzone.common.Decimal;
+import com.burtonzone.election.BallotBox;
 import com.burtonzone.election.Candidate;
 import com.burtonzone.election.CandidateVotes;
 import com.burtonzone.election.Election;
@@ -63,8 +64,9 @@ public class OpenListRunner
     private class Worksheet
     {
         private final Election election;
+        private final BallotBox effectiveBallots;
         private final Counter<Candidate> candidateVotes;
-        private final Counter<Party> candidatePartyVotes;
+        private final Counter<Party> partyVotes;
         private final JImmutableListMap<Party, Candidate> partyLists;
         private Counter<Party> partySeats;
         private JImmutableSetMap<Party, Candidate> elected;
@@ -74,8 +76,9 @@ public class OpenListRunner
         private Worksheet(Election election)
         {
             this.election = election;
-            this.candidateVotes = election.getBallots().getCandidateFirstChoiceCounts();
-            candidatePartyVotes = election.getBallots().getPartyFirstChoiceCounts();
+            effectiveBallots = selectPartyVotesForSeatAllocation(election.getBallots().toSingleChoiceBallots());
+            candidateVotes = effectiveBallots.getFirstChoicCandidateVotes();
+            partyVotes = effectiveBallots.getPartyVotes();
             partyLists = selectPartyLists();
             partySeats = new Counter<>();
             elected = JImmutables.setMap();
@@ -113,9 +116,9 @@ public class OpenListRunner
             if (!partySeats.isEmpty()) {
                 throw new IllegalArgumentException("Hare quotas cannot be used with pre-assigned seats.");
             }
-            var partyVotes = selectPartyVotesForSeatAllocation();
             final var partyQuota = Election.computeQuota(partyVotes.getTotal(), election.getSeats());
             final var totalSeats = new Decimal(election.getSeats());
+            var partyVotes = this.partyVotes;
             for (var e : partyVotes) {
                 var seats = e.getCount().div(partyQuota);
                 if (seats.isGreaterThan(ZERO)) {
@@ -161,9 +164,8 @@ public class OpenListRunner
                 final var candidate = entry.getCandidate();
                 final var party = candidate.getParty();
                 if (!party.equals(currentParty)) {
-                    var votes = Decimal.max(candidatePartyVotes.get(party), election.getPartyVotes().get(party));
                     currentParty = party;
-                    quota = Election.computeQuota(votes, election.getSeats());
+                    quota = Election.computeQuota(partyVotes.get(party), election.getSeats());
                 }
                 if (filledSeatsForParty(party) < numberOfSeatsForParty(party)) {
                     final var votes = entry.getVotes();
@@ -234,12 +236,9 @@ public class OpenListRunner
             }
             final var electedCandidates = electedCandidateVotes.transform(CandidateVotes::getCandidate);
             final var electedParties = electedCandidates.transform(set(), Candidate::getParty);
-            final var wasted = election.getBallots()
-                .withoutFirstChoiceMatching(c -> electedParties.contains(c.getParty()))
-                .getTotalCount();
+            final var wasted = effectiveBallots.countWasted(set(electedCandidates), electedParties);
             final var round = new ElectionResult.RoundResult(electedCandidateVotes, electedCandidates);
-            final var effectiveBallots = election.getBallots().toFirstChoicePartyBallots();
-            return new ElectionResult(election, list(round), effectiveBallots, selectPartyVotesForSeatAllocation(), wasted);
+            return new ElectionResult(election, list(round), effectiveBallots, partyVotes, wasted);
         }
 
         private JImmutableListMap<Party, Candidate> selectPartyLists()
@@ -256,7 +255,6 @@ public class OpenListRunner
 
         private Party findPartyWithHighestAdjustedVotes(Counter<Party> partySeats)
         {
-            final var partyVotes = selectPartyVotesForSeatAllocation();
             Party topParty = null;
             Decimal topVotes = ZERO;
             for (Counter.Entry<Party> entry : partyVotes) {
@@ -296,11 +294,11 @@ public class OpenListRunner
             };
         }
 
-        private Counter<Party> selectPartyVotesForSeatAllocation()
+        private BallotBox selectPartyVotesForSeatAllocation(BallotBox ballots)
         {
             return switch (config.partyVoteMode) {
-                case Candidate -> candidatePartyVotes;
-                case Voter -> election.getPartyVotes();
+                case Candidate -> ballots.toPartyVoteFromFirstChoice();
+                case Voter -> ballots;
             };
         }
 

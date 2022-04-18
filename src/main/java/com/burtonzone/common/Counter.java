@@ -10,6 +10,7 @@ import java.util.stream.Collector;
 import javax.annotation.Nonnull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.javimmutable.collections.GenericCollector;
 import org.javimmutable.collections.IterableStreamable;
 import org.javimmutable.collections.JImmutableList;
 import org.javimmutable.collections.JImmutableMap;
@@ -73,31 +74,35 @@ public class Counter<T>
         return counter;
     }
 
-    public static <T> Collector<T, ?, Counter<T>> counter()
+    public static <T> Collector<T, ?, Counter<T>> collectCounts()
     {
-        return Collector.of(Counter::new,
-                            Counter::inc,
-                            Counter::add,
-                            Function.identity());
+        final Counter<T> empty = new Counter<>();
+        return GenericCollector.unordered(empty,
+                                          empty,
+                                          Counter::isEmpty,
+                                          Counter::inc,
+                                          Counter::add);
     }
 
-    public static <T> Collector<JImmutableMap.Entry<T, Decimal>, ?, Counter<T>> entryCollector()
+    public static <T> Collector<JImmutableMap.Entry<T, Decimal>, ?, Counter<T>> collectEntrySum()
     {
-        return Collector.of(Counter::new,
-                            Counter::add,
-                            Counter::add,
-                            Function.identity());
+        final Counter<T> empty = new Counter<>();
+        return GenericCollector.unordered(empty, empty, Counter::isEmpty,
+                                          (sum, e) -> sum.add(e.getKey(), e.getValue()),
+                                          Counter::add);
     }
 
     /**
      * Combine all of the {@link Counter} in the stream into a single one by adding the counts for each key.
      */
-    public static <T> Collector<Counter<T>, ?, Counter<T>> fromCounters()
+    public static <T> Collector<Counter<T>, ?, Counter<T>> collectSum()
     {
-        return Collector.of(() -> new Counter<T>(),
-                            (sum, c) -> sum.add(c),
-                            (a, b) -> a.add(b),
-                            a -> a);
+        final Counter<T> empty = new Counter<>();
+        return GenericCollector.unordered(empty,
+                                          empty,
+                                          Counter::isEmpty,
+                                          Counter::add,
+                                          Counter::add);
     }
 
     public boolean isEmpty()

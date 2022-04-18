@@ -26,7 +26,7 @@ public class BasicStvRunner
         return new ElectionResult(election,
                                   results.build(),
                                   election.getBallots(),
-                                  election.getBallots().getPartyVoteCounts(election.getSeats()),
+                                  election.getBallots().getCandidatePartyVotes(election.getSeats()),
                                   wasted);
     }
 }
