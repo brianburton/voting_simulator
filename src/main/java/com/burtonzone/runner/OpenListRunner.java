@@ -235,8 +235,7 @@ public class OpenListRunner
                                                               electedCandidateVotes.size(), election.getSeats()));
             }
             final var electedCandidates = electedCandidateVotes.transform(CandidateVotes::getCandidate);
-            final var electedParties = electedCandidates.transform(set(), Candidate::getParty);
-            final var wasted = effectiveBallots.countWasted(set(electedCandidates), electedParties);
+            final var wasted = effectiveBallots.countWastedUsingCandidateOrParty(electedCandidates);
             final var round = new ElectionResult.RoundResult(electedCandidateVotes, electedCandidates);
             return new ElectionResult(election, list(round), effectiveBallots, partyVotes, wasted);
         }

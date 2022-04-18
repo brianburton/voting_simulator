@@ -43,6 +43,11 @@ public class Ballot
         return !(partyIn(electedParties) || anyCandidateIn(electedCandidates));
     }
 
+    public boolean isWasted(JImmutableSet<Candidate> electedCandidates)
+    {
+        return !anyCandidateIn(electedCandidates);
+    }
+
     public boolean isFirst(Candidate candidate)
     {
         return candidates.get(0).equals(candidate);

@@ -108,7 +108,7 @@ public class MmpRunner
         }
         final var effectiveElection = new Election("", parties, candidates, list(), partyLists, ballots, seats);
         final var effectiveRoundResult = new ElectionResult.RoundResult(partyResult.getVotes(), partyResult.getElected());
-        final var wasted = ballots.countWasted(effectiveRoundResult.getElected());
+        final var wasted = ballots.countWastedUsingCandidateOrParty(effectiveRoundResult.getElected());
         final var effectiveResults = new ElectionResult(effectiveElection,
                                                         list(effectiveRoundResult),
                                                         ballots,

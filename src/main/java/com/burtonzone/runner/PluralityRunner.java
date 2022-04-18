@@ -64,10 +64,7 @@ public class PluralityRunner
             .slice(0, election.getSeats())
             .transform(cv -> new CandidateVotes(cv, Vote));
         final var elected = votes.transform(CandidateVotes::getCandidate);
-        final var electedSet = set(elected);
-        final var wasted = election.getBallots()
-            .withoutPrefixChoiceMatching(maxChoices, electedSet::contains)
-            .getTotalCount();
+        final var wasted = election.getBallots().countWastedUsingCandidateOnly(elected);
         final var round = new ElectionResult.RoundResult(votes, elected);
         return new ElectionResult(election,
                                   list(round),

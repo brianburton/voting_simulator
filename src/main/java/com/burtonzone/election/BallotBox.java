@@ -221,18 +221,21 @@ public class BallotBox
         return new CandidateComparator();
     }
 
-    public Decimal countWasted(JImmutableList<Candidate> electedCandidates)
+    public Decimal countWastedUsingCandidateOnly(JImmutableList<Candidate> electedCandidates)
+    {
+        final var electedCandidatesSet = set(electedCandidates);
+        return ballots.stream()
+            .filter(e -> e.getKey().isWasted(electedCandidatesSet))
+            .map(JImmutableMap.Entry::getValue)
+            .collect(Decimal.collectSum());
+    }
+
+    public Decimal countWastedUsingCandidateOrParty(JImmutableList<Candidate> electedCandidates)
     {
         final var electedCandidatesSet = set(electedCandidates);
         final var electedPartiesSet = electedCandidatesSet.transform(Candidate::getParty);
-        return countWasted(electedCandidatesSet, electedPartiesSet);
-    }
-
-    public Decimal countWasted(JImmutableSet<Candidate> electedCandidates,
-                               JImmutableSet<Party> electedParties)
-    {
         return ballots.stream()
-            .filter(e -> e.getKey().isWasted(electedCandidates, electedParties))
+            .filter(e -> e.getKey().isWasted(electedCandidatesSet, electedPartiesSet))
             .map(JImmutableMap.Entry::getValue)
             .collect(Decimal.collectSum());
     }

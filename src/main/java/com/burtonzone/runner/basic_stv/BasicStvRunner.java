@@ -14,15 +14,12 @@ public class BasicStvRunner
     public ElectionResult runElection(Election election)
     {
         final JImmutableList.Builder<ElectionResult.RoundResult> results = listBuilder();
-        BasicStvRound round = BasicStvRound.start(election);
+        var round = BasicStvRound.start(election);
         while (!round.isFinished()) {
             round = round.advance();
             results.add(round.toElectionResult());
         }
-        final var electedSet = set(round.getElected());
-        final var wasted = election.getBallots()
-            .withoutAnyChoiceMatching(electedSet::contains)
-            .getTotalCount();
+        final var wasted = election.getBallots().countWastedUsingCandidateOnly(round.getElected());
         return new ElectionResult(election,
                                   results.build(),
                                   election.getBallots(),
