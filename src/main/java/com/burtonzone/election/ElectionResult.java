@@ -35,11 +35,6 @@ public class ElectionResult
         return election;
     }
 
-    public JImmutableList<RoundResult> getResults()
-    {
-        return results;
-    }
-
     public RoundResult getFinalRound()
     {
         return results.get(results.size() - 1);
@@ -48,11 +43,6 @@ public class ElectionResult
     public BallotBox getEffectiveBallots()
     {
         return effectiveBallots;
-    }
-
-    public boolean isComplete()
-    {
-        return getFinalRound().elected.size() == election.getSeats();
     }
 
     public JImmutableList<Candidate> getElected()
@@ -68,11 +58,6 @@ public class ElectionResult
     public Decimal getWasted()
     {
         return wasted;
-    }
-
-    public Counter<Party> getPartyEffectiveVoteCounts()
-    {
-        return effectiveBallots.getPartyAllChoiceCounts();
     }
 
     public Counter<Party> getPartyElectedCounts()
@@ -96,7 +81,6 @@ public class ElectionResult
     {
         final var partySeats = getPartyElectedCounts();
         final var totalSeats = partySeats.getTotal();
-        final var partyVotes = getPartyEffectiveVoteCounts();
         final var totalVotes = partyVotes.getTotal();
         var sum = ZERO;
         for (Party party : getElection().getParties()) {

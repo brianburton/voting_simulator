@@ -1,7 +1,6 @@
 package com.burtonzone.election;
 
 import com.burtonzone.common.Counter;
-import java.util.function.Predicate;
 import lombok.Data;
 import org.javimmutable.collections.JImmutableList;
 import org.javimmutable.collections.JImmutableSet;
@@ -53,12 +52,6 @@ public class Ballot
         return candidates.get(0).equals(candidate);
     }
 
-    public boolean isPrefixMatch(int prefixLength,
-                                 Predicate<Candidate> matcher)
-    {
-        return candidates.stream().limit(prefixLength).anyMatch(matcher);
-    }
-
     public Ballot without(Candidate candidate)
     {
         var newCandidates = candidates.reject(c -> c.equals(candidate));
@@ -77,20 +70,12 @@ public class Ballot
         return newCandidates == candidates ? this : new Ballot(newCandidates, party);
     }
 
-    public Ballot reject(Predicate<Candidate> criteria)
+    public Counter<Party> countPartyVotes(int maxToCount)
     {
-        var newCandidates = candidates.reject(criteria);
-        return newCandidates == candidates ? this : new Ballot(newCandidates, party);
-    }
-
-    public Ballot select(Predicate<Candidate> criteria)
-    {
-        var newCandidates = candidates.select(criteria);
-        return newCandidates == candidates ? this : new Ballot(newCandidates, party);
-    }
-
-    public Counter<Party> countPartyVotes()
-    {
-        return Counter.count(candidates, Candidate::getParty).toRatio();
+        return candidates.stream()
+            .limit(maxToCount)
+            .map(Candidate::getParty)
+            .collect(Counter.collectCounts())
+            .toRatio();
     }
 }

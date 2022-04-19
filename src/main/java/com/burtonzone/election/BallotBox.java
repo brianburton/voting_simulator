@@ -71,6 +71,10 @@ public class BallotBox
         return answer.build();
     }
 
+    /**
+     * Replaces the party choice in all ballots to match the party of the first
+     * ranked candidate in that ballot.
+     */
     public BallotBox toPartyVoteFromFirstChoice()
     {
         var answer = builder();
@@ -90,12 +94,14 @@ public class BallotBox
     {
         return ballots.stream()
             .map(e -> e.getKey()
-                .prefix(numSeats)
-                .countPartyVotes()
+                .countPartyVotes(numSeats)
                 .times(e.getValue()))
             .collect(Counter.collectSum());
     }
 
+    /**
+     * Add up the actual party vote in the ballots.
+     */
     public Counter<Party> getPartyVotes()
     {
         return ballots.stream()
@@ -122,16 +128,6 @@ public class BallotBox
         return Counter.sum(ballots,
                            e -> e.getKey().first(),
                            e -> e.getValue());
-    }
-
-    public Counter<Party> getPartyAllChoiceCounts()
-    {
-        return ballots.stream()
-            .flatMap(e -> e
-                .getKey()
-                .getCandidates().stream()
-                .map(ce -> entry(ce.getParty(), e.getValue())))
-            .collect(Counter.collectEntrySum());
     }
 
     /**
