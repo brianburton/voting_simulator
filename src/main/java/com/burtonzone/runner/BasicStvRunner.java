@@ -30,16 +30,7 @@ public class BasicStvRunner
         while (worksheet.remaining > 0) {
             worksheet.nextRound();
         }
-        final var rounds = worksheet.toResults();
-        final var finalRound = rounds.get(rounds.size() - 1);
-
-        final var wasted = election.getBallots().countWastedUsingCandidateOnly(finalRound.getElected());
-        final var result = new ElectionResult(election,
-                                              rounds,
-                                              election.getBallots(),
-                                              election.getBallots().getCandidatePartyVotes(election.getSeats()),
-                                              wasted);
-        return new StvResult(election, worksheet.rounds, result);
+        return worksheet.toStvResult();
     }
 
     @Data
@@ -122,7 +113,7 @@ public class BasicStvRunner
             ballots = ballots.removeAndTransfer(loser.getCandidate(), ONE);
         }
 
-        private JImmutableList<ElectionResult.RoundResult> toResults()
+        private JImmutableList<ElectionResult.RoundResult> toElectionRounds()
         {
             final var results = JImmutables.<ElectionResult.RoundResult>listBuilder();
             var votes = JImmutables.<CandidateVotes>list();
@@ -135,6 +126,20 @@ public class BasicStvRunner
                 }
             }
             return results.build();
+        }
+
+        private StvResult toStvResult()
+        {
+            final var electionRounds = toElectionRounds();
+            final var finalRound = electionRounds.get(electionRounds.size() - 1);
+
+            final var wasted = election.getBallots().countWastedUsingCandidateOnly(finalRound.getElected());
+            final var result = new ElectionResult(election,
+                                                  electionRounds,
+                                                  election.getBallots(),
+                                                  election.getBallots().getCandidatePartyVotes(election.getSeats()),
+                                                  wasted);
+            return new StvResult(election, rounds, result);
         }
     }
 }
