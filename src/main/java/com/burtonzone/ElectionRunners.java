@@ -1,11 +1,11 @@
 package com.burtonzone;
 
 import com.burtonzone.election.ElectionRunner;
+import com.burtonzone.runner.BasicStvRunner;
 import com.burtonzone.runner.MmpRunner;
 import com.burtonzone.runner.OpenListRunner;
 import com.burtonzone.runner.OpenListRunner.Config;
 import com.burtonzone.runner.PluralityRunner;
-import com.burtonzone.runner.basic_stv.BasicStvRunner;
 import java.util.function.Supplier;
 
 public enum ElectionRunners

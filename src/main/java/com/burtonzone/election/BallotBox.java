@@ -9,7 +9,6 @@ import com.burtonzone.common.Decimal;
 import java.util.Comparator;
 import java.util.function.Predicate;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import lombok.Value;
 import org.javimmutable.collections.IterableStreamable;
 import org.javimmutable.collections.JImmutableList;
@@ -185,16 +184,55 @@ public class BallotBox
 
     public BallotBox remove(Candidate candidate)
     {
-        return removeCandidateImpl(candidate, null);
+        var newBallots = ballots;
+        for (var e : ballots) {
+            var oldCandidates = e.getKey();
+            var newCandidates = oldCandidates.without(candidate);
+            if (newCandidates == oldCandidates) {
+                continue;
+            }
+
+            newBallots = newBallots.delete(oldCandidates);
+            if (oldCandidates.isFirst(candidate)) {
+                continue;
+            }
+
+            assert !newCandidates.isEmpty();
+
+            final var count = e.getValue();
+            newBallots = newBallots.update(newCandidates, h -> h.map(count::plus).orElse(count));
+        }
+        return newBallots == ballots ? this : new BallotBox(newBallots);
     }
 
     public BallotBox removeAndTransfer(Candidate candidate,
                                        Decimal transferWeight)
     {
-        if (transferWeight.isZero()) {
-            transferWeight = null;
+        var newBallots = ballots;
+        for (var e : ballots) {
+            var oldCandidates = e.getKey();
+            var newCandidates = oldCandidates.without(candidate);
+            if (newCandidates == oldCandidates) {
+                continue;
+            }
+
+            newBallots = newBallots.delete(oldCandidates);
+            if (newCandidates.isEmpty()) {
+                continue;
+            }
+
+            var transferCount = e.getValue();
+            if (oldCandidates.isFirst(candidate)) {
+                transferCount = transferCount.times(transferWeight);
+                if (transferCount.isZero()) {
+                    continue;
+                }
+            }
+
+            final var count = transferCount;
+            newBallots = newBallots.update(newCandidates, h -> h.map(count::plus).orElse(count));
         }
-        return removeCandidateImpl(candidate, transferWeight);
+        return newBallots == ballots ? this : new BallotBox(newBallots);
     }
 
     public Decimal getTotalCount()
@@ -238,28 +276,6 @@ public class BallotBox
             .filter(e -> e.getKey().isWasted(electedCandidatesSet, electedPartiesSet))
             .map(JImmutableMap.Entry::getValue)
             .collect(Decimal.collectSum());
-    }
-
-    private BallotBox removeCandidateImpl(Candidate candidate,
-                                          @Nullable Decimal transferWeight)
-    {
-        var newBallots = ballots;
-        for (var e : ballots) {
-            var oldCandidates = e.getKey();
-            var newCandidates = oldCandidates.without(candidate);
-            if (newCandidates != oldCandidates) {
-                var transferCount = e.getValue();
-                if (transferWeight != null && oldCandidates.isFirst(candidate)) {
-                    transferCount = transferCount.times(transferWeight);
-                }
-                newBallots = newBallots.delete(oldCandidates);
-                if (!newCandidates.isEmpty()) {
-                    final var newCount = transferCount;
-                    newBallots = newBallots.update(newCandidates, h -> h.map(newCount::plus).orElse(newCount));
-                }
-            }
-        }
-        return newBallots == ballots ? this : new BallotBox(newBallots);
     }
 
     /**
