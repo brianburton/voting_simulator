@@ -276,6 +276,16 @@ public class Counter<T>
         return counts.getSpliteratorCharacteristics();
     }
 
+    public IterableStreamable<T> keys()
+    {
+        return counts.keys();
+    }
+
+    public IterableStreamable<Decimal> values()
+    {
+        return counts.values();
+    }
+
     private JImmutableList<Entry<T>> sortEntries(Comparator<Entry<T>> comparator)
     {
         return counts.stream()
