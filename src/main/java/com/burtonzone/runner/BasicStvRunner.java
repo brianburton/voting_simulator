@@ -94,7 +94,7 @@ public class BasicStvRunner
 
         private JImmutableList<CandidateVotes> computeVotes()
         {
-            return ballots.getFirstChoicCandidateVotes()
+            return ballots.getFirstChoiceCandidateVotes()
                 .getSortedList(election.getTieBreaker())
                 .transform(cv -> new CandidateVotes(cv, Vote));
         }

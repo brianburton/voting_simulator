@@ -77,7 +77,7 @@ public class OpenListRunner
         {
             this.election = election;
             effectiveBallots = selectPartyVotesForSeatAllocation(election.getBallots().toSingleChoiceBallots());
-            candidateVotes = effectiveBallots.getFirstChoicCandidateVotes();
+            candidateVotes = effectiveBallots.getFirstChoiceCandidateVotes();
             partyVotes = effectiveBallots.getPartyVotes();
             partyLists = selectPartyLists();
             partySeats = new Counter<>();

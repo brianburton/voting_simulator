@@ -71,18 +71,6 @@ public class BallotBox
         return answer.build();
     }
 
-    public BallotBox toFirstChoicePartyBallots()
-    {
-        var answer = builder();
-        for (var e : ballots) {
-            var choices = e.getKey();
-            var firstChoiceParty = choices.first().getParty();
-            var filteredChoices = choices.select(c -> c.getParty().equals(firstChoiceParty));
-            answer.add(filteredChoices, e.getValue());
-        }
-        return answer.build();
-    }
-
     public BallotBox toPartyVoteFromFirstChoice()
     {
         var answer = builder();
@@ -110,11 +98,6 @@ public class BallotBox
 
     public Counter<Party> getPartyVotes()
     {
-//        var answer = new Counter<Party>();
-//        for (JImmutableMap.Entry<Ballot, Decimal> e : ballots) {
-//          answer= answer.add(e.getKey().getParty(), e.getValue());
-//        }
-//        return answer;
         return ballots.stream()
             .map(e -> entry(e.getKey().getParty(), e.getValue()))
             .collect(Counter.collectEntrySum());
@@ -134,17 +117,10 @@ public class BallotBox
         return ballots.getSpliteratorCharacteristics();
     }
 
-    public Counter<Candidate> getFirstChoicCandidateVotes()
+    public Counter<Candidate> getFirstChoiceCandidateVotes()
     {
         return Counter.sum(ballots,
                            e -> e.getKey().first(),
-                           e -> e.getValue());
-    }
-
-    public Counter<Party> getFirstChoicePartyVotes()
-    {
-        return Counter.sum(ballots,
-                           e -> e.getKey().first().getParty(),
                            e -> e.getValue());
     }
 
@@ -182,29 +158,6 @@ public class BallotBox
         return sum;
     }
 
-    public BallotBox remove(Candidate candidate)
-    {
-        var newBallots = ballots;
-        for (var e : ballots) {
-            var oldCandidates = e.getKey();
-            var newCandidates = oldCandidates.without(candidate);
-            if (newCandidates == oldCandidates) {
-                continue;
-            }
-
-            newBallots = newBallots.delete(oldCandidates);
-            if (oldCandidates.isFirst(candidate)) {
-                continue;
-            }
-
-            assert !newCandidates.isEmpty();
-
-            final var count = e.getValue();
-            newBallots = newBallots.update(newCandidates, h -> h.map(count::plus).orElse(count));
-        }
-        return newBallots == ballots ? this : new BallotBox(newBallots);
-    }
-
     public BallotBox removeAndTransfer(Candidate candidate,
                                        Decimal transferWeight)
     {
@@ -240,11 +193,6 @@ public class BallotBox
         return ballots.values().reduce(ZERO, Decimal::plus);
     }
 
-    public boolean isEmpty()
-    {
-        return ballots.isEmpty();
-    }
-
     public JImmutableSet<Candidate> getCandidates()
     {
         return ballots
@@ -278,30 +226,6 @@ public class BallotBox
             .collect(Decimal.collectSum());
     }
 
-    /**
-     * Removes any ballots with a first choice candidate that matches a predicate.
-     * Votes are not exhausted just removed.
-     *
-     * @param matcher When true causes ballot to be removed.
-     * @return new BallotBox
-     */
-    public BallotBox withoutFirstChoiceMatching(Predicate<Candidate> matcher)
-    {
-        var newBallots = ballots;
-        for (var e : ballots) {
-            var ballot = e.getKey();
-            if (matcher.test(ballot.first())) {
-                newBallots = newBallots.delete(ballot);
-            }
-        }
-        return newBallots == ballots ? this : new BallotBox(newBallots);
-    }
-
-    public BallotBox withoutAnyChoiceMatching(Predicate<Candidate> matcher)
-    {
-        return withoutPrefixChoiceMatching(Integer.MAX_VALUE, matcher);
-    }
-
     public BallotBox withoutBallotsMatching(Predicate<Ballot> matcher)
     {
         var newBallots = ballots;
@@ -311,27 +235,6 @@ public class BallotBox
             }
         }
         return newBallots == ballots ? this : new BallotBox(newBallots);
-    }
-
-    /**
-     * Removes any ballots with a first prefixLength choice candidate that matches a predicate.
-     * Votes are not exhausted just removed.
-     *
-     * @param prefixLength Number of preferred candidates to test
-     * @param matcher      When true causes ballot to be removed.
-     * @return new BallotBox
-     */
-    public BallotBox withoutPrefixChoiceMatching(int prefixLength,
-                                                 Predicate<Candidate> matcher)
-    {
-        var newBallots = ballots;
-        for (var e : ballots) {
-            var ballot = e.getKey();
-            if (ballot.isPrefixMatch(prefixLength, matcher)) {
-                newBallots = newBallots.delete(ballot);
-            }
-        }
-        return new BallotBox(newBallots);
     }
 
     private class CandidateComparator
