@@ -1,7 +1,6 @@
 package com.burtonzone.runner;
 
 import static com.burtonzone.election.CandidateVotes.SelectionType.Vote;
-import static org.javimmutable.collections.util.JImmutables.*;
 
 import com.burtonzone.common.Counter;
 import com.burtonzone.election.Candidate;
@@ -63,12 +62,11 @@ public class PluralityRunner
             .getSortedList(election.getTieBreaker())
             .slice(0, election.getSeats())
             .transform(cv -> new CandidateVotes(cv, Vote));
-        final var round = new ElectionResult.RoundResult(votes);
-        final var wasted = election.getBallots().countWastedUsingCandidateOnly(round.getElected());
+        final var wasted = election.getBallots().countWastedUsingCandidateOnly(votes);
         return new ElectionResult(election,
-                                  list(round),
                                   effectiveBallots,
                                   effectiveBallots.getCandidatePartyVotes(election.getSeats()),
-                                  wasted);
+                                  wasted,
+                                  votes);
     }
 }

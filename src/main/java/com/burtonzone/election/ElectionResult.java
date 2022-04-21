@@ -1,47 +1,36 @@
 package com.burtonzone.election;
 
 import static com.burtonzone.common.Decimal.ZERO;
-import static org.javimmutable.collections.util.JImmutables.*;
 
 import com.burtonzone.common.Counter;
 import com.burtonzone.common.Decimal;
-import lombok.Value;
 import org.javimmutable.collections.JImmutableList;
 import org.javimmutable.collections.util.JImmutables;
 
 public class ElectionResult
 {
     private final Election election;
-    private final JImmutableList<RoundResult> results;
     private final BallotBox effectiveBallots;
     private final Counter<Party> partyVotes;
     private final Decimal wasted;
     private final JImmutableList<CandidateVotes> electedVotes;
 
     public ElectionResult(Election election,
-                          JImmutableList<RoundResult> results,
                           BallotBox effectiveBallots,
                           Counter<Party> partyVotes,
-                          Decimal wasted)
+                          Decimal wasted,
+                          JImmutableList<CandidateVotes> electedVotes)
     {
         this.election = election;
-        this.results = results;
         this.effectiveBallots = effectiveBallots;
         this.partyVotes = partyVotes;
         this.wasted = wasted;
-        electedVotes = results.stream()
-            .flatMap(r -> r.getVotes().stream())
-            .collect(listCollector());
+        this.electedVotes = electedVotes;
     }
 
     public Election getElection()
     {
         return election;
-    }
-
-    public JImmutableList<RoundResult> getResults()
-    {
-        return results;
     }
 
     public BallotBox getEffectiveBallots()
@@ -109,21 +98,5 @@ public class ElectionResult
             .filter(CandidateVotes::isList)
             .map(cv -> cv.getCandidate().getParty())
             .collect(Counter.collectCounts());
-    }
-
-    @Value
-    public static class RoundResult
-    {
-        JImmutableList<CandidateVotes> votes;
-
-        public int getSeats()
-        {
-            return votes.size();
-        }
-
-        public JImmutableList<Candidate> getElected()
-        {
-            return votes.transform(CandidateVotes::getCandidate);
-        }
     }
 }

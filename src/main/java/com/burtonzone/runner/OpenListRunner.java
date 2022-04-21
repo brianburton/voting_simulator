@@ -234,9 +234,8 @@ public class OpenListRunner
                 throw new IllegalStateException(String.format("elected/seat mismatch: seats=%d elected=%d",
                                                               electedCandidateVotes.size(), election.getSeats()));
             }
-            final var round = new ElectionResult.RoundResult(electedCandidateVotes);
-            final var wasted = effectiveBallots.countWastedUsingCandidateOrParty(round.getElected());
-            return new ElectionResult(election, list(round), effectiveBallots, partyVotes, wasted);
+            final var wasted = effectiveBallots.countWastedUsingCandidateOrParty(electedCandidateVotes);
+            return new ElectionResult(election, effectiveBallots, partyVotes, wasted, electedCandidateVotes);
         }
 
         private JImmutableListMap<Party, Candidate> selectPartyLists()

@@ -6,14 +6,12 @@ import static com.burtonzone.election.CandidateVotes.SelectionType.Vote;
 import static org.javimmutable.collections.util.JImmutables.*;
 
 import com.burtonzone.election.BallotBox;
-import com.burtonzone.election.Candidate;
 import com.burtonzone.election.CandidateVotes;
 import com.burtonzone.election.Election;
 import com.burtonzone.election.ElectionResult;
 import com.burtonzone.election.ElectionRunner;
 import lombok.Data;
 import org.javimmutable.collections.JImmutableList;
-import org.javimmutable.collections.util.JImmutables;
 
 public class BasicStvRunner
     implements ElectionRunner
@@ -90,11 +88,11 @@ public class BasicStvRunner
                 .transform(cv -> new CandidateVotes(cv, Vote));
         }
 
-        private JImmutableList<Candidate> computeWinnersList()
+        private JImmutableList<CandidateVotes> computeWinnersList()
         {
             return rounds.stream()
                 .filter(r -> r.winner != null)
-                .map(r -> r.winner.getCandidate())
+                .map(r -> r.winner)
                 .collect(listCollector());
         }
 
@@ -121,27 +119,15 @@ public class BasicStvRunner
             ballots = ballots.removeAndTransfer(loser.getCandidate(), ONE);
         }
 
-        private JImmutableList<ElectionResult.RoundResult> toElectionRounds()
-        {
-            final var results = JImmutables.<ElectionResult.RoundResult>listBuilder();
-            for (StvRound round : rounds) {
-                if (round.winner != null) {
-                    results.add(new ElectionResult.RoundResult(list(round.winner)));
-                }
-            }
-            return results.build();
-        }
-
         private StvResult toStvResult()
         {
-            final var electionRounds = toElectionRounds();
-
-            final var wasted = election.getBallots().countWastedUsingCandidateOnly(computeWinnersList());
+            final var electedVotes = computeWinnersList();
+            final var wasted = election.getBallots().countWastedUsingCandidateOnly(electedVotes);
             final var result = new ElectionResult(election,
-                                                  electionRounds,
                                                   election.getBallots(),
                                                   election.getBallots().getCandidatePartyVotes(election.getSeats()),
-                                                  wasted);
+                                                  wasted,
+                                                  electedVotes);
             return new StvResult(election, rounds, result);
         }
     }

@@ -108,13 +108,12 @@ public class MmpRunner
             throw new IllegalArgumentException("list count mismatch");
         }
         final var effectiveElection = new Election("", parties, candidates, list(), partyLists, ballots, seats);
-        final var effectiveRoundResult = new ElectionResult.RoundResult(partyResult.getVotes());
-        final var wasted = ballots.countWastedUsingCandidateOrParty(effectiveRoundResult.getElected());
+        final var wasted = ballots.countWastedUsingCandidateOrParty(partyResult.getVotes());
         final var effectiveResults = new ElectionResult(effectiveElection,
-                                                        list(effectiveRoundResult),
                                                         ballots,
                                                         partyVotes,
-                                                        wasted);
+                                                        wasted,
+                                                        partyResult.getVotes());
         if (CandidateVotes.countType(effectiveResults.getVotes(), CandidateVotes.SelectionType.Vote) != votedCount) {
             throw new IllegalArgumentException("voted count mismatch");
         }
