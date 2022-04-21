@@ -1,6 +1,7 @@
 package com.burtonzone.election;
 
 import static com.burtonzone.common.Decimal.ZERO;
+import static org.javimmutable.collections.util.JImmutables.*;
 
 import com.burtonzone.common.Counter;
 import com.burtonzone.common.Decimal;
@@ -15,6 +16,7 @@ public class ElectionResult
     private final BallotBox effectiveBallots;
     private final Counter<Party> partyVotes;
     private final Decimal wasted;
+    private final JImmutableList<CandidateVotes> electedVotes;
 
     public ElectionResult(Election election,
                           JImmutableList<RoundResult> results,
@@ -22,12 +24,14 @@ public class ElectionResult
                           Counter<Party> partyVotes,
                           Decimal wasted)
     {
-        assert results.isNonEmpty();
         this.election = election;
         this.results = results;
         this.effectiveBallots = effectiveBallots;
         this.partyVotes = partyVotes;
         this.wasted = wasted;
+        electedVotes = results.stream()
+            .flatMap(r -> r.getVotes().stream())
+            .collect(listCollector());
     }
 
     public Election getElection()
@@ -35,9 +39,9 @@ public class ElectionResult
         return election;
     }
 
-    public RoundResult getFinalRound()
+    public JImmutableList<RoundResult> getResults()
     {
-        return results.get(results.size() - 1);
+        return results;
     }
 
     public BallotBox getEffectiveBallots()
@@ -47,12 +51,17 @@ public class ElectionResult
 
     public JImmutableList<Candidate> getElected()
     {
-        return getFinalRound().getElected();
+        return electedVotes.transform(CandidateVotes::getCandidate);
     }
 
     public JImmutableList<CandidateVotes> getVotes()
     {
-        return getFinalRound().getVotes();
+        return electedVotes;
+    }
+
+    public int getElectedCount()
+    {
+        return electedVotes.size();
     }
 
     public Decimal getWasted()
@@ -62,7 +71,9 @@ public class ElectionResult
 
     public Counter<Party> getPartyElectedCounts()
     {
-        return Counter.count(getFinalRound().getElected(), Candidate::getParty);
+        return electedVotes.stream()
+            .map(cv -> cv.getCandidate().getParty())
+            .collect(Counter.collectCounts());
     }
 
     public Counter<Party> getPartyVoteCounts()
@@ -94,24 +105,25 @@ public class ElectionResult
 
     public Counter<Party> getPartyListSeats()
     {
-        var sum = new Counter<Party>();
-        for (CandidateVotes candidateVotes : getFinalRound().getVotes()) {
-            if (candidateVotes.isList()) {
-                sum = sum.inc(candidateVotes.getCandidate().getParty());
-            }
-        }
-        return sum;
+        return electedVotes.stream()
+            .filter(CandidateVotes::isList)
+            .map(cv -> cv.getCandidate().getParty())
+            .collect(Counter.collectCounts());
     }
 
     @Value
     public static class RoundResult
     {
         JImmutableList<CandidateVotes> votes;
-        JImmutableList<Candidate> elected;
 
         public int getSeats()
         {
-            return elected.size();
+            return votes.size();
+        }
+
+        public JImmutableList<Candidate> getElected()
+        {
+            return votes.transform(CandidateVotes::getCandidate);
         }
     }
 }

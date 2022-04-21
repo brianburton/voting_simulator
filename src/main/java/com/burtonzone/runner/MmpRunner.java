@@ -83,7 +83,8 @@ public class MmpRunner
         final var seats = seatsCalculator.applyAsInt(districtSeats);
 
         final var districtWinners = pluralityResults.getResults().stream()
-            .flatMap(er -> er.getElected().stream())
+            .flatMap(er -> er.getVotes().stream())
+            .map(CandidateVotes::getCandidate)
             .collect(listCollector());
 
         final var filteredParties = computePartiesToFilter(partyVotes, districtWinners);
@@ -107,7 +108,7 @@ public class MmpRunner
             throw new IllegalArgumentException("list count mismatch");
         }
         final var effectiveElection = new Election("", parties, candidates, list(), partyLists, ballots, seats);
-        final var effectiveRoundResult = new ElectionResult.RoundResult(partyResult.getVotes(), partyResult.getElected());
+        final var effectiveRoundResult = new ElectionResult.RoundResult(partyResult.getVotes());
         final var wasted = ballots.countWastedUsingCandidateOrParty(effectiveRoundResult.getElected());
         final var effectiveResults = new ElectionResult(effectiveElection,
                                                         list(effectiveRoundResult),

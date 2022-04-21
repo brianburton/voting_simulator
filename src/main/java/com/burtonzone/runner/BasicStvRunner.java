@@ -90,6 +90,14 @@ public class BasicStvRunner
                 .transform(cv -> new CandidateVotes(cv, Vote));
         }
 
+        private JImmutableList<Candidate> computeWinnersList()
+        {
+            return rounds.stream()
+                .filter(r -> r.winner != null)
+                .map(r -> r.winner.getCandidate())
+                .collect(listCollector());
+        }
+
         private void recordQuotaWinner(CandidateVotes winner)
         {
             final var overVote = winner.getVotes().minus(election.getQuota());
@@ -116,13 +124,9 @@ public class BasicStvRunner
         private JImmutableList<ElectionResult.RoundResult> toElectionRounds()
         {
             final var results = JImmutables.<ElectionResult.RoundResult>listBuilder();
-            var votes = JImmutables.<CandidateVotes>list();
-            var elected = JImmutables.<Candidate>list();
             for (StvRound round : rounds) {
                 if (round.winner != null) {
-                    votes = votes.insertLast(round.winner);
-                    elected = elected.insertLast(round.winner.getCandidate());
-                    results.add(new ElectionResult.RoundResult(votes, elected));
+                    results.add(new ElectionResult.RoundResult(list(round.winner)));
                 }
             }
             return results.build();
@@ -131,9 +135,8 @@ public class BasicStvRunner
         private StvResult toStvResult()
         {
             final var electionRounds = toElectionRounds();
-            final var finalRound = electionRounds.get(electionRounds.size() - 1);
 
-            final var wasted = election.getBallots().countWastedUsingCandidateOnly(finalRound.getElected());
+            final var wasted = election.getBallots().countWastedUsingCandidateOnly(computeWinnersList());
             final var result = new ElectionResult(election,
                                                   electionRounds,
                                                   election.getBallots(),

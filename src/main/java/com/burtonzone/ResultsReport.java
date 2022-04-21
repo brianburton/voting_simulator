@@ -60,7 +60,7 @@ public class ResultsReport
         return builder()
             .parties(JImmutables.insertOrderSet(result.getElection().getParties()))
             .seats(result.getElection().getSeats())
-            .elected(result.getFinalRound().getElected().size())
+            .elected(result.getElectedCount())
             .votes(totalVotes.toInt())
             .wasted(result.getWasted().toInt())
             .averageWasted(result.getWasted().dividedBy(totalVotes))
@@ -94,7 +94,7 @@ public class ResultsReport
         for (ElectionResult result : results) {
             parties = parties.insertAll(result.getElection().getParties());
             seats = seats + result.getElection().getSeats();
-            elected = elected + result.getFinalRound().getElected().size();
+            elected = elected + result.getElectedCount();
             final Decimal electionTotalVotes = result.getElection().getTotalVotes();
             votes = votes + electionTotalVotes.toInt();
             wasted = wasted + result.getWasted().toInt();

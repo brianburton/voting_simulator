@@ -63,9 +63,8 @@ public class PluralityRunner
             .getSortedList(election.getTieBreaker())
             .slice(0, election.getSeats())
             .transform(cv -> new CandidateVotes(cv, Vote));
-        final var elected = votes.transform(CandidateVotes::getCandidate);
-        final var wasted = election.getBallots().countWastedUsingCandidateOnly(elected);
-        final var round = new ElectionResult.RoundResult(votes, elected);
+        final var round = new ElectionResult.RoundResult(votes);
+        final var wasted = election.getBallots().countWastedUsingCandidateOnly(round.getElected());
         return new ElectionResult(election,
                                   list(round),
                                   effectiveBallots,
