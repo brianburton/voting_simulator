@@ -69,14 +69,12 @@ public class BasicStvRunner
                 throw new IllegalStateException("not enough candidates remaining");
             }
             final var winner = votes.get(0);
-            final var loser = votes.get(votes.size() - 1);
             if (winner.getVotes().isGreaterOrEqualTo(election.getQuota())) {
                 recordQuotaWinner(winner);
             } else if (votes.size() == remaining) {
-                for (CandidateVotes vote : votes) {
-                    recordRemainderWinner(vote);
-                }
+                recordRemainderWinners(votes);
             } else {
+                final var loser = votes.get(votes.size() - 1);
                 recordLoser(loser);
             }
         }
@@ -106,11 +104,13 @@ public class BasicStvRunner
             remaining -= 1;
         }
 
-        private void recordRemainderWinner(CandidateVotes winner)
+        private void recordRemainderWinners(JImmutableList<CandidateVotes> winners)
         {
-            rounds = rounds.insertLast(new StvRound(ballots, winner, null));
-            ballots = ballots.removeAndTransfer(winner.getCandidate(), ZERO);
-            remaining -= 1;
+            for (CandidateVotes winner : winners) {
+                rounds = rounds.insertLast(new StvRound(ballots, winner, null));
+                ballots = ballots.removeAndTransfer(winner.getCandidate(), ZERO);
+                remaining -= 1;
+            }
         }
 
         private void recordLoser(CandidateVotes loser)
