@@ -4,8 +4,10 @@ import static com.burtonzone.common.Decimal.ZERO;
 
 import com.burtonzone.common.Counter;
 import com.burtonzone.common.Decimal;
+import lombok.Getter;
 import org.javimmutable.collections.JImmutableList;
 
+@Getter
 public class ElectionResult
 {
     private final Election election;
@@ -30,34 +32,14 @@ public class ElectionResult
         this.electedVotes = electedVotes;
     }
 
-    public Election getElection()
-    {
-        return election;
-    }
-
-    public BallotBox getEffectiveBallots()
-    {
-        return effectiveBallots;
-    }
-
     public JImmutableList<Candidate> getElected()
     {
         return electedVotes.transform(CandidateVotes::getCandidate);
     }
 
-    public JImmutableList<CandidateVotes> getVotes()
-    {
-        return electedVotes;
-    }
-
     public int getElectedCount()
     {
         return electedVotes.size();
-    }
-
-    public Decimal getWasted()
-    {
-        return wasted;
     }
 
     public Counter<Party> getPartyElectedCounts()
@@ -67,14 +49,12 @@ public class ElectionResult
             .collect(Counter.collectCounts());
     }
 
-    public Counter<Party> getPartyVoteCounts()
+    public Counter<Party> getPartyListSeats()
     {
-        return partyVotes;
-    }
-
-    public Decimal getEffectiveVoteScore()
-    {
-        return effectiveVoteScore;
+        return electedVotes.stream()
+            .filter(CandidateVotes::isList)
+            .map(cv -> cv.getCandidate().getParty())
+            .collect(Counter.collectCounts());
     }
 
     // https://en.wikipedia.org/wiki/Gallagher_index
@@ -91,13 +71,5 @@ public class ElectionResult
             sum = sum.plus(diffSquared);
         }
         return sum.dividedBy(Decimal.TWO).root();
-    }
-
-    public Counter<Party> getPartyListSeats()
-    {
-        return electedVotes.stream()
-            .filter(CandidateVotes::isList)
-            .map(cv -> cv.getCandidate().getParty())
-            .collect(Counter.collectCounts());
     }
 }

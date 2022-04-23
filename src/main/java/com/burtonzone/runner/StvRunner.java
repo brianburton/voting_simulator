@@ -32,10 +32,10 @@ public class StvRunner
         return worksheet.toStvResult();
     }
 
+    @Getter
     public static class Result
         extends ElectionResult
     {
-        @Getter
         private final JImmutableList<Round> rounds;
 
         public Result(Election election,

@@ -67,7 +67,7 @@ public class ResultsReport
             .averageEffectiveVoteScore(result.getEffectiveVoteScore().dividedBy(totalVotes))
             .effectiveVoteScore(result.getEffectiveVoteScore())
             .averageError(result.computeErrors())
-            .partyVotes(result.getPartyVoteCounts())
+            .partyVotes(result.getPartyVotes())
             .partySeats(result.getPartyElectedCounts())
             .partyListSeats(result.getPartyListSeats())
             .winningParty(computeWinningParty(result.getPartyElectedCounts()))
@@ -99,7 +99,7 @@ public class ResultsReport
             votes = votes + electionTotalVotes.toInt();
             wasted = wasted + result.getWasted().toInt();
             effectiveVoteScore = effectiveVoteScore.plus(result.getEffectiveVoteScore());
-            partyVotes = partyVotes.add(result.getPartyVoteCounts());
+            partyVotes = partyVotes.add(result.getPartyVotes());
             partySeats = partySeats.add(result.getPartyElectedCounts());
             partyElectedCounts = partyElectedCounts.add(result.getPartyElectedCounts());
             partyListSeats = partyListSeats.add(result.getPartyListSeats());
@@ -457,12 +457,6 @@ public class ResultsReport
         var numer = new Decimal(amount);
         var denom = new Decimal(maxAmount);
         return percent(numer, denom);
-    }
-
-    private static String center(String s,
-                                 int width)
-    {
-        return center(s, width, "-");
     }
 
     private static String center(String s,
