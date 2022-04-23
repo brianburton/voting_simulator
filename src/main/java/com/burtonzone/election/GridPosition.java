@@ -5,12 +5,12 @@ import com.burtonzone.common.Decimal;
 import com.burtonzone.common.Rand;
 import javax.annotation.Nonnull;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
+import lombok.Data;
 import lombok.Getter;
 import org.javimmutable.collections.JImmutableList;
 
+@Data
 @AllArgsConstructor
-@EqualsAndHashCode
 public class GridPosition
     implements Position
 {

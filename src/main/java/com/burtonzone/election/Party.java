@@ -3,18 +3,18 @@ package com.burtonzone.election;
 import com.burtonzone.common.Decimal;
 import java.util.Comparator;
 import lombok.AllArgsConstructor;
-import lombok.Value;
+import lombok.Data;
 import org.javimmutable.collections.JImmutableList;
 
-@Value
+@Data
 @AllArgsConstructor
 public class Party
 {
     public static final Comparator<Party> NameComparator = Comparator.comparing(Party::getName);
 
-    String name;
-    String abbrev;
-    Position position;
+    private final String name;
+    private final String abbrev;
+    private final Position position;
 
     @Override
     public String toString()
