@@ -1,16 +1,16 @@
 package com.burtonzone;
 
 import com.burtonzone.election.ElectionRunner;
-import com.burtonzone.runner.BasicStvRunner;
 import com.burtonzone.runner.MmpRunner;
 import com.burtonzone.runner.OpenListRunner;
 import com.burtonzone.runner.OpenListRunner.Config;
 import com.burtonzone.runner.PluralityRunner;
+import com.burtonzone.runner.StvRunner;
 import java.util.function.Supplier;
 
 public enum ElectionRunners
 {
-    STV(BasicStvRunner::new),
+    STV(StvRunner::new),
 
     /**
      * Each voter gets one vote per seat and candidates with the highest vote counts are elected.

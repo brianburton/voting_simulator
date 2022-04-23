@@ -12,7 +12,7 @@ import com.burtonzone.election.Party;
 import org.javimmutable.collections.util.JImmutables;
 import org.junit.Test;
 
-public class BasicStvRunnerTest
+public class StvRunnerTest
 {
     private final Party P = new Party("P", "P", new LinearPosition(10));
     private final Candidate A = new Candidate(P, "A");
@@ -20,7 +20,7 @@ public class BasicStvRunnerTest
     private final Candidate C = new Candidate(P, "C");
     private final Candidate D = new Candidate(P, "D");
     private final Candidate E = new Candidate(P, "E");
-    private final BasicStvRunner runner = new BasicStvRunner();
+    private final StvRunner runner = new StvRunner();
 
     @Test
     public void sampleWithTieBreaker()
@@ -38,8 +38,8 @@ public class BasicStvRunnerTest
             .ballot(C, A, B, E, D)
             .ballot(D, A, C, E, B)
             .build();
-        var result = runner.runElection(election);
-        var elected = result.getElected();
+        final var result = runner.runElection(election);
+        final var elected = result.getElected();
         assertEquals(JImmutables.list(A, C), elected);
     }
 
@@ -58,12 +58,12 @@ public class BasicStvRunnerTest
         assertEquals(new Decimal(14), election.getTotalVotes());
         assertEquals(new Decimal(5), election.getQuota());
 
-        final BasicStvRunner.StvResult result = runner.runStvElection(election);
+        final var result = runner.runElection(election);
 
-        var elected = result.getResult().getElected();
+        final var elected = result.getElected();
         assertEquals(JImmutables.list(A, B), elected);
 
-        final var rounds = result.getStvRounds();
+        final var rounds = result.getRounds();
         assertEquals(2, rounds.size());
 
         final var round1 = rounds.get(0);
@@ -73,7 +73,7 @@ public class BasicStvRunnerTest
         final var round2 = rounds.get(1);
         assertEquals(cv(B, "5"), round2.getWinner());
 
-        assertEquals(new Decimal("4"), result.getResult().getWasted());
+        assertEquals(new Decimal("4"), result.getWasted());
     }
 
     @Test
@@ -92,12 +92,12 @@ public class BasicStvRunnerTest
         assertEquals(new Decimal(59), election.getTotalVotes());
         assertEquals(new Decimal(20), election.getQuota());
 
-        final BasicStvRunner.StvResult result = runner.runStvElection(election);
+        final var result = runner.runElection(election);
 
-        var elected = result.getResult().getElected();
+        final var elected = result.getElected();
         assertEquals(JImmutables.list(A, C), elected);
 
-        final var rounds = result.getStvRounds();
+        final var rounds = result.getRounds();
         assertEquals(4, rounds.size());
 
         final var round1 = rounds.get(0);
@@ -113,7 +113,7 @@ public class BasicStvRunnerTest
         final var round4 = rounds.get(3);
         assertEquals(cv(C, "4"), round4.getWinner());
 
-        assertEquals(new Decimal("5"), result.getResult().getWasted());
+        assertEquals(new Decimal("5"), result.getWasted());
     }
 
     @Test
@@ -131,12 +131,12 @@ public class BasicStvRunnerTest
         assertEquals(new Decimal(15), election.getTotalVotes());
         assertEquals(new Decimal(6), election.getQuota());
 
-        final BasicStvRunner.StvResult result = runner.runStvElection(election);
+        final var result = runner.runElection(election);
 
-        var elected = result.getResult().getElected();
+        final var elected = result.getElected();
         assertEquals(JImmutables.list(B, C), elected);
 
-        final var rounds = result.getStvRounds();
+        final var rounds = result.getRounds();
         assertEquals(4, rounds.size());
 
         final var round1 = rounds.get(0);
@@ -151,7 +151,7 @@ public class BasicStvRunnerTest
         final var round4 = rounds.get(3);
         assertEquals(cv(C, "6"), round4.getWinner());
 
-        assertEquals(new Decimal("0"), result.getResult().getWasted());
+        assertEquals(new Decimal("0"), result.getWasted());
     }
 
     @Test
@@ -170,12 +170,12 @@ public class BasicStvRunnerTest
         assertEquals(new Decimal(100), election.getTotalVotes());
         assertEquals(new Decimal(51), election.getQuota());
 
-        final BasicStvRunner.StvResult result = runner.runStvElection(election);
+        final var result = runner.runElection(election);
 
-        var elected = result.getResult().getElected();
+        final var elected = result.getElected();
         assertEquals(JImmutables.list(D), elected);
 
-        final var rounds = result.getStvRounds();
+        final var rounds = result.getRounds();
         assertEquals(4, rounds.size());
 
         final var round1 = rounds.get(0);
@@ -190,7 +190,7 @@ public class BasicStvRunnerTest
         final var round4 = rounds.get(3);
         assertEquals(cv(D, "49"), round4.getWinner());
 
-        assertEquals(new Decimal("51"), result.getResult().getWasted());
+        assertEquals(new Decimal("51"), result.getWasted());
     }
 
     @Test
@@ -211,12 +211,12 @@ public class BasicStvRunnerTest
         assertEquals(new Decimal(23), election.getTotalVotes());
         assertEquals(new Decimal(6), election.getQuota());
 
-        final BasicStvRunner.StvResult result = runner.runStvElection(election);
+        final var result = runner.runElection(election);
 
-        var elected = result.getResult().getElected();
+        final var elected = result.getElected();
         assertEquals(JImmutables.list(C, A, D), elected);
 
-        final var rounds = result.getStvRounds();
+        final var rounds = result.getRounds();
         assertEquals(5, rounds.size());
 
         final var round1 = rounds.get(0);
@@ -234,7 +234,7 @@ public class BasicStvRunnerTest
         final var round5 = rounds.get(4);
         assertEquals(cv(D, "5"), round5.getWinner());
 
-        assertEquals(new Decimal("2"), result.getResult().getWasted());
+        assertEquals(new Decimal("2"), result.getWasted());
     }
 
     private static CandidateVotes cv(Candidate candidate,
