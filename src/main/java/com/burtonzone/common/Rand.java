@@ -1,12 +1,8 @@
 package com.burtonzone.common;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Random;
 import lombok.Getter;
 import org.javimmutable.collections.JImmutableList;
-import org.javimmutable.collections.util.JImmutables;
 
 public class Rand
 {
@@ -65,13 +61,6 @@ public class Rand
             }
             return min + (sum + (bias / 2)) / bias;
         }
-    }
-
-    public <T> JImmutableList<T> shuffle(Collection<T> collection)
-    {
-        var list = new ArrayList<T>(collection);
-        Collections.shuffle(list, random);
-        return JImmutables.list(list);
     }
 
     public <T> T nextElement(JImmutableList<T> list)
