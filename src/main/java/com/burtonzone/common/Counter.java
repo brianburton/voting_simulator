@@ -110,22 +110,22 @@ public class Counter<T>
         return counts.isEmpty();
     }
 
-    public Counter<T> addZero(T key)
+    public Decimal get(T key)
     {
-        if (counts.get(key) != null) {
-            return this;
-        } else {
-            return new Counter<>(counts.assign(key, ZERO));
-        }
+        return counts.getValueOr(key, ZERO);
     }
 
-    public Counter<T> addZeros(Iterable<T> keys)
+    public Counter<T> set(T key,
+                          Decimal count)
     {
-        var answer = this;
-        for (T key : keys) {
-            answer = answer.addZero(key);
-        }
-        return answer;
+        var newCounts = counts.assign(key, count);
+        return new Counter<>(newCounts);
+    }
+
+    public Counter<T> delete(T key)
+    {
+        var newCounts = counts.delete(key);
+        return newCounts == counts ? this : new Counter<>(newCounts);
     }
 
     public Counter<T> inc(T key)
@@ -183,16 +183,13 @@ public class Counter<T>
         }
     }
 
-
-    public Counter<T> delete(T key)
+    public Counter<T> times(Decimal multiple)
     {
-        var newCounts = counts.delete(key);
-        return newCounts == counts ? this : new Counter<>(newCounts);
-    }
-
-    public Decimal get(T key)
-    {
-        return counts.getValueOr(key, ZERO);
+        var answer = counts;
+        for (var e : counts) {
+            answer = answer.assign(e.getKey(), e.getValue().times(multiple));
+        }
+        return new Counter<>(answer);
     }
 
     public Decimal getTotal()
@@ -233,11 +230,6 @@ public class Counter<T>
         return Comparator.comparing(this::get).reversed();
     }
 
-    public JImmutableMap<T, Decimal> toMap()
-    {
-        return counts;
-    }
-
     public Counter<T> toRatio()
     {
         JImmutableMap<T, Decimal> answer = map();
@@ -248,17 +240,8 @@ public class Counter<T>
             }
         } else {
             for (var e : counts) {
-                answer = answer.assign(e.getKey(), e.getValue().dividedBy(total));
+                answer = answer.assign(e.getKey(), e.getValue().divide(total));
             }
-        }
-        return new Counter<>(answer);
-    }
-
-    public Counter<T> times(Decimal multiple)
-    {
-        var answer = counts;
-        for (var e : counts) {
-            answer = answer.assign(e.getKey(), e.getValue().times(multiple));
         }
         return new Counter<>(answer);
     }
@@ -298,13 +281,6 @@ public class Counter<T>
     public String toString()
     {
         return counts.toString();
-    }
-
-    public Counter<T> set(T key,
-                          Decimal count)
-    {
-        var newCounts = counts.assign(key, count);
-        return new Counter<>(newCounts);
     }
 
     @Getter

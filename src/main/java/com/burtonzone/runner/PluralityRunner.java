@@ -84,7 +84,7 @@ public class PluralityRunner
         for (var e : ballots) {
             final var ballot = e.getKey();
             final var count = e.getCount();
-            final var increment = count.dividedBy(new Decimal(ballot.size()));
+            final var increment = count.divide(new Decimal(ballot.size()));
             for (Candidate candidate : ballot.getCandidates()) {
                 if (elected.contains(candidate)) {
                     sum = sum.plus(increment);

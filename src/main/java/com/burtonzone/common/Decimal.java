@@ -45,17 +45,6 @@ public class Decimal
                                           Decimal::plus);
     }
 
-    public static Decimal max(Decimal a,
-                              Decimal b)
-    {
-        return a.isGreaterThan(b) ? a : b;
-    }
-
-    public Decimal rounded()
-    {
-        return rounded(RoundingMode.HALF_UP);
-    }
-
     public Decimal plus(Decimal other)
     {
         return new Decimal(value.add(other.value));
@@ -71,30 +60,19 @@ public class Decimal
         return new Decimal(value.subtract(other.value));
     }
 
-    public Decimal dividedBy(Decimal other)
-    {
-        return new Decimal(value.divide(other.value, DIVISION_PRECISION, RoundingMode.HALF_UP));
-    }
-
     public Decimal times(Decimal other)
     {
         return new Decimal(value.multiply(other.value, MathContext.UNLIMITED));
     }
 
-    public Decimal times(int val)
+    public Decimal divide(Decimal other)
     {
-        return new Decimal(value.multiply(new BigDecimal(val), MathContext.UNLIMITED));
-    }
-
-    public Decimal floor()
-    {
-        var changed = value.setScale(0, RoundingMode.FLOOR);
-        return new Decimal(changed);
+        return new Decimal(value.divide(other.value, DIVISION_PRECISION, RoundingMode.HALF_UP));
     }
 
     public Decimal div(Decimal o)
     {
-        return dividedBy(o).floor();
+        return divide(o).roundDown();
     }
 
     public Decimal mod(Decimal o)
@@ -102,7 +80,12 @@ public class Decimal
         return minus(div(o).times(o));
     }
 
-    public Decimal squared()
+    public Decimal abs()
+    {
+        return value.signum() >= 0 ? this : new Decimal(value.negate());
+    }
+
+    public Decimal square()
     {
         return times(this);
     }
@@ -112,10 +95,19 @@ public class Decimal
         return new Decimal(value.sqrt(new MathContext(DIVISION_PRECISION, RoundingMode.HALF_UP)));
     }
 
-    @Override
-    public int compareTo(Decimal other)
+    public Decimal round()
     {
-        return value.compareTo(other.value);
+        return new Decimal(value.setScale(0, RoundingMode.HALF_UP));
+    }
+
+    public Decimal roundUp()
+    {
+        return new Decimal(value.setScale(0, RoundingMode.UP));
+    }
+
+    public Decimal roundDown()
+    {
+        return new Decimal(value.setScale(0, RoundingMode.DOWN));
     }
 
     public boolean isGreaterThan(Decimal other)
@@ -138,11 +130,6 @@ public class Decimal
         return compareTo(other) <= 0;
     }
 
-    public Decimal abs()
-    {
-        return value.signum() >= 0 ? this : new Decimal(value.negate());
-    }
-
     public boolean isZero()
     {
         var diff = minus(ZERO).abs();
@@ -154,26 +141,6 @@ public class Decimal
         return value.signum() <= 0 || isZero();
     }
 
-    @Override
-    public String toString()
-    {
-        return value.toPlainString();
-    }
-
-    public Decimal rounded(RoundingMode roundingMode)
-    {
-        return new Decimal(value
-                               .setScale(0, roundingMode)
-                               .setScale(PRECISION, RoundingMode.HALF_UP));
-    }
-
-    public Decimal roundUp()
-    {
-        return new Decimal(value
-                               .setScale(0, RoundingMode.UP)
-                               .setScale(PRECISION, RoundingMode.HALF_UP));
-    }
-
     public BigDecimal toBigDecimal()
     {
         return value;
@@ -182,5 +149,17 @@ public class Decimal
     public int toInt()
     {
         return value.toBigInteger().intValue();
+    }
+
+    @Override
+    public int compareTo(Decimal other)
+    {
+        return value.compareTo(other.value);
+    }
+
+    @Override
+    public String toString()
+    {
+        return value.toPlainString();
     }
 }

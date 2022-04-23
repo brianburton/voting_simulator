@@ -289,8 +289,8 @@ public class OpenListRunner
                                              Decimal seats)
         {
             return switch (config.seatAllocator) {
-                case Webster -> votes.dividedBy(Decimal.ONE.plus(seats.times(Decimal.TWO)));
-                case DHondt -> votes.dividedBy(Decimal.ONE.plus(seats));
+                case Webster -> votes.divide(Decimal.ONE.plus(seats.times(Decimal.TWO)));
+                case DHondt -> votes.divide(Decimal.ONE.plus(seats));
                 default -> throw new IllegalArgumentException("no formula for " + config.seatAllocator);
             };
         }

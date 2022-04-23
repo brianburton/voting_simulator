@@ -6,7 +6,6 @@ import static org.javimmutable.collections.util.JImmutables.*;
 import com.burtonzone.common.Counter;
 import com.burtonzone.common.Decimal;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import java.math.RoundingMode;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -53,9 +52,9 @@ public class Election
     public static Decimal computeQuota(Decimal totalVotes,
                                        int numberOfSeats)
     {
-        return totalVotes.dividedBy(new Decimal(numberOfSeats + 1))
+        return totalVotes.divide(new Decimal(numberOfSeats + 1))
             .plus(ONE)
-            .rounded(RoundingMode.DOWN);
+            .roundDown();
     }
 
     public static Builder builder()

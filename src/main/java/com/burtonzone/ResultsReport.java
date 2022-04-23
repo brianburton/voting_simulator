@@ -63,8 +63,8 @@ public class ResultsReport
             .elected(result.getElectedCount())
             .votes(totalVotes.toInt())
             .wasted(result.getWasted().toInt())
-            .averageWasted(result.getWasted().dividedBy(totalVotes))
-            .averageEffectiveVoteScore(result.getEffectiveVoteScore().dividedBy(totalVotes))
+            .averageWasted(result.getWasted().divide(totalVotes))
+            .averageEffectiveVoteScore(result.getEffectiveVoteScore().divide(totalVotes))
             .effectiveVoteScore(result.getEffectiveVoteScore())
             .averageError(result.computeErrors())
             .partyVotes(result.getPartyVotes())
@@ -105,8 +105,8 @@ public class ResultsReport
             partyListSeats = partyListSeats.add(result.getPartyListSeats());
             allBallots.add(result.getEffectiveBallots());
             final var weight = new Decimal(result.getElection().getSeats());
-            averageWasted.add(result.getWasted().dividedBy(electionTotalVotes), weight);
-            averageEffectiveVoteScore.add(result.getEffectiveVoteScore().dividedBy(electionTotalVotes), weight);
+            averageWasted.add(result.getWasted().divide(electionTotalVotes), weight);
+            averageEffectiveVoteScore.add(result.getEffectiveVoteScore().divide(electionTotalVotes), weight);
             averageError.add(result.computeErrors(), weight);
         }
         if (seats != elected) {
@@ -147,10 +147,10 @@ public class ResultsReport
         var total = ZERO;
         for (Party party : parties) {
             var partyResult = new PartyResult(party);
-            var seatFraction = new Decimal(partyResult.getSeats()).dividedBy(seats);
-            total = total.plus(seatFraction.squared());
+            var seatFraction = new Decimal(partyResult.getSeats()).divide(seats);
+            total = total.plus(seatFraction.square());
         }
-        return ONE.dividedBy(total);
+        return ONE.divide(total);
     }
 
     // https://en.wikipedia.org/wiki/Gallagher_index
@@ -160,12 +160,12 @@ public class ResultsReport
         final var totalVotes = partyVotes.getTotal();
         var sum = ZERO;
         for (Party party : parties) {
-            final var seatPercentage = partySeats.get(party).dividedBy(totalSeats);
-            final var votePercentage = partyVotes.get(party).dividedBy(totalVotes);
-            final var diffSquared = votePercentage.minus(seatPercentage).squared();
+            final var seatPercentage = partySeats.get(party).divide(totalSeats);
+            final var votePercentage = partyVotes.get(party).divide(totalVotes);
+            final var diffSquared = votePercentage.minus(seatPercentage).square();
             sum = sum.plus(diffSquared);
         }
-        return sum.dividedBy(Decimal.TWO).root();
+        return sum.divide(Decimal.TWO).root();
     }
 
     public JImmutableList<String> getHeaders(Iterable<Party> parties)
@@ -387,8 +387,8 @@ public class ResultsReport
             final var totalVotes = partyVotes.getTotal();
             final var totalSeats = new Decimal(elected);
             return ourVotes.times(totalSeats)
-                .dividedBy(totalVotes)
-                .rounded()
+                .divide(totalVotes)
+                .round()
                 .toInt();
         }
 

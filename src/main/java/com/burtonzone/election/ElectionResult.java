@@ -65,11 +65,11 @@ public class ElectionResult
         final var totalVotes = partyVotes.getTotal();
         var sum = ZERO;
         for (Party party : getElection().getParties()) {
-            final var seatPercentage = partySeats.get(party).dividedBy(totalSeats);
-            final var votePercentage = partyVotes.get(party).dividedBy(totalVotes);
-            final var diffSquared = votePercentage.minus(seatPercentage).squared();
+            final var seatPercentage = partySeats.get(party).divide(totalSeats);
+            final var votePercentage = partyVotes.get(party).divide(totalVotes);
+            final var diffSquared = votePercentage.minus(seatPercentage).square();
             sum = sum.plus(diffSquared);
         }
-        return sum.dividedBy(Decimal.TWO).root();
+        return sum.divide(Decimal.TWO).root();
     }
 }

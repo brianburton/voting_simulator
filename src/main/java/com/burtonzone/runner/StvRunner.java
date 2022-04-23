@@ -109,7 +109,7 @@ public class StvRunner
         private void recordQuotaWinner(CandidateVotes winner)
         {
             final var overVote = winner.getVotes().minus(election.getQuota());
-            final var transferWeight = overVote.dividedBy(winner.getVotes());
+            final var transferWeight = overVote.divide(winner.getVotes());
             final var candidate = new CandidateVotes(winner.getCandidate(), election.getQuota(), Vote);
             rounds = rounds.insertLast(new Round(ballots, candidate, null));
             ballots = ballots.removeAndTransfer(winner.getCandidate(), transferWeight);
@@ -137,7 +137,7 @@ public class StvRunner
             for (var e : election.getBallots()) {
                 final var ballot = e.getKey();
                 final var count = e.getCount();
-                final var drop = ONE.dividedBy(new Decimal(ballot.size()));
+                final var drop = ONE.divide(new Decimal(ballot.size()));
                 var fraction = ONE;
                 for (Candidate candidate : ballot.getCandidates()) {
                     if (elected.contains(candidate)) {

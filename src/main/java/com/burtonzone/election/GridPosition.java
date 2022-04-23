@@ -52,7 +52,7 @@ public class GridPosition
     {
         var xOffset = rand.nextInt(-distance, distance);
         var yOffsetSquared = distance * distance - xOffset * xOffset;
-        var yOffset = new Decimal(yOffsetSquared).root().rounded().toInt();
+        var yOffset = new Decimal(yOffsetSquared).root().round().toInt();
         if (rand.nextBoolean()) {
             yOffset = -yOffset;
         }
