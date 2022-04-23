@@ -52,7 +52,7 @@ public class Election
     public static Decimal computeQuota(Decimal totalVotes,
                                        int numberOfSeats)
     {
-        return totalVotes.divide(new Decimal(numberOfSeats + 1))
+        return totalVotes.divide(numberOfSeats + 1)
             .plus(ONE)
             .roundDown();
     }

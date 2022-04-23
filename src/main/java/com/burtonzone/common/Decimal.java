@@ -65,9 +65,14 @@ public class Decimal
         return new Decimal(value.multiply(other.value, MathContext.UNLIMITED));
     }
 
-    public Decimal divide(Decimal other)
+    public Decimal divide(Decimal divisor)
     {
-        return new Decimal(value.divide(other.value, DIVISION_PRECISION, RoundingMode.HALF_UP));
+        return new Decimal(value.divide(divisor.value, DIVISION_PRECISION, RoundingMode.HALF_UP));
+    }
+
+    public Decimal divide(int divisor)
+    {
+        return divide(new Decimal(divisor));
     }
 
     public Decimal div(Decimal o)

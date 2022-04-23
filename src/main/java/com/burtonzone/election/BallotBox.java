@@ -52,7 +52,7 @@ public class BallotBox
             count += 1;
             sum += ballot.size();
         }
-        return (count == 0) ? ZERO : new Decimal(sum).divide(new Decimal(count));
+        return (count == 0) ? ZERO : new Decimal(sum).divide(count);
     }
 
     public BallotBox toSingleChoiceBallots()

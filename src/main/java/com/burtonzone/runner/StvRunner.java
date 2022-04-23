@@ -137,7 +137,7 @@ public class StvRunner
             for (var e : election.getBallots()) {
                 final var ballot = e.getKey();
                 final var count = e.getCount();
-                final var drop = ONE.divide(new Decimal(ballot.size()));
+                final var drop = ONE.divide(ballot.size());
                 var fraction = ONE;
                 for (Candidate candidate : ballot.getCandidates()) {
                     if (elected.contains(candidate)) {
