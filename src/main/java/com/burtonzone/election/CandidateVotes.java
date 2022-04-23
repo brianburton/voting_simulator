@@ -1,11 +1,15 @@
 package com.burtonzone.election;
 
+import static org.javimmutable.collections.util.JImmutables.*;
+
 import com.burtonzone.common.Counter;
 import com.burtonzone.common.Decimal;
 import java.util.Comparator;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 import org.javimmutable.collections.IterableStreamable;
+import org.javimmutable.collections.JImmutableList;
+import org.javimmutable.collections.JImmutableSet;
 
 @Value
 @AllArgsConstructor
@@ -36,6 +40,11 @@ public class CandidateVotes
     public boolean isList()
     {
         return selectionType == SelectionType.List;
+    }
+
+    public static JImmutableSet<Candidate> toCandidateSet(JImmutableList<CandidateVotes> elected)
+    {
+        return elected.transform(set(), CandidateVotes::getCandidate);
     }
 
     public static Comparator<CandidateVotes> voteOrder(Comparator<Candidate> tieBreaker)

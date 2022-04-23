@@ -5,7 +5,6 @@ import static com.burtonzone.common.Decimal.ZERO;
 import com.burtonzone.common.Counter;
 import com.burtonzone.common.Decimal;
 import org.javimmutable.collections.JImmutableList;
-import org.javimmutable.collections.util.JImmutables;
 
 public class ElectionResult
 {
@@ -13,18 +12,21 @@ public class ElectionResult
     private final BallotBox effectiveBallots;
     private final Counter<Party> partyVotes;
     private final Decimal wasted;
+    private final Decimal effectiveVoteScore;
     private final JImmutableList<CandidateVotes> electedVotes;
 
     public ElectionResult(Election election,
                           BallotBox effectiveBallots,
                           Counter<Party> partyVotes,
                           Decimal wasted,
+                          Decimal effectiveVoteScore,
                           JImmutableList<CandidateVotes> electedVotes)
     {
         this.election = election;
         this.effectiveBallots = effectiveBallots;
         this.partyVotes = partyVotes;
         this.wasted = wasted;
+        this.effectiveVoteScore = effectiveVoteScore;
         this.electedVotes = electedVotes;
     }
 
@@ -72,8 +74,7 @@ public class ElectionResult
 
     public Decimal getEffectiveVoteScore()
     {
-        final var candidateSet = JImmutables.set(getElected());
-        return effectiveBallots.getEffectiveVoteScore(candidateSet::contains);
+        return effectiveVoteScore;
     }
 
     // https://en.wikipedia.org/wiki/Gallagher_index

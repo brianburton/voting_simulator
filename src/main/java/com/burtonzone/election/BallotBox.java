@@ -1,6 +1,5 @@
 package com.burtonzone.election;
 
-import static com.burtonzone.common.Decimal.ONE;
 import static com.burtonzone.common.Decimal.ZERO;
 import static org.javimmutable.collections.util.JImmutables.*;
 
@@ -125,31 +124,6 @@ public class BallotBox
         return Counter.sum(ballots,
                            e -> e.getKey().first(),
                            e -> e.getCount());
-    }
-
-    /**
-     * Returns a number which is a fraction of the total number of votes in the ballot box.
-     * For each ballot the first choice to have a true value from the predicate generates a score.
-     * The ballot's first choice scores 1, the second choice scores 2/3, the third scores 4/9 etc.
-     *
-     * @param isElected return true if the candidate should be considered elected
-     * @return the total score for all ballots in the box
-     */
-    public Decimal getEffectiveVoteScore(Predicate<Candidate> isElected)
-    {
-        final var drop = new Decimal("0.8");
-        var sum = ZERO;
-        for (var ballot : ballots) {
-            var divisor = ONE;
-            for (Candidate candidate : ballot.getKey().getCandidates()) {
-                if (isElected.test(candidate)) {
-                    sum = sum.plus(ballot.getCount().times(divisor));
-                    break;
-                }
-                divisor = divisor.times(drop);
-            }
-        }
-        return sum;
     }
 
     public BallotBox removeAndTransfer(Candidate candidate,

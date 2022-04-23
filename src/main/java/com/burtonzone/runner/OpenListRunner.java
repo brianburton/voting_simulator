@@ -19,6 +19,7 @@ import lombok.Builder;
 import lombok.Value;
 import org.javimmutable.collections.JImmutableList;
 import org.javimmutable.collections.JImmutableListMap;
+import org.javimmutable.collections.JImmutableSet;
 import org.javimmutable.collections.JImmutableSetMap;
 import org.javimmutable.collections.util.JImmutables;
 
@@ -234,8 +235,11 @@ public class OpenListRunner
                 throw new IllegalStateException(String.format("elected/seat mismatch: seats=%d elected=%d",
                                                               electedCandidateVotes.size(), election.getSeats()));
             }
+            final var electedCandidates = CandidateVotes.toCandidateSet(electedCandidateVotes);
+            final var electedParties = electedCandidates.transform(Candidate::getParty);
             final var wasted = effectiveBallots.countWastedUsingCandidateOrParty(electedCandidateVotes);
-            return new ElectionResult(election, effectiveBallots, partyVotes, wasted, electedCandidateVotes);
+            final var effectiveVoteScore = computeEffectiveVoteScore(effectiveBallots, electedCandidates, electedParties);
+            return new ElectionResult(election, effectiveBallots, partyVotes, wasted, effectiveVoteScore, electedCandidateVotes);
         }
 
         private JImmutableListMap<Party, Candidate> selectPartyLists()
@@ -316,6 +320,26 @@ public class OpenListRunner
                 selected = selected.insert(party, candidate);
             }
         }
+    }
+
+    public static Decimal computeEffectiveVoteScore(BallotBox ballots,
+                                                    JImmutableSet<Candidate> winningCandidates,
+                                                    JImmutableSet<Party> winningParties)
+    {
+        final var fraction = new Decimal("0.9");
+        var sum = ZERO;
+        for (var e : ballots) {
+            final var ballot = e.getKey();
+            final var count = e.getCount();
+            final var candidate = winningCandidates.contains(ballot.first());
+            final var party = winningParties.contains(ballot.getParty());
+            if (candidate && party) {
+                sum = sum.plus(count);
+            } else if (candidate || party) {
+                sum = sum.plus(count.times(fraction));
+            }
+        }
+        return sum;
     }
 
     @Value

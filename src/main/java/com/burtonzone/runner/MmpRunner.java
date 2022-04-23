@@ -107,12 +107,17 @@ public class MmpRunner
         if (listCount != seats - districtSeats) {
             throw new IllegalArgumentException("list count mismatch");
         }
+        final var winningCandidates = set(districtWinners);
+        final var winningParties = partyResult.getVotes()
+            .transform(set(), cv -> cv.getCandidate().getParty());
         final var effectiveElection = new Election("", parties, candidates, list(), partyLists, ballots, seats);
         final var wasted = ballots.countWastedUsingCandidateOrParty(partyResult.getVotes());
+        final var effectiveVoteScore = OpenListRunner.computeEffectiveVoteScore(ballots, winningCandidates, winningParties);
         final var effectiveResults = new ElectionResult(effectiveElection,
                                                         ballots,
                                                         partyVotes,
                                                         wasted,
+                                                        effectiveVoteScore,
                                                         partyResult.getVotes());
         if (CandidateVotes.countType(effectiveResults.getVotes(), CandidateVotes.SelectionType.Vote) != votedCount) {
             throw new IllegalArgumentException("voted count mismatch");

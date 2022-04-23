@@ -5,13 +5,16 @@ import static com.burtonzone.common.Decimal.ZERO;
 import static com.burtonzone.election.CandidateVotes.SelectionType.Vote;
 import static org.javimmutable.collections.util.JImmutables.*;
 
+import com.burtonzone.common.Decimal;
 import com.burtonzone.election.BallotBox;
+import com.burtonzone.election.Candidate;
 import com.burtonzone.election.CandidateVotes;
 import com.burtonzone.election.Election;
 import com.burtonzone.election.ElectionResult;
 import com.burtonzone.election.ElectionRunner;
 import lombok.Data;
 import org.javimmutable.collections.JImmutableList;
+import org.javimmutable.collections.JImmutableSet;
 
 public class BasicStvRunner
     implements ElectionRunner
@@ -119,14 +122,37 @@ public class BasicStvRunner
             ballots = ballots.removeAndTransfer(loser.getCandidate(), ONE);
         }
 
+        private Decimal computeEffectiveVoteScore(JImmutableSet<Candidate> elected)
+        {
+            var sum = ZERO;
+            for (var e : election.getBallots()) {
+                final var ballot = e.getKey();
+                final var count = e.getCount();
+                final var drop = ONE.dividedBy(new Decimal(ballot.size()));
+                var fraction = ONE;
+                for (Candidate candidate : ballot.getCandidates()) {
+                    if (elected.contains(candidate)) {
+                        sum = sum.plus(count.times(fraction));
+                        break;
+                    }
+                    fraction = fraction.minus(drop);
+                }
+            }
+            return sum;
+        }
+
         private StvResult toStvResult()
         {
             final var electedVotes = computeWinnersList();
+            final var electedCandidates = CandidateVotes.toCandidateSet(electedVotes);
+            final var partyVotes = election.getBallots().getCandidatePartyVotes(election.getSeats());
             final var wasted = election.getBallots().countWastedUsingCandidateOnly(electedVotes);
+            final var effectiveVoteScore = computeEffectiveVoteScore(electedCandidates);
             final var result = new ElectionResult(election,
                                                   election.getBallots(),
-                                                  election.getBallots().getCandidatePartyVotes(election.getSeats()),
+                                                  partyVotes,
                                                   wasted,
+                                                  effectiveVoteScore,
                                                   electedVotes);
             return new StvResult(election, rounds, result);
         }
